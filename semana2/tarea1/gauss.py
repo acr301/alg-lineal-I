@@ -211,3 +211,51 @@ def solucion_parametrica(matriz, n_incognitas, columnas_pivote):
         expresiones[col] = (termino_independiente, partes)
 
     return libres, expresiones
+
+
+def evaluar_solucion_parametrica(n_incognitas, libres, expresiones, valores_libres):
+    """
+    Construye una solucion concreta x = [x1, ..., xn] a partir de la solucion
+    parametrica devuelta por solucion_parametrica(), asignando un valor
+    numerico a cada variable libre.
+
+    'valores_libres' es una lista alineada con 'libres': valores_libres[k] es
+    el valor que se le asigna a la variable libre libres[k].
+
+    Util para construir un ejemplo concreto (p. ej. con parametros = 0 o 1)
+    y poder verificar que satisface el sistema original.
+    """
+    x = [0.0] * n_incognitas
+    for indice_libre, valor in zip(libres, valores_libres):
+        x[indice_libre] = valor
+
+    for v in range(n_incognitas):
+        if expresiones[v] is None:
+            continue
+        termino_independiente, partes = expresiones[v]
+        valor = termino_independiente
+        for coef, indice_libre in partes:
+            valor += coef * x[indice_libre]
+        x[v] = valor
+
+    return x
+
+
+def verificar_solucion(coeficientes, terminos_independientes, x):
+    """
+    Sustituye la solucion 'x' en el sistema ORIGINAL (antes de escalonar) y
+    comprueba, ecuacion por ecuacion, que A*x sea igual a b.
+
+    Devuelve una lista de tuplas (valor_calculado, valor_esperado, coincide):
+      - valor_calculado: resultado de evaluar la fila i de A contra x.
+      - valor_esperado: terminos_independientes[i] (b_i).
+      - coincide: True si valor_calculado es (casi) igual a valor_esperado.
+    """
+    resultados = []
+    for fila, b_i in zip(coeficientes, terminos_independientes):
+        valor_calculado = 0.0
+        for coef, xj in zip(fila, x):
+            valor_calculado += coef * xj
+        coincide = valor_casi_cero(valor_calculado - b_i)
+        resultados.append((valor_calculado, b_i, coincide))
+    return resultados

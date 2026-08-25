@@ -16,9 +16,11 @@ from gauss import (
     clasificar,
     crear_matriz_aumentada,
     escalonar,
+    evaluar_solucion_parametrica,
     reducir_a_escalonada_reducida,
     solucion_parametrica,
     sustitucion_regresiva,
+    verificar_solucion,
 )
 
 
@@ -85,19 +87,10 @@ class TestSistemaIndeterminado(unittest.TestCase):
         # Verificar que, para un valor arbitrario del parámetro t = z, la
         # solución generada satisface las ecuaciones originales.
         for t in (0, 1, -3.5):
-            x = [0.0, 0.0, 0.0]
-            x[2] = t
-            for v in range(n):
-                if v in libres:
-                    continue
-                termino, partes = expresiones[v]
-                valor = termino
-                for coef, libre in partes:
-                    valor += coef * x[libre]
-                x[v] = valor
-            for fila, b in zip(coeficientes, terminos):
-                total = sum(a * xv for a, xv in zip(fila, x))
-                self.assertAlmostEqual(total, b)
+            x = evaluar_solucion_parametrica(n, libres, expresiones, [t])
+            resultados = verificar_solucion(coeficientes, terminos, x)
+            for _, _, coincide in resultados:
+                self.assertTrue(coincide)
 
 
 class TestSistemaIncompatible(unittest.TestCase):
@@ -120,6 +113,26 @@ class TestSistemaIncompatible(unittest.TestCase):
         terminos = [3, 5, 4]  # 2*fila1 debe dar 6, no 5 -> incompatible
         _, _, _, tipo = resolver(coeficientes, terminos)
         self.assertEqual(tipo, "incompatible")
+
+
+class TestVerificarSolucion(unittest.TestCase):
+    def test_solucion_correcta(self):
+        coeficientes = [[1, 1, 1], [0, 2, 5], [2, 5, -1]]
+        terminos = [6, -4, 27]
+        x = [5, 3, -2]
+        resultados = verificar_solucion(coeficientes, terminos, x)
+        self.assertEqual(len(resultados), 3)
+        for valor_calculado, valor_esperado, coincide in resultados:
+            self.assertTrue(coincide)
+            self.assertAlmostEqual(valor_calculado, valor_esperado)
+
+    def test_solucion_incorrecta_no_coincide(self):
+        coeficientes = [[1, 1], [1, -1]]
+        terminos = [4, 0]
+        x = [1, 1]  # solución real es x=2, y=2
+        resultados = verificar_solucion(coeficientes, terminos, x)
+        coincidencias = [coincide for _, _, coincide in resultados]
+        self.assertFalse(all(coincidencias))
 
 
 if __name__ == "__main__":

@@ -21,10 +21,12 @@ from gauss import (
     copiar_matriz,
     crear_matriz_aumentada,
     escalonar,
+    evaluar_solucion_parametrica,
     reducir_a_escalonada_reducida,
     solucion_parametrica,
     sustitucion_regresiva,
     valor_casi_cero,
+    verificar_solucion,
 )
 
 
@@ -96,6 +98,28 @@ def imprimir_matriz(matriz, n_incognitas, titulo=None):
         print(f"[ {coeficientes_str}  |  {termino_str:>8} ]")
 
 
+def imprimir_verificacion(coeficientes, terminos, x, titulo="Verificación (sustituyendo en el sistema original)"):
+    """
+    Sustituye 'x' en el sistema original [coeficientes | terminos] y muestra,
+    ecuación por ecuación, el valor calculado vs. el esperado, y si coinciden.
+    """
+    print(f"\n--- {titulo} ---")
+    resultados = verificar_solucion(coeficientes, terminos, x)
+    todo_coincide = True
+    for i, (valor_calculado, valor_esperado, coincide) in enumerate(resultados):
+        estado = "OK" if coincide else "NO coincide"
+        if not coincide:
+            todo_coincide = False
+        print(
+            f"  Ecuación {i + 1}: {formatear_numero(valor_calculado)} "
+            f"(esperado {formatear_numero(valor_esperado)})  ->  {estado}"
+        )
+    if todo_coincide:
+        print("La solución satisface todas las ecuaciones del sistema original.")
+    else:
+        print("ADVERTENCIA: la solución NO satisface todas las ecuaciones.")
+
+
 def resolver_sistema(coeficientes, terminos, n):
     """Ejecuta el flujo completo (escalonar, clasificar, mostrar) para un sistema dado."""
     matriz = crear_matriz_aumentada(coeficientes, terminos)
@@ -130,6 +154,8 @@ def resolver_sistema(coeficientes, terminos, n):
         for j in range(n):
             print(f"  x{j + 1} = {formatear_numero(x[j])}")
 
+        imprimir_verificacion(coeficientes, terminos, x)
+
     else:
         print("Sistema COMPATIBLE INDETERMINADO: tiene infinitas soluciones.")
 
@@ -162,6 +188,14 @@ def resolver_sistema(coeficientes, terminos, n):
                     indice_parametro = libres.index(indice_libre) + 1
                     texto += f" {signo} {formatear_numero(abs(coef))}*t{indice_parametro}"
                 print(f"  x{v + 1} = {texto}")
+
+        valores_ejemplo = [0.0] * len(libres)
+        x_ejemplo = evaluar_solucion_parametrica(n, libres, expresiones, valores_ejemplo)
+        asignaciones = ", ".join(
+            f"t{k + 1} = {formatear_numero(v)}" for k, v in enumerate(valores_ejemplo)
+        )
+        titulo = f"Verificación con un ejemplo concreto ({asignaciones})"
+        imprimir_verificacion(coeficientes, terminos, x_ejemplo, titulo)
 
 
 def main():
