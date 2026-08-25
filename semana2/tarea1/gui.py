@@ -142,7 +142,7 @@ class GaussWindow(QMainWindow):
             column.addWidget(spinner)
             control_layout.addLayout(column)
         self.example = QComboBox()
-        self.example.addItems(["Solución única", "Variables libres", "Sistema incompatible"])
+        self.example.addItems(["Solución única", "Variables libres", "Sistema inconsistente"])
         self.example.currentTextChanged.connect(self.load_example)
         example_column = QVBoxLayout()
         example_column.addWidget(QLabel("Ejemplo rápido"))
@@ -250,7 +250,7 @@ class GaussWindow(QMainWindow):
         examples = {
             "Solución única": [[1, 1, 1, 6], [0, 2, 5, -4], [2, 5, -1, 27]],
             "Variables libres": [[1, 1, 1, 6], [2, 2, 2, 12], [1, -1, 0, 0]],
-            "Sistema incompatible": [[1, 1, 2], [1, 1, 5]],
+            "Sistema inconsistente": [[1, 1, 2], [1, 1, 5]],
         }
         matrix = examples[name]
         self.equations.setValue(len(matrix))
@@ -295,16 +295,16 @@ class GaussWindow(QMainWindow):
         kind = clasificar(matrix, n, pivots)
         result_lines = []
         if kind == "incompatible":
-            self.set_status("Sistema incompatible · no tiene solución", "#ffe6e5", "#9f2520")
+            self.set_status("Sistema inconsistente · no tiene solución", "#ffe6e5", "#9f2520")
             result_lines.append("Una ecuación se redujo a 0 = c (con c distinto de cero).")
         elif kind == "determinado":
             solution = sustitucion_regresiva(matrix, n, pivots)
-            self.set_status("Sistema compatible determinado · solución única", "#dff7e7", "#176b46")
+            self.set_status("Sistema consistente determinado · solución única", "#dff7e7", "#176b46")
             result_lines.append("<b>Solución única</b>")
             result_lines.extend(f"x{i + 1} = {format_number(value)}" for i, value in enumerate(solution))
             result_lines.append(self.verification_html(coefficients, terms, solution))
         else:
-            self.set_status("Sistema compatible indeterminado · infinitas soluciones", "#fff3cf", "#805900")
+            self.set_status("Sistema consistente indeterminado · infinitas soluciones", "#fff3cf", "#805900")
             reducir_a_escalonada_reducida(matrix, n, pivots, registrar_paso=register)
             self.steps.append(("Forma escalonada reducida", copiar_matriz(matrix)))
             free, expressions = solucion_parametrica(matrix, n, pivots)
