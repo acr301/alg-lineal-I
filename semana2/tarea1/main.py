@@ -5,9 +5,9 @@ Programa interactivo que resuelve sistemas de ecuaciones lineales Ax = b
 usando el método de eliminación de Gauss (reducción por filas), muestra
 cada paso del proceso y clasifica el sistema según sus soluciones:
 
-  - Compatible determinado   -> solución única.
-  - Compatible indeterminado -> infinitas soluciones (solución paramétrica).
-  - Incompatible             -> sin solución.
+  - Consistente determinado   -> solución única.
+  - Consistente indeterminado -> infinitas soluciones (solución paramétrica).
+  - Inconsistente             -> sin solución.
 
 Toda la lógica del algoritmo vive en gauss.py (sin input/print). Este
 archivo solo se encarga de la interacción con el usuario por consola.
@@ -144,11 +144,11 @@ def resolver_sistema(coeficientes, terminos, n):
 
     print("\n--- Clasificación del sistema ---")
     if tipo == "incompatible":
-        print("Sistema INCOMPATIBLE: no tiene solución.")
+        print("Sistema INCONSISTENTE: no tiene solución.")
         print("(Una fila quedó de la forma 0 = c, con c distinto de 0.)")
 
     elif tipo == "determinado":
-        print("Sistema COMPATIBLE DETERMINADO: tiene solución única.")
+        print("Sistema CONSISTENTE DETERMINADO: tiene solución única.")
         x = sustitucion_regresiva(matriz, n, columnas_pivote)
         print("\nSolución:")
         for j in range(n):
@@ -157,7 +157,7 @@ def resolver_sistema(coeficientes, terminos, n):
         imprimir_verificacion(coeficientes, terminos, x)
 
     else:
-        print("Sistema COMPATIBLE INDETERMINADO: tiene infinitas soluciones.")
+        print("Sistema CONSISTENTE INDETERMINADO: tiene infinitas soluciones.")
 
         pasos_rref = []
 
