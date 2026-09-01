@@ -127,7 +127,8 @@ class PantallaProceso(PantallaBase):
         self._mostrar_paso(0)
 
     def al_atras(self):
-        self.win.ir("entrada")
+        # Si venimos de un ejemplo, no hay pantallas de entrada que revisar.
+        self.win.ir("entrada" if self.sesion.origen == "manual" else "menu")
 
     def widget_inicial(self):
         # El foco va al botón de continuar (Enter avanza de pantalla); los pasos

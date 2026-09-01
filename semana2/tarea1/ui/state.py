@@ -39,6 +39,7 @@ class Sesion:
         self.modo = MODO_FRACCION
         self.matriz = self._matriz_ceros(3, 3)
         self.resultado = None  # dict tras resolver(), o None
+        self.origen = "manual"  # "manual" (flujo completo) | "ejemplo" (salta a proceso)
 
     # ---- helpers de forma -------------------------------------------------- #
 
@@ -60,6 +61,11 @@ class Sesion:
         self.n_eq = len(datos)
         self.n_var = len(datos[0]) - 1
         self.matriz = [[float(v) for v in fila] for fila in datos]
+        self.resultado = None
+        self.origen = "ejemplo"
+
+    def iniciar_manual(self):
+        self.origen = "manual"
         self.resultado = None
 
     def fmt(self, valor):

@@ -7,7 +7,7 @@ APP_INFO = {
     "version": "2.0.0",
     "resumen": ("Resuelve y analiza sistemas de ecuaciones lineales Ax = b por "
                 "eliminación de Gauss, paso a paso y sin librerías de álgebra."),
-    "autores": "ACR301 y colaboradores",
+    "autores": "Andrés Castillo y Fátima Zogaib (Grupo 7)",
     "licencia": "MIT",
     "repo": "github.com/acr301/alg-lineal-I",
 }
@@ -24,6 +24,7 @@ QLabel#subtitle { color: #eafcff; font-size: 13px; }
 QLabel#h1 { font-size: 20px; font-weight: 800; color: #0874a4; }
 QLabel#hint { color: #41738c; font-size: 12px; }
 QLabel#explain { color: #5a7d92; font-size: 12px; }
+QLabel#pie { color: #7fa0b3; font-size: 11px; }
 QLabel#prompt { font-size: 17px; font-weight: 700; color: #0874a4; }
 QLabel#status { padding: 8px 12px; border-radius: 9px; font-weight: 800; }
 QGroupBox { background: rgba(255,255,255,0.88); border: 1px solid #a7dce9;

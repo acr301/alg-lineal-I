@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
+from formato import normalizar_entrada
 from ui.widgets import MatrizGrid, PantallaBase
 
 
@@ -23,12 +24,6 @@ def _parsear(texto):
     return float(texto)
 
 
-def _num_editable(valor):
-    if valor == int(valor):
-        return str(int(valor))
-    return f"{valor:g}"
-
-
 class PantallaEntrada(PantallaBase):
     def __init__(self, win):
         super().__init__(win)
@@ -39,27 +34,37 @@ class PantallaEntrada(PantallaBase):
         self.prompt = QLabel("—")
         self.prompt.setObjectName("prompt")
         self.prompt.setWordWrap(True)
+        self.prompt.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.raiz.addWidget(self.prompt)
 
         fila_entrada = QHBoxLayout()
-        self.anterior = QPushButton("◀  Anterior")
+        fila_entrada.setSpacing(10)
+        self.anterior = QPushButton("◀")
         self.anterior.setObjectName("secondary")
+        self.anterior.setFixedWidth(46)
+        self.anterior.setToolTip("Término anterior")
         self.anterior.clicked.connect(lambda: self._ir_a(self.indice - 1))
         self.campo = QLineEdit()
         self.campo.setObjectName("cell")
-        self.campo.setPlaceholderText("número  (admite . , y también 1/2)")
+        self.campo.setPlaceholderText("número")
         self.campo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.campo.setFixedWidth(180)
         self.campo.returnPressed.connect(self._confirmar)
-        self.siguiente = QPushButton("Siguiente  ▶")
+        self.siguiente = QPushButton("▶")
         self.siguiente.setObjectName("secondary")
+        self.siguiente.setFixedWidth(46)
+        self.siguiente.setToolTip("Siguiente término")
         self.siguiente.clicked.connect(lambda: self._ir_a(self.indice + 1))
+        fila_entrada.addStretch(1)
         fila_entrada.addWidget(self.anterior)
-        fila_entrada.addWidget(self.campo, 1)
+        fila_entrada.addWidget(self.campo, 0)
         fila_entrada.addWidget(self.siguiente)
+        fila_entrada.addStretch(1)
         self.raiz.addLayout(fila_entrada)
 
         self.error = QLabel("")
         self.error.setStyleSheet("color:#9f2520; font-weight:700;")
+        self.error.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.raiz.addWidget(self.error)
 
         self.grid = MatrizGrid()
@@ -105,7 +110,7 @@ class PantallaEntrada(PantallaBase):
         fila = self.indice // (self.sesion.n_var + 1) + 1
         self.prompt.setText(f"Ecuación {fila} · <b>{etiqueta}</b> — {descripcion} "
                             f"&nbsp; ({self.indice + 1}/{total})")
-        self.campo.setText(_num_editable(self.sesion.get_celda(self.indice)))
+        self.campo.setText(self.sesion.fmt(self.sesion.get_celda(self.indice)))
         self.campo.selectAll()
         self.campo.setFocus()
         self.anterior.setEnabled(self.indice > 0)
@@ -115,7 +120,7 @@ class PantallaEntrada(PantallaBase):
 
     def _confirmar(self):
         try:
-            valor = _parsear(self.campo.text())
+            valor = normalizar_entrada(_parsear(self.campo.text()))
         except (ValueError, ZeroDivisionError):
             self.error.setText("Ingresa un número válido (ej. 3, -2.5, 1/2).")
             self.campo.selectAll()

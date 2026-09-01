@@ -150,4 +150,6 @@ Resultado: Inconsistente (contradicción)
 
 ---
 
-**Versión:** 1.0.0 | **Última actualización:** 2026-08-31 | **Licencia:** MIT
+**Autores:** Andrés Castillo y Fátima Zogaib (Grupo 7) | **Última actualización:** 2026-09-01 | **Licencia:** MIT
+
+Ver también [docs/ADR-0001-entrada-numerica.md](docs/ADR-0001-entrada-numerica.md) — cómo la calculadora normaliza los números que teclea el usuario.

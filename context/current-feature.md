@@ -47,6 +47,20 @@ pendiente de PR/merge.
     código → sin warning "missing font family".
   - Código LaTeX oculto tras "Ver sintaxis LaTeX" en la última pantalla; la
     comprobación ya no se repite ahí (está en "Proceso y resultado").
+- [x] **4ª iteración (feedback):**
+  - Rama renombrada a `feature/gui-multipantalla-y-notacion-matematica`.
+  - Contenido de todas las pantallas en una columna centrada (máx. 820 px), no de
+    borde a borde; encabezados centrados.
+  - Menú: la info (autores/licencia/repo/método) baja a un pie pequeño.
+    **Autores: Andrés Castillo y Fátima Zogaib (Grupo 7)** (también en `pyproject`).
+  - Bug corregido: Enter elegía nada en las listas del menú →
+    `ui/widgets.ListaOpciones` (emite en Return/Enter, no sólo `itemActivated`).
+  - Elegir un ejemplo salta directo a "Proceso y resultado" (`sesion.origen`);
+    "Atrás" desde ahí vuelve al menú.
+  - Entrada de términos: campo estrecho y centrado (no de lado a lado).
+  - **ADR-0001** (`docs/ADR-0001-entrada-numerica.md`): `formato.normalizar_entrada`
+    ajusta lo tecleado a una fracción tidy (den ≤ 64) o a 4 decimales; el mismo
+    tope rige qué se muestra como fracción. `6.3333`, `19/3` ⇒ `19/3`; `6.33` ⇒ `6.33`.
 - [ ] Abrir PR y mergear a `main` (pendiente de confirmación del usuario).
 
 ## Notes

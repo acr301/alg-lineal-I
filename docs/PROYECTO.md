@@ -153,8 +153,7 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
 
 ## 👥 Colaboradores
 
-- **Autor principal:** ACR301
-- **Revisores:** fmariezgg (y otros que se sumen)
+- **Autores:** Andrés Castillo y Fátima Zogaib (Grupo 7)
 
 ## 📝 Cómo Contribuir
 

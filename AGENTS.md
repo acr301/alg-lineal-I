@@ -135,6 +135,10 @@ solución vectorial), navegable **sin ratón**: Enter avanza, Esc retrocede,
 - Comprobación explícita (sustitución término a término)
 - Fracción exacta vs. decimal (`formato.a_fraccion`)
 
+### docs/ADR-0001-entrada-numerica.md
+- Cómo se normaliza lo que teclea el usuario (fracción tidy ≤ 64 o 4 decimales)
+- `formato.normalizar_entrada`, `MAX_DEN_DISPLAY`, `DECIMALES_ENTRADA`
+
 ### docs/CASOS_PRUEBA.md
 - 3 casos de prueba principales
 - Datos listos para copiar/pegar

@@ -6,7 +6,9 @@ from PyQt6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
+    QListWidget,
     QPushButton,
+    QSizePolicy,
     QToolButton,
     QToolTip,
     QVBoxLayout,
@@ -17,16 +19,51 @@ import mathrender
 from formato import MODO_FRACCION
 
 
+class ListaOpciones(QListWidget):
+    """QListWidget que emite ``elegido`` con Enter/Return (además del doble clic).
+
+    En macOS ``itemActivated`` no siempre se dispara con Enter; esto lo arregla."""
+
+    elegido = pyqtSignal(object)  # el QListWidgetItem seleccionado
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.itemActivated.connect(self.elegido.emit)
+        self.itemDoubleClicked.connect(self.elegido.emit)
+
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            item = self.currentItem()
+            if item is not None:
+                self.elegido.emit(item)
+                return
+        super().keyPressEvent(event)
+
+
 class PantallaBase(QWidget):
-    """Andamiaje común: encabezado 'hero', cuerpo y barra de navegación."""
+    """Andamiaje común: una columna centrada (no ocupa todo el ancho) con
+    encabezado 'hero', cuerpo y barra de navegación."""
+
+    ANCHO_MAX = 820
 
     def __init__(self, win):
         super().__init__(win)
         self.win = win
         self.sesion = win.sesion
         self.setObjectName("pantalla")
-        self.raiz = QVBoxLayout(self)
-        self.raiz.setContentsMargins(30, 24, 30, 22)
+
+        exterior = QHBoxLayout(self)
+        exterior.setContentsMargins(24, 20, 24, 18)
+        exterior.addStretch(1)
+        columna = QWidget()
+        columna.setMaximumWidth(self.ANCHO_MAX)
+        columna.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        exterior.addWidget(columna, 8)   # 8:1:1 -> ocupa el centro pero topado en ANCHO_MAX
+        exterior.addStretch(1)
+
+        self.raiz = QVBoxLayout(columna)
+        self.raiz.setContentsMargins(0, 0, 0, 0)
         self.raiz.setSpacing(14)
         self.nav = None
 
@@ -34,14 +71,16 @@ class PantallaBase(QWidget):
         hero = QFrame()
         hero.setObjectName("hero")
         v = QVBoxLayout(hero)
-        v.setContentsMargins(24, 16, 24, 16)
+        v.setContentsMargins(22, 15, 22, 15)
         t = QLabel(titulo)
         t.setObjectName("title")
+        t.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         v.addWidget(t)
         if subtitulo:
             s = QLabel(subtitulo)
             s.setObjectName("subtitle")
             s.setWordWrap(True)
+            s.setAlignment(Qt.AlignmentFlag.AlignHCenter)
             v.addWidget(s)
         self.raiz.addWidget(hero)
 

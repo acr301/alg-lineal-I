@@ -25,6 +25,14 @@ EPS = 1e-9
 MODO_FRACCION = "fraccion"
 MODO_DECIMAL = "decimal"
 
+# --- Entrada y presentación numérica (ver docs/ADR-0001) --------------------- #
+# Sólo se muestran como fracción los valores cuyo denominador reducido no pasa de
+# este tope (cubre los recíprocos "de a mano": /2 /3 /4 ... /64). Con denominador
+# mayor se muestra el decimal.
+MAX_DEN_DISPLAY = 64
+# Los decimales que no encajan en una fracción tidy se redondean a esta precisión.
+DECIMALES_ENTRADA = 4
+
 _SUBINDICES = {
     "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄",
     "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉",
@@ -103,7 +111,7 @@ def formatear_valor(valor, modo=MODO_FRACCION, decimales=4):
         cifras sin ceros de relleno.
     """
     if modo == MODO_FRACCION:
-        fraccion = a_fraccion(valor)
+        fraccion = a_fraccion(valor, max_den=MAX_DEN_DISPLAY)
         if fraccion is not None:
             num, den = fraccion
             return str(num) if den == 1 else f"{num}/{den}"
@@ -112,6 +120,21 @@ def formatear_valor(valor, modo=MODO_FRACCION, decimales=4):
     if _casi_cero(valor - redondeado):
         return str(int(redondeado))
     return f"{valor:.{decimales}f}".rstrip("0").rstrip(".")
+
+
+def normalizar_entrada(valor):
+    """
+    Normaliza un número tecleado por el usuario para que la calculadora trate
+    igual todas las formas de escribir la misma cantidad (ver docs/ADR-0001):
+
+      - si está a menos de 1e-4 de una fracción de denominador <= MAX_DEN_DISPLAY
+        (p. ej. 6.3333 ≈ 19/3, 0.333 ≈ 1/3), se ajusta a esa fracción exacta;
+      - si no, se redondea a DECIMALES_ENTRADA decimales.
+    """
+    fraccion = a_fraccion(valor, max_den=MAX_DEN_DISPLAY, tol=1e-4)
+    if fraccion is not None:
+        return fraccion[0] / fraccion[1]
+    return round(valor, DECIMALES_ENTRADA)
 
 
 def formatear_display(valor, modo=MODO_FRACCION, decimales=4):
@@ -193,7 +216,7 @@ def valor_html(valor, modo=MODO_FRACCION):
     denominador con una regla); si no, texto llano con el menos tipográfico.
     """
     if modo == MODO_FRACCION:
-        fraccion = a_fraccion(valor)
+        fraccion = a_fraccion(valor, max_den=MAX_DEN_DISPLAY)
         if fraccion is not None and fraccion[1] != 1:
             num, den = fraccion
             signo = MENOS if num < 0 else ""
@@ -232,7 +255,7 @@ def matriz_html(matriz, n_incognitas, modo=MODO_FRACCION, resaltar_columna_b=Tru
 def latex_valor(valor, modo=MODO_FRACCION):
     """Un número como LaTeX: ``\\frac{a}{b}`` si es fracción propia, si no el literal."""
     if modo == MODO_FRACCION:
-        fraccion = a_fraccion(valor)
+        fraccion = a_fraccion(valor, max_den=MAX_DEN_DISPLAY)
         if fraccion is not None:
             num, den = fraccion
             if den == 1:

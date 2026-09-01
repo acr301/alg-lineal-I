@@ -5,7 +5,8 @@ description = "Sistema interactivo para resolver sistemas de ecuaciones lineales
 requires-python = ">=3.9"
 license = "MIT"
 authors = [
-    {name = "ACR301", email = "acr301@example.com"}
+    {name = "Andrés Castillo"},
+    {name = "Fátima Zogaib"},
 ]
 
 dependencies = [

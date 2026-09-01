@@ -1,18 +1,11 @@
-"""Pantalla de menú: información de la app y punto de entrada al flujo."""
+"""Pantalla de menú: punto de entrada al flujo. Info de la app abajo, pequeña."""
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (
-    QApplication,
-    QFrame,
-    QLabel,
-    QListWidget,
-    QListWidgetItem,
-    QVBoxLayout,
-)
+from PyQt6.QtWidgets import QApplication, QLabel, QListWidgetItem, QVBoxLayout
 
 from ui.state import EJEMPLOS
 from ui.theme import APP_INFO
-from ui.widgets import PantallaBase
+from ui.widgets import ListaOpciones, PantallaBase
 
 _PRINCIPAL = "principal"
 _EJEMPLOS = "ejemplos"
@@ -21,36 +14,37 @@ _EJEMPLOS = "ejemplos"
 class PantallaMenu(PantallaBase):
     def __init__(self, win):
         super().__init__(win)
-        self.encabezado(f"{APP_INFO['nombre']}  ·  v{APP_INFO['version']}",
-                        APP_INFO["resumen"])
+        self.encabezado(f"{APP_INFO['nombre']}", APP_INFO["resumen"])
 
-        ficha = QFrame()
-        ficha.setObjectName("card")
-        fv = QVBoxLayout(ficha)
-        fv.setContentsMargins(18, 14, 18, 14)
-        for linea in (
-            f"<b>Autores:</b> {APP_INFO['autores']}",
-            f"<b>Licencia:</b> {APP_INFO['licencia']}",
-            f"<b>Repositorio:</b> {APP_INFO['repo']}",
-            "<b>Método:</b> eliminación de Gauss (sin NumPy/SymPy).",
-        ):
-            et = QLabel(linea)
-            et.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-            fv.addWidget(et)
-        self.raiz.addWidget(ficha)
+        self.raiz.addStretch(2)
 
         self.titulo_lista = QLabel("¿Qué quieres hacer?")
         self.titulo_lista.setObjectName("h1")
+        self.titulo_lista.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.raiz.addWidget(self.titulo_lista)
 
-        self.lista = QListWidget()
-        self.lista.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.lista.itemActivated.connect(self._activar)
-        self.raiz.addWidget(self.lista, 1)
+        self.lista = ListaOpciones()
+        self.lista.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.lista.elegido.connect(self._activar)
+        self.raiz.addWidget(self.lista)
 
-        ayuda = QLabel("Teclado: ↑ ↓ para moverte · Enter para elegir · Esc para volver")
+        ayuda = QLabel("↑ ↓ para moverte · Enter para elegir · Esc para volver")
         ayuda.setObjectName("hint")
+        ayuda.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.raiz.addWidget(ayuda)
+
+        self.raiz.addStretch(3)
+
+        # Pie: autores, licencia, etc. — pequeño y discreto.
+        pie = QLabel(
+            f"v{APP_INFO['version']}  ·  {APP_INFO['autores']}  ·  "
+            f"Licencia {APP_INFO['licencia']}  ·  {APP_INFO['repo']}  ·  "
+            "Método: eliminación de Gauss (sin NumPy/SymPy)")
+        pie.setObjectName("pie")
+        pie.setWordWrap(True)
+        pie.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        pie.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.raiz.addWidget(pie)
 
         self._modo = _PRINCIPAL
         self._poblar_principal()
@@ -61,20 +55,22 @@ class PantallaMenu(PantallaBase):
         self._modo = _PRINCIPAL
         self.titulo_lista.setText("¿Qué quieres hacer?")
         self.lista.clear()
-        for texto in ("Iniciar  →  crear un sistema nuevo",
-                      "Ejemplo rápido  →  cargar un caso de muestra",
+        for texto in ("Iniciar — crear un sistema nuevo",
+                      "Ejemplo rápido — cargar un caso de muestra",
                       "Salir"):
             self.lista.addItem(QListWidgetItem(texto))
         self.lista.setCurrentRow(0)
+        self.lista.setFixedHeight(self.lista.sizeHintForRow(0) * 3 + 22)
 
     def _poblar_ejemplos(self):
         self._modo = _EJEMPLOS
-        self.titulo_lista.setText("¿Qué tipo de ejemplo?")
+        self.titulo_lista.setText("¿Qué tipo de ejemplo? (se resuelve directamente)")
         self.lista.clear()
         for nombre in EJEMPLOS:
             self.lista.addItem(QListWidgetItem(nombre))
         self.lista.addItem(QListWidgetItem("←  Volver"))
         self.lista.setCurrentRow(0)
+        self.lista.setFixedHeight(self.lista.sizeHintForRow(0) * 4 + 28)
 
     # -- eventos ---------------------------------------------------------- #
 
@@ -82,6 +78,7 @@ class PantallaMenu(PantallaBase):
         texto = item.text()
         if self._modo == _PRINCIPAL:
             if texto.startswith("Iniciar"):
+                self.sesion.iniciar_manual()
                 self.win.ir("dimensiones")
             elif texto.startswith("Ejemplo"):
                 self._poblar_ejemplos()
@@ -91,8 +88,10 @@ class PantallaMenu(PantallaBase):
             if texto.startswith("←"):
                 self._poblar_principal()
             else:
+                # Un ejemplo trae dimensiones y valores dados: se acepta tal cual
+                # y se salta directo al proceso (pantalla 3).
                 self.sesion.cargar_ejemplo(texto)
-                self.win.ir("dimensiones")
+                self.win.ir("proceso")
 
     def al_entrar(self, **kw):
         self._poblar_principal()
