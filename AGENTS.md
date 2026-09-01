@@ -24,9 +24,16 @@ alg-lineal-I/
 │   ├── formato.py               # Presentación: fracciones, LaTeX (texto), helpers HTML
 │   ├── mathrender.py            # LaTeX -> imagen (matplotlib mathtext) para la GUI
 │   ├── main.py                  # Interfaz de consola (--decimal / --fraccion)
-│   ├── gui.py                   # Interfaz PyQt6
+│   ├── gui.py                   # Punto de entrada de la GUI (shim -> ui/)
+│   ├── ui/                      # GUI PyQt6 por pantallas
+│   │   ├── app.py               #   ventana principal (QStackedWidget) + atajos
+│   │   ├── state.py             #   Sesion: único sitio que llama a gauss desde la GUI
+│   │   ├── theme.py             #   hoja de estilo, paleta, fuente
+│   │   ├── widgets.py           #   PantallaBase, MatrizGrid, barra de navegación, ayuda
+│   │   └── screen_*.py          #   menú, dimensiones, entrada guiada, proceso, resultado
 │   ├── test_gauss.py            # Tests de la lógica pura
 │   ├── test_formato.py          # Tests de fracciones / formato
+│   ├── test_mathrender.py       # Tests del render de LaTeX (se salta si falta matplotlib)
 │   ├── test_main.py             # Tests de integración de consola
 │   └── requirements.txt          # Legacy (generado desde pyproject.toml)
 └── context/
@@ -57,17 +64,23 @@ uv sync
 ### 3. Ejecutar
 
 ```bash
-# GUI (interfaz gráfica)
 cd semana2/tarea1
-python3 gui.py
 
-# O consola (fracción exacta por defecto; --decimal para decimales)
-python3 main.py
+# GUI: ejecútala DENTRO del entorno de uv para que matplotlib renderice las
+# fórmulas. Con `python3 gui.py` a secas puede faltar matplotlib y la notación
+# se verá como texto.
+uv run python gui.py
 
-# O tests
-python3 test_gauss.py && python3 test_formato.py && python3 test_main.py
-# o: uv run --extra dev pytest
+# Consola (fracción exacta por defecto; --decimal para decimales)
+uv run python main.py
+
+# Tests
+uv run --extra dev pytest        # desde la raíz del repo
 ```
+
+La GUI es un flujo de pantallas (menú → dimensiones → entrada guiada → proceso →
+solución vectorial), navegable **sin ratón**: Enter avanza, Esc retrocede,
+← → recorren los pasos, F1 vuelve al menú.
 
 ## 🎯 Responsabilidades del Agente
 
@@ -154,10 +167,13 @@ python3 test_gauss.py && python3 test_formato.py && python3 test_main.py
 
 3. **Separación de responsabilidades**
    - `gauss.py`: Lógica pura (SIN input/print, SIN imports)
-   - `formato.py`: Presentación (float → texto: fracciones, notación matemática, LaTeX)
+   - `formato.py`: Presentación texto (float → fracción/decimal, LaTeX, HTML)
+   - `mathrender.py`: Presentación imagen (LaTeX → QPixmap con matplotlib)
    - `main.py`: UI de consola
-   - `gui.py`: UI PyQt6
-   - No dupliques `format_number`: usa `formato.formatear_valor(v, modo)`
+   - `ui/`: UI PyQt6 por pantallas; `ui/state.py:Sesion` es el ÚNICO sitio de la
+     GUI que llama a `gauss.py`. Cada pantalla es un `ui/screen_*.py`.
+   - No dupliques formateo de números: usa `formato.formatear_valor(v, modo)` o
+     `sesion.fmt(v)`.
 
 ## 📊 Métricas Actuales
 
@@ -172,15 +188,20 @@ python3 test_gauss.py && python3 test_formato.py && python3 test_main.py
 
 **Última feature (rama `fix/latex-renderizado-fracciones-verificacion`):**
 LaTeX renderizado, comprobación explícita y fracciones. Issues #15, #16, #17.
-- Nuevo `formato.py` (`a_fraccion`, `formatear_valor`, `generar_latex_solucion`
-  movido desde `gauss.py`, helpers HTML) y nuevo `mathrender.py` (LaTeX → QPixmap
-  con matplotlib mathtext; degradación elegante si matplotlib no está).
-- `gauss.py`: nueva `verificar_solucion_detallada()` (términos coef·xⱼ); 
-  `verificar_solucion()` pasa a ser vista resumida de ella.
-- `main.py` / `gui.py` dejan de duplicar `format_number`; fracción por defecto.
-- GUI: el diálogo "Ver análisis y LaTeX" renderiza la solución y la comprobación
-  como imágenes matemáticas; rango/nulidad/forma en lista con signos "?" (tooltips
-  explicativos); botón "Cerrar"; selector Fracción ⇄ Decimal; fuente sin "Segoe UI".
+- `formato.py` (`a_fraccion`, `formatear_valor`, `generar_latex_solucion`,
+  `texto/latex_verificacion`, helpers HTML) + `mathrender.py` (LaTeX → QPixmap con
+  matplotlib mathtext: `latex_a_pixmap`, `columna_a_pixmap`, `matriz_a_pixmap`;
+  degrada a texto/HTML si falta matplotlib).
+- `gauss.py`: `verificar_solucion_detallada()`; y `escalonar` /
+  `reducir_a_escalonada_reducida` aceptan `formato_numero` para que el
+  multiplicador de cada paso salga como fracción ('F2 <- F2 - (1/2) * F1').
+- **GUI reescrita en el paquete `ui/`**: flujo de 5 pantallas navegable con teclado
+  (menú con info de la app → dimensiones+notación → entrada guiada término a término
+  → proceso con los pasos como protagonista + solución y comprobación → solución
+  vectorial renderizada con el código LaTeX oculto tras "Ver sintaxis LaTeX").
+  `gui.py` es un shim que llama a `ui.app.main`.
+- Tooltips con `QToolButton` (funcionan también con teclado); fuente elegida por
+  código (sin warning de "Segoe UI").
 - Issue #18 (migrar consola a Textual TUI): abierto como investigación, no implementado.
 
 **Feature previa:** Solución Vectorial, Rango, Nulidad, LaTeX y Formas Escalonadas

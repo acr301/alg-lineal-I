@@ -9,13 +9,16 @@
 pip install uv
 uv sync
 
-# 2. Ejecutar GUI
+# 2. Ejecutar GUI  (dentro del entorno de uv, para que se rendericen las fórmulas)
 cd semana2/tarea1
-python3 gui.py
+uv run python gui.py
 
 # 3. O ejecutar consola
-python3 main.py
+uv run python main.py
 ```
+
+> La GUI es un flujo de pantallas navegable **sin ratón**: Enter avanza, Esc
+> retrocede, ← → recorren los pasos, F1 vuelve al menú.
 
 ## 📖 Documentación
 
@@ -38,10 +41,11 @@ python3 main.py
 - ✓ Solución general vectorial: x = xp + t₁v₁ + ... + tₖvₖ
 - ✓ **Valores en fracción exacta** (`1/3`, `-8/3`) o decimal, con toggle en la GUI
 - ✓ **Comprobación explícita** sustituyendo valores término a término
+- ✓ Multiplicador de cada paso como fracción: `F2 ← F2 − (1/2)·F1`
 - ✓ Notación matemática **renderizada** en la GUI (matplotlib mathtext → imagen):
-  vectores con corchetes, fracciones apiladas; + código LaTeX (`\frac`) copiable
-- ✓ Diálogo de análisis con rango/nulidad explicados (tooltips) y solución renderizada
-- ✓ Interfaz gráfica con PyQt6
+  matrices y vectores con corchetes, fracciones apiladas; código LaTeX oculto tras un botón
+- ✓ GUI por pantallas (menú → dimensiones → entrada guiada → proceso → vector), teclado-first
+- ✓ Análisis de rango/nulidad/forma en lista con explicaciones y ayudas `?`
 - ✓ Interfaz de consola interactiva (`--decimal` / `--fraccion`)
 - ✓ 38 tests (todos pasan)
 - ✓ El **algoritmo** no usa NumPy/SymPy (`gauss.py` no importa nada); matplotlib
@@ -93,8 +97,9 @@ python3 test_main.py      # 3 tests de integración de consola
 │   ├── formato.py            # Presentación: fracciones, LaTeX (texto), HTML
 │   ├── mathrender.py         # LaTeX -> imagen (matplotlib mathtext) para la GUI
 │   ├── main.py               # Consola
-│   ├── gui.py                # GUI PyQt6
-│   └── test_*.py             # Tests (gauss / formato / main)
+│   ├── gui.py                # Punto de entrada de la GUI (shim)
+│   ├── ui/                   # GUI PyQt6 por pantallas (app, state, theme, widgets, screen_*)
+│   └── test_*.py             # Tests (gauss / formato / mathrender / main)
 └── context/current-feature.md # Estado desarrollo
 ```
 

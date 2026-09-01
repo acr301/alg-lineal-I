@@ -114,3 +114,50 @@ def columna_a_pixmap(componentes, modo=MODO_FRACCION, fontsize=15,
     alto_pulg = alto_fila * n + 0.12
     fig.set_size_inches(ancho_pulg, alto_pulg)
     return _fig_a_pixmap(fig, escala)
+
+
+def matriz_a_pixmap(filas, col_barra=None, modo=MODO_FRACCION, fontsize=15,
+                    color=COLOR_TEXTO, escala=2):
+    """
+    Una matriz entre corchetes. 'col_barra' (int) dibuja una regla vertical
+    fina antes de esa columna (para separar A | b en la matriz aumentada).
+    """
+    if not _DISPONIBLE or not filas:
+        return None
+    n = len(filas)
+    ncols = len(filas[0])
+    tokens = [[latex_valor(v, modo) for v in fila] for fila in filas]
+    dpi = 100 * escala
+    fig = Figure(dpi=dpi)
+    fig.patch.set_alpha(0.0)
+    ax = fig.add_axes((0, 0, 1, 1))
+    ax.set_axis_off()
+    ax.set_xlim(0, ncols)
+    ax.set_ylim(0, n)
+
+    for i, fila in enumerate(tokens):
+        for j, token in enumerate(fila):
+            ax.text(j + 0.5, n - i - 0.5, f"${token}$", ha="center", va="center",
+                    fontsize=fontsize, color=color)
+
+    grosor = max(1.2, fontsize / 11.0)
+    oreja = 0.14
+    for x0, direccion in ((0.06, 1), (ncols - 0.06, -1)):
+        ax.plot([x0, x0], [0.06, n - 0.06], color=color, lw=grosor,
+                solid_capstyle="round")
+        ax.plot([x0, x0 + direccion * oreja], [0.06, 0.06], color=color, lw=grosor)
+        ax.plot([x0, x0 + direccion * oreja], [n - 0.06, n - 0.06], color=color,
+                lw=grosor)
+    if col_barra is not None and 0 < col_barra < ncols:
+        ax.plot([col_barra, col_barra], [0.1, n - 0.1], color=color,
+                lw=max(1.0, grosor * 0.7), linestyle=(0, (1, 1)))
+
+    hay_fraccion = any("\\frac" in t for fila in tokens for t in fila)
+    alto_fila = fontsize * (2.0 if hay_fraccion else 1.55) / 72.0
+    ancho_col = []
+    for j in range(ncols):
+        ancho_col.append(max(_ancho_token(tokens[i][j]) for i in range(n)))
+    ancho_pulg = 0.5 + sum(0.115 * a + 0.34 for a in ancho_col)
+    alto_pulg = alto_fila * n + 0.14
+    fig.set_size_inches(ancho_pulg, alto_pulg)
+    return _fig_a_pixmap(fig, escala)

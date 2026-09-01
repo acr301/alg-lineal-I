@@ -179,7 +179,8 @@ def resolver_sistema(coeficientes, terminos, n):
         pasos.append((descripcion, copiar_matriz(matriz_actual)))
 
     print("\n--- Proceso de eliminación (reducción por filas) ---")
-    columnas_pivote = escalonar(matriz, n, registrar_paso=registrar)
+    columnas_pivote = escalonar(matriz, n, registrar_paso=registrar,
+                                formato_numero=formatear_numero)
 
     if not pasos:
         print("(La matriz ya estaba en forma escalonada, no hizo falta ninguna operación.)")
@@ -225,7 +226,9 @@ def resolver_sistema(coeficientes, terminos, n):
 
         print("\n--- Reducción adicional a forma escalonada reducida ---")
         print("(para expresar la solución en función de las variables libres)")
-        reducir_a_escalonada_reducida(matriz, n, columnas_pivote, registrar_paso=registrar_rref)
+        reducir_a_escalonada_reducida(matriz, n, columnas_pivote,
+                                      registrar_paso=registrar_rref,
+                                      formato_numero=formatear_numero)
         for descripcion, matriz_paso in pasos_rref:
             imprimir_matriz(matriz_paso, n, f"\nPaso: {descripcion}")
 

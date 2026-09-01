@@ -9,7 +9,8 @@ gauss.py     → LÓGICA PURA (sin I/O, sin efectos secundarios, sin imports)
 formato.py   → PRESENTACIÓN texto (float → fracción/decimal, LaTeX, HTML) — sin deps
 mathrender.py→ PRESENTACIÓN imagen (LaTeX → QPixmap con matplotlib mathtext)
 main.py      → CONSOLA (input, print, flujo interactivo)
-gui.py       → INTERFAZ GRÁFICA (PyQt6, eventos, widgets)
+gui.py       → punto de entrada de la GUI (shim delgado hacia ui/)
+ui/          → INTERFAZ GRÁFICA PyQt6 por pantallas (ver "Flujo de la GUI")
 tests/       → VERIFICACIÓN (unittest, no parte del "ejercicio")
 ```
 
@@ -208,21 +209,37 @@ reutiliza `formatear_valor` / los helpers HTML sin reimplementar nada.
 
 ### 6. GUI: notación matemática renderizada, no código LaTeX crudo (issue #15)
 
-- El panel "3 · Proceso y resultado" se compone con notación matemática ligera
-  (subíndices `x₁`, signo `−`, `·`) vía rich-text de Qt, y queda descongestionado.
-- El **diálogo** "Ver análisis y LaTeX ↗" (`QDialog`) es el escaparate:
-  - `mathrender.py` convierte el LaTeX a imagen con el motor **mathtext de
-    matplotlib** (no necesita una instalación de LaTeX del sistema). Los vectores
-    columna se dibujan a mano (mathtext no soporta `pmatrix`).
-  - Rango / nulidad / forma escalonada se muestran en **lista** con un signo `?`
-    por fila cuyo *tooltip* explica el concepto (ver `GaussWindow.EXPLICACIONES`).
-  - La comprobación (sustitución término a término) también se renderiza como
-    imágenes matemáticas.
-  - Se mantiene el código LaTeX copiable como caja de texto secundaria.
-- `mathrender.disponible()` degrada con elegancia: si matplotlib no está
-  instalado, el diálogo cae a los vectores en HTML de `formato.py`.
-- Descartado por peso: `QWebEngineView` + KaTeX (+150 MB). Alternativa futura de
-  máxima fidelidad, documentada en el issue #15.
+- `mathrender.py` convierte el LaTeX a imagen con el motor **mathtext de
+  matplotlib** (no necesita una instalación de LaTeX del sistema). Matrices y
+  vectores se dibujan a mano (`matriz_a_pixmap`, `columna_a_pixmap`) porque
+  mathtext no soporta los entornos `pmatrix` / `array`.
+- `mathrender.disponible()` degrada con elegancia: sin matplotlib, la GUI usa los
+  helpers de texto/HTML de `formato.py` (nunca muestra LaTeX crudo). Por eso la
+  GUI debe ejecutarse dentro del entorno de uv (`uv run python gui.py`).
+- El código LaTeX no se muestra por defecto: está detrás de "Ver sintaxis LaTeX"
+  en la última pantalla.
+- Descartado por peso: `QWebEngineView` + KaTeX (+150 MB).
+
+### 7. Flujo de la GUI: pantallas, no un único panel (paquete `ui/`)
+
+`gui.py` es un shim; la GUI vive en `ui/` con una pantalla por archivo y un
+`QStackedWidget` que las intercambia (`ui/app.py`):
+
+```
+Menú  →  Dimensiones y notación  →  Entrada guiada  →  Proceso y resultado  →  Solución vectorial
+(info)   (n_eq, n_var, fracción)   (término a término)  (pasos + solución +      (render + LaTeX
+                                                         comprobación + análisis) oculto)
+```
+
+- Estado compartido en `ui/state.py:Sesion`; es el **único** punto de la GUI que
+  llama a `gauss.py`. `Sesion.resolver()` produce un dict con pasos, tipo,
+  rango/nulidad, solución, vectorial, verificación y LaTeX.
+- Navegación **sin ratón**: Enter avanza (botón por defecto), Esc retrocede
+  (atajo de ventana → `pantalla.al_atras()`), ← → recorren los pasos, F1 al menú.
+- Widgets reutilizables en `ui/widgets.py`: `PantallaBase` (encabezado + barra de
+  navegación), `MatrizGrid` (rejilla con corchetes y celda resaltable para la
+  entrada), `boton_ayuda` (`QToolButton` con tooltip que también responde al
+  teclado), `FilaAnalisis`.
 
 ## Extensibilidad
 

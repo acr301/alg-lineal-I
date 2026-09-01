@@ -51,7 +51,12 @@ def intercambiar_filas(matriz, i, j):
     matriz[i], matriz[j] = matriz[j], matriz[i]
 
 
-def escalonar(matriz, n_incognitas, registrar_paso=None):
+def _formato_por_defecto(valor):
+    """Formato simple para los multiplicadores en las descripciones de pasos."""
+    return f"{valor:.4g}"
+
+
+def escalonar(matriz, n_incognitas, registrar_paso=None, formato_numero=None):
     """
     Reduce 'matriz' (aumentada, de tamaño m x (n_incognitas + 1)) a forma
     escalonada por filas, usando eliminación de Gauss con pivoteo parcial
@@ -64,9 +69,14 @@ def escalonar(matriz, n_incognitas, registrar_paso=None):
     matriz_actual) que se invoca cada vez que se hace una operación de fila,
     para poder narrar el proceso paso a paso.
 
+    'formato_numero' es una función opcional valor -> str para dar formato al
+    multiplicador que aparece en la descripción de cada operación (p. ej. para
+    mostrarlo como fracción '1/2' en vez de '0.5'). No afecta al cálculo.
+
     Devuelve la lista de columnas donde se encontró un pivote, en el orden
     en que fueron procesadas (una por cada fila pivote).
     """
+    fmt = formato_numero or _formato_por_defecto
     m = len(matriz)
     columnas_pivote = []
     fila_actual = 0
@@ -107,7 +117,7 @@ def escalonar(matriz, n_incognitas, registrar_paso=None):
             matriz[r][col] = 0.0
             if registrar_paso:
                 registrar_paso(
-                    f"F{r + 1} <- F{r + 1} - ({factor:.4g}) * F{fila_actual + 1}",
+                    f"F{r + 1} <- F{r + 1} - ({fmt(factor)}) * F{fila_actual + 1}",
                     matriz,
                 )
 
@@ -156,12 +166,16 @@ def sustitucion_regresiva(matriz, n_incognitas, columnas_pivote):
 
 
 def reducir_a_escalonada_reducida(matriz, n_incognitas, columnas_pivote,
-                                   registrar_paso=None):
+                                   registrar_paso=None, formato_numero=None):
     """
     A partir de una matriz ya en forma escalonada, continúa el proceso
     (estilo Gauss-Jordan) hasta la forma escalonada reducida: cada pivote
     vale 1 y es el único valor no nulo en su columna. Modifica in place.
+
+    'formato_numero' (valor -> str) da formato al divisor/multiplicador de las
+    descripciones (p. ej. fracción). No afecta al cálculo.
     """
+    fmt = formato_numero or _formato_por_defecto
     for i in range(len(columnas_pivote) - 1, -1, -1):
         col = columnas_pivote[i]
         pivote = matriz[i][col]
@@ -169,7 +183,7 @@ def reducir_a_escalonada_reducida(matriz, n_incognitas, columnas_pivote,
             for c in range(col, n_incognitas + 1):
                 matriz[i][c] /= pivote
             if registrar_paso:
-                registrar_paso(f"F{i + 1} <- F{i + 1} / {pivote:.4g}", matriz)
+                registrar_paso(f"F{i + 1} <- F{i + 1} / {fmt(pivote)}", matriz)
 
         for r in range(i):
             factor = matriz[r][col]
@@ -180,7 +194,7 @@ def reducir_a_escalonada_reducida(matriz, n_incognitas, columnas_pivote,
             matriz[r][col] = 0.0
             if registrar_paso:
                 registrar_paso(
-                    f"F{r + 1} <- F{r + 1} - ({factor:.4g}) * F{i + 1}",
+                    f"F{r + 1} <- F{r + 1} - ({fmt(factor)}) * F{i + 1}",
                     matriz,
                 )
 

@@ -135,6 +135,46 @@ def parametro(indice):
 
 
 # --------------------------------------------------------------------------- #
+# Comprobación explícita: una fila = dict de verificar_solucion_detallada()
+#   {"terminos": [(coef, x_j, producto), ...], "suma", "esperado", "coincide"}
+# --------------------------------------------------------------------------- #
+
+def _terminos_activos(fila):
+    activos = [(c, xj, p) for (c, xj, p) in fila["terminos"] if not _casi_cero(c)]
+    return activos or fila["terminos"][:1]
+
+
+def texto_verificacion(indice, fila, modo=MODO_FRACCION):
+    """Una ecuación de la comprobación en texto Unicode:
+    ``E₁:  1·(5) + 1·(3) − 1·(2)  =  6  =  6``."""
+    partes = []
+    for k, (coef, xj, _p) in enumerate(_terminos_activos(fila)):
+        if k == 0:
+            encabezado = formatear_display(coef, modo)
+        else:
+            encabezado = f"+ {formatear_display(abs(coef), modo)}" if coef >= 0 \
+                else f"{MENOS} {formatear_display(abs(coef), modo)}"
+        partes.append(f"{encabezado}{POR}({formatear_display(xj, modo)})")
+    rel = "=" if fila["coincide"] else "≠"
+    return (f"{var(indice, 'E')}:  " + " ".join(partes)
+            + f"  =  {formatear_display(fila['suma'], modo)}"
+            + f"  {rel}  {formatear_display(fila['esperado'], modo)}")
+
+
+def latex_verificacion(indice, fila, modo=MODO_FRACCION):
+    """La misma ecuación en LaTeX (para render con mathtext)."""
+    partes = []
+    for k, (coef, xj, _p) in enumerate(_terminos_activos(fila)):
+        signo = "" if k == 0 else ("+ " if coef >= 0 else "- ")
+        c = latex_valor(abs(coef) if k else coef, modo)
+        partes.append(rf"{signo}{c} \cdot ({latex_valor(xj, modo)})")
+    rel = "=" if fila["coincide"] else r"\neq"
+    return (rf"\mathrm{{E}}_{{{indice + 1}}}:\;\; " + " ".join(partes)
+            + rf" \;=\; {latex_valor(fila['suma'], modo)}"
+            + rf" \;{rel}\; {latex_valor(fila['esperado'], modo)}")
+
+
+# --------------------------------------------------------------------------- #
 # Fragmentos HTML para el rich-text de Qt (QLabel / QTextEdit)
 # --------------------------------------------------------------------------- #
 
@@ -160,7 +200,7 @@ def valor_html(valor, modo=MODO_FRACCION):
             return (
                 f'<span style="white-space:nowrap;">{signo}'
                 f'<span style="display:inline-block; text-align:center; vertical-align:middle;">'
-                f'<span style="display:block; border-bottom:1px solid currentColor; padding:0 2px;">{abs(num)}</span>'
+                f'<span style="display:block; border-bottom:1px solid #153653; padding:0 2px;">{abs(num)}</span>'
                 f'<span style="display:block; padding:0 2px;">{den}</span>'
                 f'</span></span>'
             )
@@ -178,13 +218,13 @@ def matriz_html(matriz, n_incognitas, modo=MODO_FRACCION, resaltar_columna_b=Tru
         for columna, valor in enumerate(fila):
             estilo = "padding:3px 10px; text-align:center;"
             if resaltar_columna_b and columna == n_incognitas:
-                estilo += " border-left:2px solid currentColor;"
+                estilo += " border-left:2px solid #153653;"
             celdas.append(f'<td style="{estilo}">{valor_html(valor, modo)}</td>')
         filas_html.append(f"<tr>{''.join(celdas)}</tr>")
     cuerpo = "".join(filas_html)
     return (
         '<table cellspacing="0" cellpadding="0" style="border-collapse:collapse;'
-        ' border-left:2px solid currentColor; border-right:2px solid currentColor;">'
+        ' border-left:2px solid #153653; border-right:2px solid #153653;">'
         f"{cuerpo}</table>"
     )
 
@@ -246,6 +286,6 @@ def vector_columna_html(componentes, modo=MODO_FRACCION):
     )
     return (
         '<table cellspacing="0" cellpadding="0" style="border-collapse:collapse; display:inline-table;'
-        ' vertical-align:middle; border-left:2px solid currentColor; border-right:2px solid currentColor;">'
+        ' vertical-align:middle; border-left:2px solid #153653; border-right:2px solid #153653;">'
         f"{filas}</table>"
     )

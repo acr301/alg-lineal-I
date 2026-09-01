@@ -33,6 +33,20 @@ pendiente de PR/merge.
   "Segoe UI" (quitaba el warning de Qt en macOS). `matplotlib` añadido a
   `pyproject.toml` (solo render; `gauss.py`/`formato.py` siguen sin imports).
   Degradación elegante si matplotlib no está (`mathrender.disponible()`).
+- [x] **3ª iteración (feedback):**
+  - GUI reescrita como paquete `ui/` con flujo de 5 pantallas (menú, dimensiones,
+    entrada guiada término a término, proceso, solución vectorial), navegable con
+    teclado (Enter/Esc/←→/F1). `gui.py` queda como shim.
+  - El multiplicador de cada paso se muestra como fracción: `gauss.escalonar` /
+    `reducir_a_escalonada_reducida` aceptan `formato_numero`; lo usan `ui/state.py`
+    y `main.py`.
+  - `mathrender.matriz_a_pixmap()` para render de matrices; los pasos y la
+    solución vectorial se ven renderizados. Sin matplotlib no se muestra LaTeX
+    crudo (cae a texto/HTML); aviso al arrancar + docs piden `uv run python gui.py`.
+  - Tooltips con `QToolButton` (funcionan con ratón y teclado). Fuente elegida por
+    código → sin warning "missing font family".
+  - Código LaTeX oculto tras "Ver sintaxis LaTeX" en la última pantalla; la
+    comprobación ya no se repite ahí (está en "Proceso y resultado").
 - [ ] Abrir PR y mergear a `main` (pendiente de confirmación del usuario).
 
 ## Notes
