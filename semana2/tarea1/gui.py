@@ -12,6 +12,7 @@ ejercicio y la versión de consola (``main.py``).
 import sys
 
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtGui import QColor, QPalette
 from PyQt6.QtWidgets import (
     QApplication,
@@ -32,20 +33,26 @@ from PyQt6.QtWidgets import (
     QSplitter,
     QTableWidget,
     QTableWidgetItem,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 
 from gauss import (
     clasificar,
+    clasificar_forma_escalonada,
     copiar_matriz,
     crear_matriz_aumentada,
     escalonar,
     evaluar_solucion_parametrica,
+    generar_latex_solucion,
+    rango_matriz,
     reducir_a_escalonada_reducida,
+    solucion_general_vectorial,
     solucion_parametrica,
     sustitucion_regresiva,
     valor_casi_cero,
+    verificar_rango_nulidad,
     verificar_solucion,
 )
 
@@ -210,6 +217,31 @@ class GaussWindow(QMainWindow):
         self.result.setWordWrap(True)
         self.result.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         process_layout.addWidget(self.result)
+
+        # Sección de análisis y LaTeX
+        analysis_group = QGroupBox("4 · Análisis avanzado")
+        analysis_layout = QVBoxLayout(analysis_group)
+
+        self.analysis_text = QLabel("Análisis: rango, nulidad, forma escalonada")
+        self.analysis_text.setWordWrap(True)
+        self.analysis_text.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        analysis_layout.addWidget(self.analysis_text)
+
+        latex_label = QLabel("Código LaTeX de la solución:")
+        analysis_layout.addWidget(latex_label)
+        self.latex_text = QTextEdit()
+        self.latex_text.setReadOnly(True)
+        self.latex_text.setMaximumHeight(120)
+        analysis_layout.addWidget(self.latex_text)
+
+        latex_button_layout = QHBoxLayout()
+        copy_latex = QPushButton("Copiar LaTeX")
+        copy_latex.clicked.connect(self.copy_latex_to_clipboard)
+        latex_button_layout.addStretch()
+        latex_button_layout.addWidget(copy_latex)
+        analysis_layout.addLayout(latex_button_layout)
+
+        process_layout.addWidget(analysis_group)
         splitter.addWidget(process_group)
         splitter.setSizes([560, 560])
         page.addWidget(splitter, 1)
@@ -293,16 +325,33 @@ class GaussWindow(QMainWindow):
         pivots = escalonar(matrix, n, registrar_paso=register)
         self.steps.append(("Forma escalonada final", copiar_matriz(matrix)))
         kind = clasificar(matrix, n, pivots)
+
+        # Análisis: rango, nulidad, forma escalonada
+        rango = rango_matriz(matrix, n)
+        rango_nulidad = verificar_rango_nulidad(matrix, n, pivots)
+        forma_esc = clasificar_forma_escalonada(matrix, n, pivots)
+
+        analysis_lines = []
+        analysis_lines.append(f"Rango(A): {rango}")
+        analysis_lines.append(f"Nulidad(A): {rango_nulidad['nulidad']}")
+        analysis_lines.append(f"Rango + Nulidad = {rango_nulidad['suma']} (esperado: {n})")
+        analysis_lines.append(f"Forma escalonada: {forma_esc}")
+        self.analysis_text.setText(" | ".join(analysis_lines))
+
         result_lines = []
+        latex_code = ""
+
         if kind == "incompatible":
             self.set_status("Sistema inconsistente · no tiene solución", "#ffe6e5", "#9f2520")
             result_lines.append("Una ecuación se redujo a 0 = c (con c distinto de cero).")
+            self.latex_text.setPlainText("")
         elif kind == "determinado":
             solution = sustitucion_regresiva(matrix, n, pivots)
             self.set_status("Sistema consistente determinado · solución única", "#dff7e7", "#176b46")
             result_lines.append("<b>Solución única</b>")
             result_lines.extend(f"x{i + 1} = {format_number(value)}" for i, value in enumerate(solution))
             result_lines.append(self.verification_html(coefficients, terms, solution))
+            self.latex_text.setPlainText("")
         else:
             self.set_status("Sistema consistente indeterminado · infinitas soluciones", "#fff3cf", "#805900")
             reducir_a_escalonada_reducida(matrix, n, pivots, registrar_paso=register)
@@ -319,6 +368,19 @@ class GaussWindow(QMainWindow):
                     sign = "+" if coefficient >= 0 else "−"
                     expression += f" {sign} {format_number(abs(coefficient))}·t{free.index(free_variable) + 1}"
                 result_lines.append(f"x{variable + 1} = {expression}")
+
+            # Solución vectorial y LaTeX
+            solucion_vec = solucion_general_vectorial(matrix, n, pivots, free, expressions)
+            result_lines.append("<b>Solución vectorial</b>")
+            result_lines.append(f"xp = [{', '.join(format_number(v) for v in solucion_vec['particular'])}]")
+            for k, vec in enumerate(solucion_vec["vectores_nulos"]):
+                result_lines.append(f"v{k + 1} = [{', '.join(format_number(v) for v in vec)}]")
+
+            latex_code = generar_latex_solucion(n, free, expressions,
+                                                solucion_vec["particular"],
+                                                solucion_vec["vectores_nulos"])
+            self.latex_text.setPlainText(latex_code)
+
             example_solution = evaluar_solucion_parametrica(n, free, expressions, [0.0] * len(free))
             result_lines.append(self.verification_html(coefficients, terms, example_solution, "Verificación con todos los parámetros en 0"))
 
@@ -335,6 +397,12 @@ class GaussWindow(QMainWindow):
             for i, (actual, expected, matches) in enumerate(matches)
         )
         return f"<br><b>{heading}</b><br>{detail}"
+
+    def copy_latex_to_clipboard(self):
+        """Copia el contenido del campo LaTeX al portapapeles."""
+        clipboard = QGuiApplication.clipboard()
+        clipboard.setText(self.latex_text.toPlainText())
+        QMessageBox.information(self, "Copiado", "Código LaTeX copiado al portapapeles.")
 
     def show_step(self, index):
         if not self.steps:
