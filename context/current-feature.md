@@ -1,16 +1,29 @@
-# Current Feature
+# Current Feature: Solución Vectorial, Rango, Nulidad, LaTeX y Formas Escalonadas
 
 ## Status
 
-Not Started
+Complete
 
 ## Goals
 
-<!-- goals go here -->
+- Implementar `solucion_general_vectorial()` en gauss.py para expresar soluciones como x = xp + t1*v1 + ... + tk*vk
+- Implementar `rango_matriz()` para calcular el rango de una matriz
+- Implementar `verificar_rango_nulidad()` para verificar que Rango(A) + Nulidad(A) = n
+- Implementar `es_forma_escalonada()` para detectar forma escalonada por filas
+- Implementar `es_forma_escalonada_reducida()` para detectar forma escalonada reducida
+- Implementar `clasificar_forma_escalonada()` para clasificar como REF, RREF o ninguna
+- Generar código LaTeX copiable de la solución vectorial
+- Agregar interfaz en GUI: QTextEdit para LaTeX + botón "Copiar LaTeX"
+- Mostrar en GUI: Rango(A), n - Rango(A), verificación rango-nulidad, solución vectorial, LaTeX, clasificación
+- Escribir tests exhaustivos para determinado, indeterminado, incompatible, rango, variables libres, rango-nulidad, solución vectorial, REF, RREF, etc.
 
 ## Notes
 
-<!-- notes go here -->
+- Respeta separación: gauss.py = lógica pura, main.py = consola, gui.py = PyQt6
+- Prohibido: NumPy, SymPy, librerías de álgebra lineal externas
+- No romper funcionalidades existentes
+- Tests en test_gauss.py y test_main.py
+- Rama: feature/solucion-vectorial-rango-latex-formas
 
 ## History
 
