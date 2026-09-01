@@ -63,7 +63,8 @@ class PantallaEntrada(PantallaBase):
         self.raiz.addWidget(self.error)
 
         self.grid = MatrizGrid()
-        self.raiz.addWidget(self.grid, 1)
+        self.raiz.addWidget(self.grid, 0)
+        self.raiz.addStretch(1)
 
         pista = QLabel("Enter: guardar y pasar al siguiente · Retroceso en campo vacío: "
                        "término anterior · Esc: volver")
