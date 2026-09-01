@@ -36,11 +36,13 @@ python3 main.py
 - ✓ Análisis de rango y nulidad
 - ✓ Detección de formas escalonadas (REF/RREF)
 - ✓ Solución general vectorial: x = xp + t₁v₁ + ... + tₖvₖ
-- ✓ Generación de código LaTeX copiable
+- ✓ **Valores en fracción exacta** (`1/3`, `-8/3`) o decimal, con toggle en la GUI
+- ✓ **Comprobación explícita** sustituyendo valores término a término
+- ✓ Notación matemática renderizada en la GUI + código LaTeX (`\frac`) copiable
 - ✓ Interfaz gráfica con PyQt6
-- ✓ Interfaz de consola interactiva
-- ✓ 21 tests (todos pasan)
-- ✓ Sin NumPy, SymPy ni librerías de AL
+- ✓ Interfaz de consola interactiva (`--decimal` / `--fraccion`)
+- ✓ 35 tests (todos pasan)
+- ✓ Sin NumPy, SymPy ni librerías de AL (ni siquiera `fractions`)
 
 ## 🎓 Restricción Deliberada
 
@@ -55,15 +57,18 @@ python3 main.py
 - ✅ Feature 1: Eliminación gaussiana interactiva
 - ✅ Feature 2: Verificación de soluciones
 - ✅ Feature 3: Solución vectorial, rango, nulidad, LaTeX, formas
-- 🔄 Chore: Migración a `uv` (en PR)
+- ✅ Chore: Migración a `uv`
+- 🔄 Fix: LaTeX renderizado, comprobación explícita y fracciones (issues #15/#16/#17)
+- 📋 Issue #18: migración de la consola a Textual TUI (propuesta)
 
 ## 🧪 Tests
 
 ```bash
 cd semana2/tarea1
-python3 test_gauss.py    # 18 tests unitarios
-python3 test_main.py     # 3 tests integración
-# Salida: Ran 21 tests... OK
+python3 test_gauss.py     # 21 tests de la lógica pura
+python3 test_formato.py   # 11 tests de fracciones / formato
+python3 test_main.py      # 3 tests de integración de consola
+# Total: 35 tests. O bien: uv run --extra dev pytest
 ```
 
 ## 📁 Estructura
@@ -78,10 +83,11 @@ python3 test_main.py     # 3 tests integración
 │   └── CASOS_PRUEBA.md
 ├── DOCUMENTACION_FEATURE.md   # Detalles extensos
 ├── semana2/tarea1/
-│   ├── gauss.py              # Lógica pura
+│   ├── gauss.py              # Lógica pura (sin imports)
+│   ├── formato.py            # Presentación: fracciones, notación matemática, LaTeX
 │   ├── main.py               # Consola
 │   ├── gui.py                # GUI PyQt6
-│   └── test_*.py             # Tests
+│   └── test_*.py             # Tests (gauss / formato / main)
 └── context/current-feature.md # Estado desarrollo
 ```
 
@@ -111,7 +117,7 @@ x + y + z = 6
 2x + 2y + 2z = 12
 x - y + 0z = 0
 
-Resultado: x = [3, 3, 0] + t[1, -2, 1]
+Resultado: x = [3, 3, 0] + t·[-1/2, -1/2, 1]
 ```
 
 ### Sin Solución

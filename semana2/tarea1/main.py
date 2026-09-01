@@ -13,8 +13,11 @@ Toda la lógica del algoritmo vive en gauss.py (sin input/print). Este
 archivo solo se encarga de la interacción con el usuario por consola.
 
 Uso:
-    python3 main.py
+    python3 main.py                 # valores como fracción exacta (por defecto)
+    python3 main.py --decimal       # valores en decimal
 """
+
+import sys
 
 from gauss import (
     clasificar,
@@ -23,7 +26,6 @@ from gauss import (
     crear_matriz_aumentada,
     escalonar,
     evaluar_solucion_parametrica,
-    generar_latex_solucion,
     rango_matriz,
     reducir_a_escalonada_reducida,
     solucion_general_vectorial,
@@ -31,8 +33,18 @@ from gauss import (
     sustitucion_regresiva,
     valor_casi_cero,
     verificar_rango_nulidad,
-    verificar_solucion,
+    verificar_solucion_detallada,
 )
+from formato import (
+    MODO_DECIMAL,
+    MODO_FRACCION,
+    formatear_valor,
+    generar_latex_solucion,
+)
+
+# Modo de presentación numérica; se ajusta según los argumentos de línea de
+# comandos en main(). Fracción exacta por defecto (más legible para álgebra).
+MODO = MODO_FRACCION
 
 
 def pedir_entero(mensaje, minimo=1):
@@ -84,11 +96,8 @@ def leer_sistema():
 
 
 def formatear_numero(valor):
-    """Formatea un flotante como entero si es (casi) un entero, o con 4 decimales."""
-    redondeado = round(valor)
-    if valor_casi_cero(valor - redondeado):
-        return str(int(redondeado))
-    return f"{valor:.4f}"
+    """Formatea un valor según el MODO activo (fracción exacta o decimal)."""
+    return formatear_valor(valor, MODO)
 
 
 def imprimir_matriz(matriz, n_incognitas, titulo=None):
@@ -103,22 +112,56 @@ def imprimir_matriz(matriz, n_incognitas, titulo=None):
         print(f"[ {coeficientes_str}  |  {termino_str:>8} ]")
 
 
+def _con_signo(texto, es_primero):
+    """Antepone ' + ' / ' - ' a un valor ya formateado, para encadenar términos."""
+    negativo = texto.startswith("-")
+    cuerpo = texto[1:] if negativo else texto
+    if es_primero:
+        return f"-{cuerpo}" if negativo else cuerpo
+    return f" - {cuerpo}" if negativo else f" + {cuerpo}"
+
+
+def _linea_sustitucion(terminos):
+    """
+    A partir de [(coef, x_j, producto), ...] arma las dos partes de la
+    demostración:  '2·(5) + 1·(-3)'   y   '10 - 3'.
+    Omite los términos con coeficiente 0 (no aportan nada a la suma).
+    """
+    activos = [(c, xj, p) for (c, xj, p) in terminos if not valor_casi_cero(c)]
+    if not activos:
+        activos = terminos[:1]  # todos los coeficientes eran 0: mostrar 0·(x)
+    factores = ""
+    productos = ""
+    for indice, (coef, xj, producto) in enumerate(activos):
+        primero = indice == 0
+        factores += _con_signo(f"{formatear_numero(coef)}·({formatear_numero(xj)})", primero)
+        productos += _con_signo(formatear_numero(producto), primero)
+    return factores, productos
+
+
 def imprimir_verificacion(coeficientes, terminos, x, titulo="Verificación (sustituyendo en el sistema original)"):
     """
     Sustituye 'x' en el sistema original [coeficientes | terminos] y muestra,
-    ecuación por ecuación, el valor calculado vs. el esperado, y si coinciden.
+    ecuación por ecuación, la DEMOSTRACIÓN completa: los factores coef·(x_j),
+    la suma de los productos y la comparación con el término independiente.
     """
     print(f"\n--- {titulo} ---")
-    resultados = verificar_solucion(coeficientes, terminos, x)
+    resultados = verificar_solucion_detallada(coeficientes, terminos, x)
     todo_coincide = True
-    for i, (valor_calculado, valor_esperado, coincide) in enumerate(resultados):
-        estado = "OK" if coincide else "NO coincide"
+    for i, resultado in enumerate(resultados):
+        factores, productos = _linea_sustitucion(resultado["terminos"])
+        suma = formatear_numero(resultado["suma"])
+        esperado = formatear_numero(resultado["esperado"])
+        coincide = resultado["coincide"]
         if not coincide:
             todo_coincide = False
-        print(
-            f"  Ecuación {i + 1}: {formatear_numero(valor_calculado)} "
-            f"(esperado {formatear_numero(valor_esperado)})  ->  {estado}"
-        )
+        simbolo = "=" if coincide else "≠"
+        estado = "OK" if coincide else "NO coincide"
+        print(f"  Ecuación {i + 1}:")
+        print(f"    {factores}")
+        if productos != suma:
+            print(f"    = {productos}")
+        print(f"    = {suma} {simbolo} {esperado} (b{i + 1})  ->  {estado}")
     if todo_coincide:
         print("La solución satisface todas las ecuaciones del sistema original.")
     else:
@@ -218,7 +261,7 @@ def resolver_sistema(coeficientes, terminos, n):
         print("\n--- Código LaTeX (para copiar) ---")
         latex_code = generar_latex_solucion(n, libres, expresiones,
                                              solucion_vec["particular"],
-                                             solucion_vec["vectores_nulos"])
+                                             solucion_vec["vectores_nulos"], MODO)
         print(latex_code)
 
         valores_ejemplo = [0.0] * len(libres)
@@ -231,6 +274,14 @@ def resolver_sistema(coeficientes, terminos, n):
 
 
 def main():
+    global MODO
+    if "--decimal" in sys.argv:
+        MODO = MODO_DECIMAL
+    elif "--fraccion" in sys.argv:
+        MODO = MODO_FRACCION
+    etiqueta = "decimal" if MODO == MODO_DECIMAL else "fracción exacta"
+    print(f"(Los valores se muestran en {etiqueta}; usa --decimal o --fraccion para cambiar.)\n")
+
     while True:
         coeficientes, terminos, m, n = leer_sistema()
         resolver_sistema(coeficientes, terminos, n)

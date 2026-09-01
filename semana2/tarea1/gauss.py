@@ -241,6 +241,34 @@ def evaluar_solucion_parametrica(n_incognitas, libres, expresiones, valores_libr
     return x
 
 
+def verificar_solucion_detallada(coeficientes, terminos_independientes, x):
+    """
+    Igual que 'verificar_solucion', pero conservando la SUSTITUCION completa
+    para poder mostrarla como demostracion (coef * x_j termino a termino).
+
+    Devuelve una lista con un diccionario por ecuacion:
+      - 'terminos': lista de (coeficiente, x_j, producto) para cada incognita.
+      - 'suma': resultado de sumar todos los productos (A_i . x).
+      - 'esperado': terminos_independientes[i] (b_i).
+      - 'coincide': True si 'suma' es (casi) igual a 'esperado'.
+    """
+    resultados = []
+    for fila, b_i in zip(coeficientes, terminos_independientes):
+        terminos = []
+        suma = 0.0
+        for coef, xj in zip(fila, x):
+            producto = coef * xj
+            suma += producto
+            terminos.append((coef, xj, producto))
+        resultados.append({
+            "terminos": terminos,
+            "suma": suma,
+            "esperado": b_i,
+            "coincide": valor_casi_cero(suma - b_i),
+        })
+    return resultados
+
+
 def verificar_solucion(coeficientes, terminos_independientes, x):
     """
     Sustituye la solucion 'x' en el sistema ORIGINAL (antes de escalonar) y
@@ -250,15 +278,13 @@ def verificar_solucion(coeficientes, terminos_independientes, x):
       - valor_calculado: resultado de evaluar la fila i de A contra x.
       - valor_esperado: terminos_independientes[i] (b_i).
       - coincide: True si valor_calculado es (casi) igual a valor_esperado.
+
+    Es una vista resumida de 'verificar_solucion_detallada'.
     """
-    resultados = []
-    for fila, b_i in zip(coeficientes, terminos_independientes):
-        valor_calculado = 0.0
-        for coef, xj in zip(fila, x):
-            valor_calculado += coef * xj
-        coincide = valor_casi_cero(valor_calculado - b_i)
-        resultados.append((valor_calculado, b_i, coincide))
-    return resultados
+    return [
+        (r["suma"], r["esperado"], r["coincide"])
+        for r in verificar_solucion_detallada(coeficientes, terminos_independientes, x)
+    ]
 
 
 def rango_matriz(matriz, n_incognitas):
@@ -440,42 +466,5 @@ def _construir_expresion_string(particular, vectores_nulos, variables_libres):
     return "".join(parts)
 
 
-def generar_latex_solucion(n_incognitas, libres, expresiones, particular, vectores_nulos):
-    """
-    Genera código LaTeX para la solución general vectorial.
-
-    Devuelve un string con código LaTeX que puede copiarse.
-    """
-    lines = []
-
-    # Solución particular
-    lines.append("\\text{Solución particular (variables libres } = 0\\text{):}")
-    lines.append("\\\\")
-    x_p_components = []
-    for val in particular:
-        x_p_components.append(f"{val:.6g}".rstrip('0').rstrip('.'))
-    lines.append(f"\\mathbf{{x_p}} = \\begin{{pmatrix}} {' \\\\ '.join(x_p_components)} \\end{{pmatrix}}")
-    lines.append("\\\\")
-    lines.append("\\\\")
-
-    # Vectores del espacio nulo
-    if vectores_nulos:
-        lines.append("\\text{Vectores del espacio nulo (base):}")
-        lines.append("\\\\")
-        for k, vec in enumerate(vectores_nulos):
-            v_components = []
-            for val in vec:
-                v_components.append(f"{val:.6g}".rstrip('0').rstrip('.'))
-            lines.append(f"\\mathbf{{v_{k + 1}}} = \\begin{{pmatrix}} {' \\\\ '.join(v_components)} \\end{{pmatrix}}")
-            if k < len(vectores_nulos) - 1:
-                lines.append(", \\quad ")
-            lines.append("\\\\")
-        lines.append("\\\\")
-
-        # Solución general
-        lines.append("\\text{Solución general:}")
-        lines.append("\\\\")
-        params = " + ".join([f"t_{k + 1} \\mathbf{{v_{k + 1}}}" for k in range(len(vectores_nulos))])
-        lines.append(f"\\mathbf{{x}} = \\mathbf{{x_p}} + {params}")
-
-    return "".join(lines)
+# NOTA: la generación de LaTeX (presentación) vive ahora en formato.py
+# (generar_latex_solucion). gauss.py se queda solo con la lógica del algoritmo.

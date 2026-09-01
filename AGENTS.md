@@ -20,11 +20,13 @@ alg-lineal-I/
 │   ├── ALGORITMO.md             # Explicación matemática detallada
 │   └── CASOS_PRUEBA.md          # Playbook con datos listos
 ├── semana2/tarea1/
-│   ├── gauss.py                 # Lógica pura (sin I/O, sin librerías externas)
-│   ├── main.py                  # Interfaz de consola
+│   ├── gauss.py                 # Lógica pura (sin I/O, sin imports)
+│   ├── formato.py               # Presentación: fracciones, notación matemática, LaTeX
+│   ├── main.py                  # Interfaz de consola (--decimal / --fraccion)
 │   ├── gui.py                   # Interfaz PyQt6
-│   ├── test_gauss.py            # 18 tests unitarios
-│   ├── test_main.py             # 3 tests de integración
+│   ├── test_gauss.py            # Tests de la lógica pura
+│   ├── test_formato.py          # Tests de fracciones / formato
+│   ├── test_main.py             # Tests de integración de consola
 │   └── requirements.txt          # Legacy (generado desde pyproject.toml)
 └── context/
     └── current-feature.md       # Estado actual del desarrollo
@@ -58,11 +60,12 @@ uv sync
 cd semana2/tarea1
 python3 gui.py
 
-# O consola
+# O consola (fracción exacta por defecto; --decimal para decimales)
 python3 main.py
 
 # O tests
-python3 test_gauss.py
+python3 test_gauss.py && python3 test_formato.py && python3 test_main.py
+# o: uv run --extra dev pytest
 ```
 
 ## 🎯 Responsabilidades del Agente
@@ -83,7 +86,7 @@ python3 test_gauss.py
 
 ### Al Completar
 
-- [ ] Tests verdes (21 tests deben pasar)
+- [ ] Tests verdes (35 tests deben pasar)
 - [ ] Actualizar `context/current-feature.md`
 - [ ] Commits lógicos (no squash a menos que se pida)
 - [ ] Crear PR mencionando issues relacionados
@@ -115,6 +118,8 @@ python3 test_gauss.py
 - Explicación de rango/nulidad
 - Detección de formas escalonadas
 - Solución vectorial
+- Comprobación explícita (sustitución término a término)
+- Fracción exacta vs. decimal (`formato.a_fraccion`)
 
 ### docs/CASOS_PRUEBA.md
 - 3 casos de prueba principales
@@ -131,6 +136,7 @@ python3 test_gauss.py
 | uv | 0.10+ | Gestor de paquetes rápido |
 | unittest | stdlib | Tests sin dependencias |
 | Algoritmo | Puro | Sin NumPy/SymPy |
+| `gauss.py` / `formato.py` | Puro | Sin imports (ni `fractions`): fracción por Euclides + fracción continua |
 
 ## 🚫 Restricciones Críticas
 
@@ -143,33 +149,38 @@ python3 test_gauss.py
    - Si modificas `gauss.py`, actualiza tests
 
 3. **Separación de responsabilidades**
-   - `gauss.py`: Lógica pura (SIN input/print)
+   - `gauss.py`: Lógica pura (SIN input/print, SIN imports)
+   - `formato.py`: Presentación (float → texto: fracciones, notación matemática, LaTeX)
    - `main.py`: UI de consola
    - `gui.py`: UI PyQt6
+   - No dupliques `format_number`: usa `formato.formatear_valor(v, modo)`
 
 ## 📊 Métricas Actuales
 
-- **Líneas de código:** ~800 (gauss.py: 560, GUI: 400, main: 150)
-- **Tests:** 21 (todos pasan)
-- **Cobertura:** Lógica principal cubierta
+- **Líneas de código:** ~1000 (gauss.py, formato.py, gui.py, main.py)
+- **Tests:** 35 (todos pasan) — `test_gauss.py` (21), `test_formato.py` (11), `test_main.py` (3)
+- **Cobertura:** Lógica principal y capa de formato cubiertas
 - **Estado:** Feature completada y mergeada
 
 ## 🤖 Memoria para Agentes
 
 ### Contexto Compartido
 
-**Última feature completada:** Solución Vectorial, Rango, Nulidad, LaTeX y Formas Escalonadas
-- 6 funciones nuevas en `gauss.py`
-- Panel de análisis en GUI
-- 18 nuevos tests
-- Generación de código LaTeX
-- Mergeado a main: 2026-08-31
+**Última feature (rama `fix/latex-renderizado-fracciones-verificacion`):**
+LaTeX renderizado, comprobación explícita y fracciones. Issues #15, #16, #17.
+- Nuevo módulo de presentación `formato.py` (`a_fraccion`, `formatear_valor`,
+  `generar_latex_solucion` — movido desde `gauss.py` —, helpers HTML).
+- `gauss.py`: nueva `verificar_solucion_detallada()` (términos coef·xⱼ para la
+  demostración); `verificar_solucion()` pasa a ser una vista resumida de ella.
+- `main.py` / `gui.py` dejan de duplicar `format_number`; fracción exacta por defecto.
+- GUI: análisis + LaTeX movidos a un `QDialog`; resultado con notación matemática;
+  selector Fracción ⇄ Decimal.
+- Issue #18 (migrar consola a Textual TUI): abierto como investigación, no implementado.
 
-**Migración en curso:** Cambio a `uv` para gestión de paquetes
-- `pyproject.toml` creado
-- `uv.lock` sincronizado
-- Documentación actualizada
-- Estado: PR pendiente
+**Feature previa:** Solución Vectorial, Rango, Nulidad, LaTeX y Formas Escalonadas
+(mergeada a main 2026-08-31).
+
+**Migración a `uv`:** `pyproject.toml` + `uv.lock` en su sitio; documentación actualizada.
 
 ### Decisiones Tomales Anteriormente
 
@@ -180,6 +191,8 @@ python3 test_gauss.py
 
 ### Temas Futuros (Out of Scope Ahora)
 
+- Migrar la consola a **Textual TUI** (issue #18)
+- LaTeX de alta fidelidad en la GUI: matplotlib `mathtext` o `QWebEngineView` + KaTeX (issue #15)
 - Método de Cramer
 - Factorización LU
 - Descomposición QR
@@ -233,4 +246,4 @@ R: En `docs/ALGORITMO.md` (completa) y `docs/CASOS_PRUEBA.md` (práctica)
 
 **Última actualización:** 2026-08-31  
 **Versión:** 1.0.0  
-**Estado del Repo:** Feature feature/solucion-vectorial mergeada, migration a uv en progreso
+**Estado del Repo:** rama `fix/latex-renderizado-fracciones-verificacion` en curso (issues #15/#16/#17); issue #18 (Textual TUI) abierto

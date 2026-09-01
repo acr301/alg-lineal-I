@@ -2,26 +2,31 @@
 
 ## Status
 
-In Progress
+In Progress — implementado en `fix/latex-renderizado-fracciones-verificacion`,
+pendiente de PR/merge.
 
 ## Goals
 
-- [ ] **Notación matemática renderizada en la GUI (#15).** Que la solución, los
-  vectores y la matriz se muestren como notación compuesta (corchetes, subíndices
-  reales, fracciones apiladas) con rich-text de Qt (sin dependencias nuevas). El
-  código LaTeX pasa a ser acción secundaria en un `QDialog` aparte y el panel
-  "3 · Proceso y resultado" queda descongestionado.
-- [ ] **Demostración de la comprobación sustituyendo valores (#16).** Nueva función
-  pura `verificar_solucion_detallada()` en `gauss.py` que expone los términos
-  `coef·xᵢ`; consola y GUI muestran `1·(5) + 1·(3) + 1·(-2) = 5 + 3 − 2 = 6`.
-- [ ] **Matriz en fracción exacta en el paso a paso y tablas (#17).** Módulo de
-  presentación `formato.py` con `a_fraccion()` / `formatear_valor()` implementados a
-  mano (Euclides, sin `fractions`). Matriz, pasos, forma final, vectores y
-  verificación se ven en fracción por defecto, con toggle Fracción/Decimal en la GUI.
-- [ ] `main.py` y `gui.py` dejan de duplicar `format_number`; usan `formato.py`.
-- [ ] Tests nuevos (`test_formato.py`, casos en `test_gauss.py`) y suite existente en verde.
-- [ ] Documentación actualizada (`README.md`, `AGENTS.md`, `docs/ARQUITECTURA.md`,
-  `docs/ALGORITMO.md`, `DOCUMENTACION_FEATURE.md`).
+- [x] **Notación matemática renderizada en la GUI (#15).** Resultado con subíndices
+  `x₁`, signo `−`, `·` y vectores columna entre corchetes (rich-text de Qt, sin
+  dependencias). Análisis de rango/nulidad y código LaTeX movidos a un `QDialog`
+  ("Ver análisis y LaTeX ↗"); el panel "3 · Proceso y resultado" queda más limpio.
+- [x] **Demostración de la comprobación sustituyendo valores (#16).**
+  `verificar_solucion_detallada()` en `gauss.py` expone los términos `coef·xⱼ`;
+  consola y GUI muestran `1·(5) + 1·(3) + 1·(-2) = 5 + 3 − 2 = 6 = 6`.
+  `verificar_solucion()` pasa a ser vista resumida de la detallada.
+- [x] **Matriz en fracción exacta en el paso a paso y tablas (#17).** `formato.py`
+  con `a_fraccion()` (fracción continua) / `mcd()` (Euclides) / `formatear_valor()`,
+  sin `import`. Matriz, pasos, forma final, vectores y verificación en fracción por
+  defecto; toggle "Fracción ⇄ Decimal" en la GUI y `--decimal/--fraccion` en consola.
+- [x] `main.py` y `gui.py` dejan de duplicar `format_number`; usan `formato.py`.
+  `generar_latex_solucion()` movida de `gauss.py` a `formato.py` (usa `\frac`;
+  corregido el bug que borraba los ceros de `x_p`).
+- [x] Tests nuevos: `test_formato.py` (11) + `TestVerificarSolucionDetallada` en
+  `test_gauss.py`. Suite: 35 tests en verde (`uv run --extra dev pytest`).
+- [x] Documentación actualizada (`README.md`, `AGENTS.md`, `docs/ARQUITECTURA.md`,
+  `docs/ALGORITMO.md`).
+- [ ] Abrir PR y mergear a `main` (pendiente de confirmación del usuario).
 
 ## Notes
 
