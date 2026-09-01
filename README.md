@@ -74,12 +74,14 @@ motor `mathtext`); arrastra NumPy como dependencia suya, que tampoco se usa.
 ## 🧪 Tests
 
 ```bash
-cd semana2/tarea1
-python3 test_gauss.py     # 21 tests de la lógica pura
-python3 test_formato.py   # 11 tests de fracciones / formato
-python3 test_main.py      # 3 tests de integración de consola
-# Total: 41 tests (test_mathrender se salta si falta matplotlib). O bien: uv run --extra dev pytest
+# Desde la raíz del repo:
+uv run --extra dev pytest        # 41 tests (test_mathrender se salta si falta matplotlib)
 ```
+
+- `test_gauss.py` — lógica pura (21)
+- `test_formato.py` — fracciones, normalización de entrada, LaTeX (14)
+- `test_mathrender.py` — render de LaTeX a imagen (3)
+- `test_main.py` — integración de consola (3)
 
 ## 📁 Estructura
 
