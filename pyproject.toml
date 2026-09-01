@@ -1,0 +1,37 @@
+[project]
+name = "alg-lineal-I"
+version = "1.0.0"
+description = "Sistema interactivo para resolver sistemas de ecuaciones lineales mediante eliminación de Gauss"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [
+    {name = "ACR301", email = "acr301@example.com"}
+]
+
+dependencies = [
+    "PyQt6>=6.6,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["semana2/tarea1"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[project.urls]
+Homepage = "https://github.com/acr301/alg-lineal-I"
+Repository = "https://github.com/acr301/alg-lineal-I.git"
+Issues = "https://github.com/acr301/alg-lineal-I/issues"

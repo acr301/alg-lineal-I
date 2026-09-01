@@ -1,31 +1,33 @@
-# Current Feature: Solución Vectorial, Rango, Nulidad, LaTeX y Formas Escalonadas
+# Current Feature
 
 ## Status
 
-Complete
+Not Started
 
 ## Goals
 
-- Implementar `solucion_general_vectorial()` en gauss.py para expresar soluciones como x = xp + t1*v1 + ... + tk*vk
-- Implementar `rango_matriz()` para calcular el rango de una matriz
-- Implementar `verificar_rango_nulidad()` para verificar que Rango(A) + Nulidad(A) = n
-- Implementar `es_forma_escalonada()` para detectar forma escalonada por filas
-- Implementar `es_forma_escalonada_reducida()` para detectar forma escalonada reducida
-- Implementar `clasificar_forma_escalonada()` para clasificar como REF, RREF o ninguna
-- Generar código LaTeX copiable de la solución vectorial
-- Agregar interfaz en GUI: QTextEdit para LaTeX + botón "Copiar LaTeX"
-- Mostrar en GUI: Rango(A), n - Rango(A), verificación rango-nulidad, solución vectorial, LaTeX, clasificación
-- Escribir tests exhaustivos para determinado, indeterminado, incompatible, rango, variables libres, rango-nulidad, solución vectorial, REF, RREF, etc.
+<!-- goals go here -->
 
 ## Notes
 
-- Respeta separación: gauss.py = lógica pura, main.py = consola, gui.py = PyQt6
-- Prohibido: NumPy, SymPy, librerías de álgebra lineal externas
-- No romper funcionalidades existentes
-- Tests en test_gauss.py y test_main.py
-- Rama: feature/solucion-vectorial-rango-latex-formas
+<!-- notes go here -->
 
 ## History
+
+### Solución Vectorial, Rango, Nulidad, LaTeX y Formas Escalonadas (semana2/tarea1)
+
+Implementa análisis avanzado de sistemas lineales en `gauss.py` sin librerías externas:
+- `rango_matriz()` calcula el rango de una matriz
+- `verificar_rango_nulidad()` verifica Rango(A) + Nulidad(A) = n
+- `es_forma_escalonada()` y `es_forma_escalonada_reducida()` detectan REF/RREF
+- `clasificar_forma_escalonada()` clasifica la forma escalonada
+- `solucion_general_vectorial()` expresa soluciones como x = xp + t1*v1 + ... + tk*vk
+- `generar_latex_solucion()` genera código LaTeX copiable
+
+Integración en `main.py`: muestra rango, nulidad, forma escalonada y solución vectorial.
+Interfaz PyQt6 en `gui.py`: panel de análisis avanzado con QTextEdit para LaTeX y botón "Copiar LaTeX".
+Tests exhaustivos: 18 nuevos tests en `test_gauss.py` (todos pasan).
+Mergeado a `main` (rama `feature/solucion-vectorial-rango-latex-formas` eliminada).
 
 ### Verificación Explícita de la Solución (semana2/tarea1)
 
