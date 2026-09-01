@@ -51,7 +51,12 @@ def intercambiar_filas(matriz, i, j):
     matriz[i], matriz[j] = matriz[j], matriz[i]
 
 
-def escalonar(matriz, n_incognitas, registrar_paso=None):
+def _formato_por_defecto(valor):
+    """Formato simple para los multiplicadores en las descripciones de pasos."""
+    return f"{valor:.4g}"
+
+
+def escalonar(matriz, n_incognitas, registrar_paso=None, formato_numero=None):
     """
     Reduce 'matriz' (aumentada, de tamaño m x (n_incognitas + 1)) a forma
     escalonada por filas, usando eliminación de Gauss con pivoteo parcial
@@ -64,9 +69,14 @@ def escalonar(matriz, n_incognitas, registrar_paso=None):
     matriz_actual) que se invoca cada vez que se hace una operación de fila,
     para poder narrar el proceso paso a paso.
 
+    'formato_numero' es una función opcional valor -> str para dar formato al
+    multiplicador que aparece en la descripción de cada operación (p. ej. para
+    mostrarlo como fracción '1/2' en vez de '0.5'). No afecta al cálculo.
+
     Devuelve la lista de columnas donde se encontró un pivote, en el orden
     en que fueron procesadas (una por cada fila pivote).
     """
+    fmt = formato_numero or _formato_por_defecto
     m = len(matriz)
     columnas_pivote = []
     fila_actual = 0
@@ -107,7 +117,7 @@ def escalonar(matriz, n_incognitas, registrar_paso=None):
             matriz[r][col] = 0.0
             if registrar_paso:
                 registrar_paso(
-                    f"F{r + 1} <- F{r + 1} - ({factor:.4g}) * F{fila_actual + 1}",
+                    f"F{r + 1} <- F{r + 1} - ({fmt(factor)}) * F{fila_actual + 1}",
                     matriz,
                 )
 
@@ -156,12 +166,16 @@ def sustitucion_regresiva(matriz, n_incognitas, columnas_pivote):
 
 
 def reducir_a_escalonada_reducida(matriz, n_incognitas, columnas_pivote,
-                                   registrar_paso=None):
+                                   registrar_paso=None, formato_numero=None):
     """
     A partir de una matriz ya en forma escalonada, continúa el proceso
     (estilo Gauss-Jordan) hasta la forma escalonada reducida: cada pivote
     vale 1 y es el único valor no nulo en su columna. Modifica in place.
+
+    'formato_numero' (valor -> str) da formato al divisor/multiplicador de las
+    descripciones (p. ej. fracción). No afecta al cálculo.
     """
+    fmt = formato_numero or _formato_por_defecto
     for i in range(len(columnas_pivote) - 1, -1, -1):
         col = columnas_pivote[i]
         pivote = matriz[i][col]
@@ -169,7 +183,7 @@ def reducir_a_escalonada_reducida(matriz, n_incognitas, columnas_pivote,
             for c in range(col, n_incognitas + 1):
                 matriz[i][c] /= pivote
             if registrar_paso:
-                registrar_paso(f"F{i + 1} <- F{i + 1} / {pivote:.4g}", matriz)
+                registrar_paso(f"F{i + 1} <- F{i + 1} / {fmt(pivote)}", matriz)
 
         for r in range(i):
             factor = matriz[r][col]
@@ -180,7 +194,7 @@ def reducir_a_escalonada_reducida(matriz, n_incognitas, columnas_pivote,
             matriz[r][col] = 0.0
             if registrar_paso:
                 registrar_paso(
-                    f"F{r + 1} <- F{r + 1} - ({factor:.4g}) * F{i + 1}",
+                    f"F{r + 1} <- F{r + 1} - ({fmt(factor)}) * F{i + 1}",
                     matriz,
                 )
 
@@ -241,6 +255,34 @@ def evaluar_solucion_parametrica(n_incognitas, libres, expresiones, valores_libr
     return x
 
 
+def verificar_solucion_detallada(coeficientes, terminos_independientes, x):
+    """
+    Igual que 'verificar_solucion', pero conservando la SUSTITUCION completa
+    para poder mostrarla como demostracion (coef * x_j termino a termino).
+
+    Devuelve una lista con un diccionario por ecuacion:
+      - 'terminos': lista de (coeficiente, x_j, producto) para cada incognita.
+      - 'suma': resultado de sumar todos los productos (A_i . x).
+      - 'esperado': terminos_independientes[i] (b_i).
+      - 'coincide': True si 'suma' es (casi) igual a 'esperado'.
+    """
+    resultados = []
+    for fila, b_i in zip(coeficientes, terminos_independientes):
+        terminos = []
+        suma = 0.0
+        for coef, xj in zip(fila, x):
+            producto = coef * xj
+            suma += producto
+            terminos.append((coef, xj, producto))
+        resultados.append({
+            "terminos": terminos,
+            "suma": suma,
+            "esperado": b_i,
+            "coincide": valor_casi_cero(suma - b_i),
+        })
+    return resultados
+
+
 def verificar_solucion(coeficientes, terminos_independientes, x):
     """
     Sustituye la solucion 'x' en el sistema ORIGINAL (antes de escalonar) y
@@ -250,15 +292,13 @@ def verificar_solucion(coeficientes, terminos_independientes, x):
       - valor_calculado: resultado de evaluar la fila i de A contra x.
       - valor_esperado: terminos_independientes[i] (b_i).
       - coincide: True si valor_calculado es (casi) igual a valor_esperado.
+
+    Es una vista resumida de 'verificar_solucion_detallada'.
     """
-    resultados = []
-    for fila, b_i in zip(coeficientes, terminos_independientes):
-        valor_calculado = 0.0
-        for coef, xj in zip(fila, x):
-            valor_calculado += coef * xj
-        coincide = valor_casi_cero(valor_calculado - b_i)
-        resultados.append((valor_calculado, b_i, coincide))
-    return resultados
+    return [
+        (r["suma"], r["esperado"], r["coincide"])
+        for r in verificar_solucion_detallada(coeficientes, terminos_independientes, x)
+    ]
 
 
 def rango_matriz(matriz, n_incognitas):
@@ -440,42 +480,5 @@ def _construir_expresion_string(particular, vectores_nulos, variables_libres):
     return "".join(parts)
 
 
-def generar_latex_solucion(n_incognitas, libres, expresiones, particular, vectores_nulos):
-    """
-    Genera código LaTeX para la solución general vectorial.
-
-    Devuelve un string con código LaTeX que puede copiarse.
-    """
-    lines = []
-
-    # Solución particular
-    lines.append("\\text{Solución particular (variables libres } = 0\\text{):}")
-    lines.append("\\\\")
-    x_p_components = []
-    for val in particular:
-        x_p_components.append(f"{val:.6g}".rstrip('0').rstrip('.'))
-    lines.append(f"\\mathbf{{x_p}} = \\begin{{pmatrix}} {' \\\\ '.join(x_p_components)} \\end{{pmatrix}}")
-    lines.append("\\\\")
-    lines.append("\\\\")
-
-    # Vectores del espacio nulo
-    if vectores_nulos:
-        lines.append("\\text{Vectores del espacio nulo (base):}")
-        lines.append("\\\\")
-        for k, vec in enumerate(vectores_nulos):
-            v_components = []
-            for val in vec:
-                v_components.append(f"{val:.6g}".rstrip('0').rstrip('.'))
-            lines.append(f"\\mathbf{{v_{k + 1}}} = \\begin{{pmatrix}} {' \\\\ '.join(v_components)} \\end{{pmatrix}}")
-            if k < len(vectores_nulos) - 1:
-                lines.append(", \\quad ")
-            lines.append("\\\\")
-        lines.append("\\\\")
-
-        # Solución general
-        lines.append("\\text{Solución general:}")
-        lines.append("\\\\")
-        params = " + ".join([f"t_{k + 1} \\mathbf{{v_{k + 1}}}" for k in range(len(vectores_nulos))])
-        lines.append(f"\\mathbf{{x}} = \\mathbf{{x_p}} + {params}")
-
-    return "".join(lines)
+# NOTA: la generación de LaTeX (presentación) vive ahora en formato.py
+# (generar_latex_solucion). gauss.py se queda solo con la lógica del algoritmo.

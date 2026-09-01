@@ -28,10 +28,10 @@ E3: [2, 5, -1] | 27
 - Tipo = "determinado"
 
 **En GUI:**
-1. Click "Ejemplo rápido" → "Solución única"
-2. Click "Resolver sistema"
-3. Observa slider de pasos
-4. Panel de resultado muestra x=5, y=3, z=-2
+1. Menú → "Ejemplo rápido" → "Solución única" (salta al proceso).
+2. Pantalla "3 · Proceso y resultado": recorre los pasos con ← →.
+3. Debajo: solución `x₁=5, x₂=3, x₃=-2` y la comprobación término a término.
+4. "Ver solución vectorial →" muestra `x = [5, 3, -2]` renderizado.
 
 ---
 
@@ -54,26 +54,24 @@ E3: [1, -1, 0] | 0
 
 **Resultado esperado:**
 - Rango(A) = 2, Nulidad = 1
-- Variable libre: z = t
-- Solución: x = [3, 3, 0] + t*[1, -2, 1]
+- Variable libre: x₃ = t₁
+- Solución: x = [3, 3, 0] + t₁·[-1/2, -1/2, 1]
 - Forma = RREF
 - Tipo = "indeterminado"
 
 **En GUI - Lo Especial:**
-1. Click "Ejemplo rápido" → "Variables libres"
-2. Click "Resolver sistema"
-3. **Panel "4 · Análisis Avanzado":**
-   - Rango: 2, Nulidad: 1
-   - Solución particular: [3, 3, 0]
-   - Vector del espacio nulo: [1, -2, 1]
-   - Código LaTeX generado
-4. Click "Copiar LaTeX" → copiar al portapapeles
+1. Menú → "Ejemplo rápido" → "Variables libres".
+2. Pantalla "3 · Proceso y resultado":
+   - solución paramétrica `x₁ = 3 − 1/2·t₁`, `x₂ = 3 − 1/2·t₁`, `x₃ = t₁`;
+   - análisis: Rango 2, Nulidad 1, Rango+Nulidad = 3 = n, Forma RREF (con ayudas `?`).
+3. "Ver solución vectorial →": `x = [3,3,0] + t₁[-1/2,-1/2,1]` renderizado; el
+   código LaTeX está detrás de "Ver sintaxis LaTeX" (con botón "Copiar LaTeX").
 
-**LaTeX generado:**
+**LaTeX generado (con `\frac`):**
 ```latex
 \mathbf{x_p} = \begin{pmatrix} 3 \\ 3 \\ 0 \end{pmatrix}
-\mathbf{v_1} = \begin{pmatrix} 1 \\ -2 \\ 1 \end{pmatrix}
-\mathbf{x} = \mathbf{x_p} + t_1 \mathbf{v_1}
+\mathbf{v_{1}} = \begin{pmatrix} -\frac{1}{2} \\ -\frac{1}{2} \\ 1 \end{pmatrix}
+\mathbf{x} = \mathbf{x_p} + t_{1} \mathbf{v_{1}}
 ```
 
 ---
@@ -100,11 +98,10 @@ E2: [1, 1] | 5
 - Sin solución
 
 **En GUI:**
-1. Click "Ejemplo rápido" → "Sistema inconsistente"
-2. Click "Resolver sistema"
-3. Observa fila con [0, 0 | 3]
-4. Panel de resultado: "Una ecuación se redujo a 0 = c..."
-5. Estado rojo: "Sistema inconsistente · no tiene solución"
+1. Menú → "Ejemplo rápido" → "Sistema inconsistente".
+2. En los pasos aparece la fila `[0, 0 | 3]`.
+3. Estado rojo: "Sistema inconsistente · no tiene solución"; el bloque de solución
+   explica "Una ecuación se redujo a 0 = c...".
 
 ---
 
@@ -112,12 +109,12 @@ E2: [1, 1] | 5
 
 ```bash
 cd semana2/tarea1
-python3 main.py
+uv run python main.py
 
 # Ingresa los datos del Caso 1
-# Verás cada paso
+# Verás cada paso (multiplicadores como fracción: F3 <- F3 - (1/2) * F1)
 # Resultado: x=5, y=3, z=-2
-# Verificación: ecuaciones satisfechas ✓
+# Comprobación: 1·(5) + 1·(3) + 1·(-2) = 6 = 6 ✓
 ```
 
 ---
@@ -127,15 +124,14 @@ python3 main.py
 Todos los casos están cubiertos por tests:
 
 ```bash
-cd semana2/tarea1
-python3 test_gauss.py
+uv run --extra dev pytest
 
 # Salida:
 # test_solucion_unica_3x3 ... ok
 # test_infinitas_soluciones ... ok
 # test_sin_solucion ... ok
 # ...
-# Ran 18 tests in 0.001s
+# 44 passed
 # OK
 ```
 

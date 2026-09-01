@@ -5,13 +5,18 @@
 ### 1. Separación Estricta de Responsabilidades
 
 ```
-gauss.py  → LÓGICA PURA (sin I/O, sin efectos secundarios)
-main.py   → CONSOLA (input, print, flujo interactivo)
-gui.py    → INTERFAZ GRÁFICA (PyQt6, eventos, widgets)
-tests/    → VERIFICACIÓN (unittest, no parte del "ejercicio")
+gauss.py     → LÓGICA PURA (sin I/O, sin efectos secundarios, sin imports)
+formato.py   → PRESENTACIÓN texto (float → fracción/decimal, LaTeX, HTML) — sin deps
+mathrender.py→ PRESENTACIÓN imagen (LaTeX → QPixmap con matplotlib mathtext)
+main.py      → CONSOLA (input, print, flujo interactivo)
+gui.py       → punto de entrada de la GUI (shim delgado hacia ui/)
+ui/          → INTERFAZ GRÁFICA PyQt6 por pantallas (ver "Flujo de la GUI")
+tests/       → VERIFICACIÓN (unittest, no parte del "ejercicio")
 ```
 
-**Ventaja:** gauss.py puede ser usado por cualquier interfaz sin duplicar lógica.
+**Ventaja:** `gauss.py` puede ser usado por cualquier interfaz sin duplicar lógica,
+y `formato.py` centraliza *cómo se muestran* los números (antes cada interfaz tenía
+su propio `format_number` duplicado).
 
 ### 2. No Usar Librerías de Álgebra Lineal
 
@@ -45,13 +50,25 @@ def escalonar(matriz, n_incognitas, registrar_paso=None):
 └──────────────┬────────────────────────────┘
                │ import
 ┌──────────────▼────────────────────────────┐
+│  PRESENTACIÓN                             │
+│  ├─ formato.py           [puro, sin deps] │
+│  │   ├─ a_fraccion() (fracción continua)  │
+│  │   ├─ formatear_valor() fracción/decimal│
+│  │   ├─ generar_latex_solucion()          │
+│  │   └─ helpers HTML (vector columna, …)  │
+│  └─ mathrender.py     [matplotlib mathtext]│
+│      ├─ latex_a_pixmap()  (LaTeX → QPixmap)│
+│      └─ columna_a_pixmap() (vector dibujado)│
+└──────────────┬────────────────────────────┘
+               │ import
+┌──────────────▼────────────────────────────┐
 │  LÓGICA DE NEGOCIO                        │
 │  └─ gauss.py                [puro]        │
 │     ├─ Eliminación Gaussiana              │
 │     ├─ Análisis de Rango/Nulidad          │
 │     ├─ Formas Escalonadas                 │
 │     ├─ Solución Vectorial                 │
-│     └─ Generación LaTeX                   │
+│     └─ Verificación (detallada)           │
 └──────────────┬────────────────────────────┘
                │
 ┌──────────────▼────────────────────────────┐
@@ -79,9 +96,12 @@ gauss.py:clasificar() → "determinado"
     ↓
 gauss.py:sustitucion_regresiva() → solución x
     ↓
-gauss.py:verificar_solucion() → validación
+gauss.py:verificar_solucion_detallada() → términos coef·x_j, suma, esperado
     ↓
-main.py:imprimir_verificacion() → Output al usuario
+formato.py:formatear_valor() → fracción exacta o decimal
+    ↓
+main.py:imprimir_verificacion() / gui.py:verification_html()
+    → demostración término a término al usuario
 ```
 
 ### Sistema Indeterminado (Infinitas Soluciones)
@@ -99,9 +119,10 @@ gauss.py:solucion_parametrica() → (libres, expresiones)
     ↓
 gauss.py:solucion_general_vectorial() → {particular, vectores_nulos}
     ↓
-gauss.py:generar_latex_solucion() → código LaTeX
+formato.py:generar_latex_solucion() → código LaTeX (con \frac)
     ↓
-main.py/gui.py: mostrar resultado
+main.py/gui.py: mostrar resultado (GUI: notación matemática renderizada
+                + diálogo aparte con análisis y LaTeX)
 ```
 
 ## Decisiones Técnicas y Justificación
@@ -165,6 +186,60 @@ if clasificacion == "incompatible":
 ```
 
 **Razón:** El usuario podría dar una matriz vacía. No es un error del programa.
+
+### 5. Capa de presentación aparte: `formato.py`
+
+```python
+# gauss.py trabaja SIEMPRE en float (el algoritmo no cambia).
+# formato.py decide cómo se ve ese float:
+formatear_valor(1/3, MODO_FRACCION)  # -> "1/3"
+formatear_valor(1/3, MODO_DECIMAL)   # -> "0.3333"
+```
+
+**Razón:**
+- La forma fraccionaria exacta (`1/3`, `-8/3`) es mucho más legible que `0.3333`
+  para material educativo de álgebra lineal (issue #17).
+- `main.py` y `gui.py` tenían cada uno su propio `format_number` duplicado.
+- La conversión float → fracción se hace **a mano** (fracción continua + Euclides),
+  sin importar `fractions`, para respetar la restricción del ejercicio.
+- `generar_latex_solucion()` (presentación pura) se movió aquí desde `gauss.py`.
+
+**Consecuencia:** cualquier interfaz nueva (p. ej. la TUI de Textual, issue #18)
+reutiliza `formatear_valor` / los helpers HTML sin reimplementar nada.
+
+### 6. GUI: notación matemática renderizada, no código LaTeX crudo (issue #15)
+
+- `mathrender.py` convierte el LaTeX a imagen con el motor **mathtext de
+  matplotlib** (no necesita una instalación de LaTeX del sistema). Matrices y
+  vectores se dibujan a mano (`matriz_a_pixmap`, `columna_a_pixmap`) porque
+  mathtext no soporta los entornos `pmatrix` / `array`.
+- `mathrender.disponible()` degrada con elegancia: sin matplotlib, la GUI usa los
+  helpers de texto/HTML de `formato.py` (nunca muestra LaTeX crudo). Por eso la
+  GUI debe ejecutarse dentro del entorno de uv (`uv run python gui.py`).
+- El código LaTeX no se muestra por defecto: está detrás de "Ver sintaxis LaTeX"
+  en la última pantalla.
+- Descartado por peso: `QWebEngineView` + KaTeX (+150 MB).
+
+### 7. Flujo de la GUI: pantallas, no un único panel (paquete `ui/`)
+
+`gui.py` es un shim; la GUI vive en `ui/` con una pantalla por archivo y un
+`QStackedWidget` que las intercambia (`ui/app.py`):
+
+```
+Menú  →  Dimensiones y notación  →  Entrada guiada  →  Proceso y resultado  →  Solución vectorial
+(info)   (n_eq, n_var, fracción)   (término a término)  (pasos + solución +      (render + LaTeX
+                                                         comprobación + análisis) oculto)
+```
+
+- Estado compartido en `ui/state.py:Sesion`; es el **único** punto de la GUI que
+  llama a `gauss.py`. `Sesion.resolver()` produce un dict con pasos, tipo,
+  rango/nulidad, solución, vectorial, verificación y LaTeX.
+- Navegación **sin ratón**: Enter avanza (botón por defecto), Esc retrocede
+  (atajo de ventana → `pantalla.al_atras()`), ← → recorren los pasos, F1 al menú.
+- Widgets reutilizables en `ui/widgets.py`: `PantallaBase` (encabezado + barra de
+  navegación), `MatrizGrid` (rejilla con corchetes y celda resaltable para la
+  entrada), `boton_ayuda` (`QToolButton` con tooltip que también responde al
+  teclado), `FilaAnalisis`.
 
 ## Extensibilidad
 

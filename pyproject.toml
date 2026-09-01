@@ -5,11 +5,17 @@ description = "Sistema interactivo para resolver sistemas de ecuaciones lineales
 requires-python = ">=3.9"
 license = "MIT"
 authors = [
-    {name = "ACR301", email = "acr301@example.com"}
+    {name = "Andrés Castillo"},
+    {name = "Fátima Zogaib"},
 ]
 
 dependencies = [
+    # PyQt6: interfaz gráfica.
     "PyQt6>=6.6,<7",
+    # matplotlib: SOLO para renderizar la notación matemática (LaTeX -> imagen) en
+    # la GUI mediante su motor mathtext. El algoritmo (gauss.py) no lo usa. Arrastra
+    # NumPy como dependencia propia; tampoco se usa NumPy para calcular.
+    "matplotlib>=3.9.4",
 ]
 
 [project.optional-dependencies]

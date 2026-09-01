@@ -157,15 +157,49 @@ x - y + 0z = 0
 - Vector nulo: v1 = [-1, -0.5, 1] (aproximadamente)
 - Solución general: x = [3, 3, 0] + t*[-1, -0.5, 1]
 
+## Comprobación explícita (sustituyendo valores)
+
+La Tarea 1 exige **demostrar** que la solución hallada satisface el sistema
+*original* (antes de escalonar). No basta con escribir `6 = 6`: se muestra la
+sustitución término a término.
+
+`gauss.py:verificar_solucion_detallada(coeficientes, terminos, x)` devuelve, por
+ecuación, la lista `(coef_i, x_i, coef_i·x_i)`, la suma de los productos y el
+término independiente esperado. Con eso, consola y GUI imprimen:
+
+```
+Ecuación 1:
+  1·(5) + 1·(3) + 1·(-2)
+  = 5 + 3 - 2
+  = 6 = 6 (b1)  ->  OK
+```
+
+Para el caso indeterminado se fija un valor concreto a cada parámetro libre
+(`t₁ = 0, …`) y se sustituye ese vector. No aplica al caso inconsistente.
+
+## Fracción exacta vs. decimal
+
+El algoritmo trabaja en `float`, pero al escalonar aparecen valores como `0.3333…`
+que son en realidad `1/3`. `formato.py:a_fraccion()` reconstruye la fracción exacta
+por **fracción continua** (con `formato.py:mcd()` de Euclides para reducir) y
+`formatear_valor()` elige entre `"1/3"` y `"0.3333"` según el modo. Se aplica a la
+matriz, a cada paso, a la forma final, a los vectores `x_p` / `v_k` y a la
+comprobación. Si el valor es irracional (p. ej. `√2`) se cae a decimal.
+
 ## Código LaTeX
+
+`formato.py:generar_latex_solucion()` emite las fracciones como `\frac{a}{b}`:
 
 ```latex
 \mathbf{x_p} = \begin{pmatrix} 3 \\ 3 \\ 0 \end{pmatrix}
 
-\mathbf{v_1} = \begin{pmatrix} -1 \\ -0.5 \\ 1 \end{pmatrix}
+\mathbf{v_1} = \begin{pmatrix} -\frac{1}{2} \\ -\frac{1}{2} \\ 1 \end{pmatrix}
 
 \mathbf{x} = \mathbf{x_p} + t_1 \mathbf{v_1}
 ```
+
+En la GUI, además del código copiable, la solución se muestra **renderizada** con
+notación matemática (vectores columna entre corchetes, subíndices reales).
 
 ---
 

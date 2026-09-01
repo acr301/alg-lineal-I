@@ -27,6 +27,7 @@ from gauss import (
     sustitucion_regresiva,
     verificar_rango_nulidad,
     verificar_solucion,
+    verificar_solucion_detallada,
 )
 
 
@@ -139,6 +140,40 @@ class TestVerificarSolucion(unittest.TestCase):
         resultados = verificar_solucion(coeficientes, terminos, x)
         coincidencias = [coincide for _, _, coincide in resultados]
         self.assertFalse(all(coincidencias))
+
+
+class TestVerificarSolucionDetallada(unittest.TestCase):
+    def test_expone_terminos_y_suma(self):
+        coeficientes = [[1, 1, 1], [0, 2, 5], [2, 5, -1]]
+        terminos = [6, -4, 27]
+        x = [5, 3, -2]
+        detalle = verificar_solucion_detallada(coeficientes, terminos, x)
+
+        self.assertEqual(len(detalle), 3)
+        # Ecuación 1: términos (coef, x_j, producto)
+        self.assertEqual(detalle[0]["terminos"],
+                         [(1, 5, 5), (1, 3, 3), (1, -2, -2)])
+        self.assertAlmostEqual(detalle[0]["suma"], 6)
+        self.assertEqual(detalle[0]["esperado"], 6)
+        for fila in detalle:
+            self.assertTrue(fila["coincide"])
+
+    def test_marca_incoincidencia(self):
+        coeficientes = [[1, 1], [1, -1]]
+        terminos = [4, 0]
+        detalle = verificar_solucion_detallada(coeficientes, terminos, [1, 1])
+        self.assertFalse(all(fila["coincide"] for fila in detalle))
+
+    def test_consistente_con_verificar_solucion(self):
+        coeficientes = [[2, 1], [1, 3]]
+        terminos = [1, 1]
+        x = [0.4, 0.2]  # 2/5, 1/5
+        resumen = verificar_solucion(coeficientes, terminos, x)
+        detalle = verificar_solucion_detallada(coeficientes, terminos, x)
+        for (suma_r, esp_r, ok_r), fila in zip(resumen, detalle):
+            self.assertAlmostEqual(suma_r, fila["suma"])
+            self.assertEqual(esp_r, fila["esperado"])
+            self.assertEqual(ok_r, fila["coincide"])
 
 
 class TestRango(unittest.TestCase):
