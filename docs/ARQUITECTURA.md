@@ -5,11 +5,12 @@
 ### 1. Separación Estricta de Responsabilidades
 
 ```
-gauss.py   → LÓGICA PURA (sin I/O, sin efectos secundarios, sin imports)
-formato.py → PRESENTACIÓN (float → texto: fracciones, notación matemática, LaTeX)
-main.py    → CONSOLA (input, print, flujo interactivo)
-gui.py     → INTERFAZ GRÁFICA (PyQt6, eventos, widgets)
-tests/     → VERIFICACIÓN (unittest, no parte del "ejercicio")
+gauss.py     → LÓGICA PURA (sin I/O, sin efectos secundarios, sin imports)
+formato.py   → PRESENTACIÓN texto (float → fracción/decimal, LaTeX, HTML) — sin deps
+mathrender.py→ PRESENTACIÓN imagen (LaTeX → QPixmap con matplotlib mathtext)
+main.py      → CONSOLA (input, print, flujo interactivo)
+gui.py       → INTERFAZ GRÁFICA (PyQt6, eventos, widgets)
+tests/       → VERIFICACIÓN (unittest, no parte del "ejercicio")
 ```
 
 **Ventaja:** `gauss.py` puede ser usado por cualquier interfaz sin duplicar lógica,
@@ -49,11 +50,14 @@ def escalonar(matriz, n_incognitas, registrar_paso=None):
                │ import
 ┌──────────────▼────────────────────────────┐
 │  PRESENTACIÓN                             │
-│  └─ formato.py            [puro, sin deps]│
-│     ├─ a_fraccion() (fracción continua)   │
-│     ├─ formatear_valor() fracción/decimal │
-│     ├─ generar_latex_solucion()           │
-│     └─ helpers HTML (vector columna, …)   │
+│  ├─ formato.py           [puro, sin deps] │
+│  │   ├─ a_fraccion() (fracción continua)  │
+│  │   ├─ formatear_valor() fracción/decimal│
+│  │   ├─ generar_latex_solucion()          │
+│  │   └─ helpers HTML (vector columna, …)  │
+│  └─ mathrender.py     [matplotlib mathtext]│
+│      ├─ latex_a_pixmap()  (LaTeX → QPixmap)│
+│      └─ columna_a_pixmap() (vector dibujado)│
 └──────────────┬────────────────────────────┘
                │ import
 ┌──────────────▼────────────────────────────┐
@@ -204,13 +208,21 @@ reutiliza `formatear_valor` / los helpers HTML sin reimplementar nada.
 
 ### 6. GUI: notación matemática renderizada, no código LaTeX crudo (issue #15)
 
-- El resultado de `gui.py` se compone con notación matemática (subíndices `x₁`,
-  signo `−`, `·`, vectores columna entre corchetes vía rich-text de Qt).
-- El código LaTeX y el análisis de rango/nulidad se movieron a un `QDialog`
-  ("Ver análisis y LaTeX ↗") para descargar el panel "3 · Proceso y resultado".
-- Enfoque deliberado: **sin dependencias nuevas**. Opciones de mayor fidelidad
-  (matplotlib `mathtext`, `QWebEngineView` + KaTeX) quedan documentadas en el
-  issue #15 para una iteración futura.
+- El panel "3 · Proceso y resultado" se compone con notación matemática ligera
+  (subíndices `x₁`, signo `−`, `·`) vía rich-text de Qt, y queda descongestionado.
+- El **diálogo** "Ver análisis y LaTeX ↗" (`QDialog`) es el escaparate:
+  - `mathrender.py` convierte el LaTeX a imagen con el motor **mathtext de
+    matplotlib** (no necesita una instalación de LaTeX del sistema). Los vectores
+    columna se dibujan a mano (mathtext no soporta `pmatrix`).
+  - Rango / nulidad / forma escalonada se muestran en **lista** con un signo `?`
+    por fila cuyo *tooltip* explica el concepto (ver `GaussWindow.EXPLICACIONES`).
+  - La comprobación (sustitución término a término) también se renderiza como
+    imágenes matemáticas.
+  - Se mantiene el código LaTeX copiable como caja de texto secundaria.
+- `mathrender.disponible()` degrada con elegancia: si matplotlib no está
+  instalado, el diálogo cae a los vectores en HTML de `formato.py`.
+- Descartado por peso: `QWebEngineView` + KaTeX (+150 MB). Alternativa futura de
+  máxima fidelidad, documentada en el issue #15.
 
 ## Extensibilidad
 

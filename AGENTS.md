@@ -21,7 +21,8 @@ alg-lineal-I/
 │   └── CASOS_PRUEBA.md          # Playbook con datos listos
 ├── semana2/tarea1/
 │   ├── gauss.py                 # Lógica pura (sin I/O, sin imports)
-│   ├── formato.py               # Presentación: fracciones, notación matemática, LaTeX
+│   ├── formato.py               # Presentación: fracciones, LaTeX (texto), helpers HTML
+│   ├── mathrender.py            # LaTeX -> imagen (matplotlib mathtext) para la GUI
 │   ├── main.py                  # Interfaz de consola (--decimal / --fraccion)
 │   ├── gui.py                   # Interfaz PyQt6
 │   ├── test_gauss.py            # Tests de la lógica pura
@@ -86,7 +87,7 @@ python3 test_gauss.py && python3 test_formato.py && python3 test_main.py
 
 ### Al Completar
 
-- [ ] Tests verdes (35 tests deben pasar)
+- [ ] Tests verdes (38 tests deben pasar)
 - [ ] Actualizar `context/current-feature.md`
 - [ ] Commits lógicos (no squash a menos que se pida)
 - [ ] Crear PR mencionando issues relacionados
@@ -133,9 +134,10 @@ python3 test_gauss.py && python3 test_formato.py && python3 test_main.py
 |-----------|---------|-------|
 | Python | 3.9+ | Soportado por PyQt6 |
 | PyQt6 | 6.6-7 | GUI moderna |
+| matplotlib | 3.9+ | SOLO render de notación matemática (mathtext) en la GUI; arrastra NumPy como dep. suya |
 | uv | 0.10+ | Gestor de paquetes rápido |
 | unittest | stdlib | Tests sin dependencias |
-| Algoritmo | Puro | Sin NumPy/SymPy |
+| Algoritmo | Puro | Sin NumPy/SymPy — `gauss.py` no importa nada |
 | `gauss.py` / `formato.py` | Puro | Sin imports (ni `fractions`): fracción por Euclides + fracción continua |
 
 ## 🚫 Restricciones Críticas
@@ -143,6 +145,8 @@ python3 test_gauss.py && python3 test_formato.py && python3 test_main.py
 1. **NO librerías de álgebra lineal** (NumPy, SymPy, scipy)
    - Razón: El ejercicio exige implementación desde cero
    - Usar: Listas, loops, aritmética básica
+   - `matplotlib` está permitido **solo** como motor de render (LaTeX → imagen) en
+     `mathrender.py`; nunca para calcular. `gauss.py` y `formato.py` siguen sin imports.
 
 2. **NO romper funcionalidades existentes**
    - Todos los tests deben pasar
@@ -158,7 +162,7 @@ python3 test_gauss.py && python3 test_formato.py && python3 test_main.py
 ## 📊 Métricas Actuales
 
 - **Líneas de código:** ~1000 (gauss.py, formato.py, gui.py, main.py)
-- **Tests:** 35 (todos pasan) — `test_gauss.py` (21), `test_formato.py` (11), `test_main.py` (3)
+- **Tests:** 38 (todos pasan) — test_gauss (21), test_formato (11), test_main (3), test_mathrender (3)
 - **Cobertura:** Lógica principal y capa de formato cubiertas
 - **Estado:** Feature completada y mergeada
 
@@ -168,13 +172,15 @@ python3 test_gauss.py && python3 test_formato.py && python3 test_main.py
 
 **Última feature (rama `fix/latex-renderizado-fracciones-verificacion`):**
 LaTeX renderizado, comprobación explícita y fracciones. Issues #15, #16, #17.
-- Nuevo módulo de presentación `formato.py` (`a_fraccion`, `formatear_valor`,
-  `generar_latex_solucion` — movido desde `gauss.py` —, helpers HTML).
-- `gauss.py`: nueva `verificar_solucion_detallada()` (términos coef·xⱼ para la
-  demostración); `verificar_solucion()` pasa a ser una vista resumida de ella.
-- `main.py` / `gui.py` dejan de duplicar `format_number`; fracción exacta por defecto.
-- GUI: análisis + LaTeX movidos a un `QDialog`; resultado con notación matemática;
-  selector Fracción ⇄ Decimal.
+- Nuevo `formato.py` (`a_fraccion`, `formatear_valor`, `generar_latex_solucion`
+  movido desde `gauss.py`, helpers HTML) y nuevo `mathrender.py` (LaTeX → QPixmap
+  con matplotlib mathtext; degradación elegante si matplotlib no está).
+- `gauss.py`: nueva `verificar_solucion_detallada()` (términos coef·xⱼ); 
+  `verificar_solucion()` pasa a ser vista resumida de ella.
+- `main.py` / `gui.py` dejan de duplicar `format_number`; fracción por defecto.
+- GUI: el diálogo "Ver análisis y LaTeX" renderiza la solución y la comprobación
+  como imágenes matemáticas; rango/nulidad/forma en lista con signos "?" (tooltips
+  explicativos); botón "Cerrar"; selector Fracción ⇄ Decimal; fuente sin "Segoe UI".
 - Issue #18 (migrar consola a Textual TUI): abierto como investigación, no implementado.
 
 **Feature previa:** Solución Vectorial, Rango, Nulidad, LaTeX y Formas Escalonadas

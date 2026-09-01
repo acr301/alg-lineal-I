@@ -38,19 +38,25 @@ python3 main.py
 - ✓ Solución general vectorial: x = xp + t₁v₁ + ... + tₖvₖ
 - ✓ **Valores en fracción exacta** (`1/3`, `-8/3`) o decimal, con toggle en la GUI
 - ✓ **Comprobación explícita** sustituyendo valores término a término
-- ✓ Notación matemática renderizada en la GUI + código LaTeX (`\frac`) copiable
+- ✓ Notación matemática **renderizada** en la GUI (matplotlib mathtext → imagen):
+  vectores con corchetes, fracciones apiladas; + código LaTeX (`\frac`) copiable
+- ✓ Diálogo de análisis con rango/nulidad explicados (tooltips) y solución renderizada
 - ✓ Interfaz gráfica con PyQt6
 - ✓ Interfaz de consola interactiva (`--decimal` / `--fraccion`)
-- ✓ 35 tests (todos pasan)
-- ✓ Sin NumPy, SymPy ni librerías de AL (ni siquiera `fractions`)
+- ✓ 38 tests (todos pasan)
+- ✓ El **algoritmo** no usa NumPy/SymPy (`gauss.py` no importa nada); matplotlib
+  se usa solo para dibujar la notación matemática, nunca para calcular
 
 ## 🎓 Restricción Deliberada
 
-**NO se usa:** NumPy, SymPy, scipy ni funciones preconstruidas de álgebra lineal.
+**NO se usa** NumPy, SymPy, scipy ni funciones preconstruidas de álgebra lineal
+**para calcular**. `gauss.py` (el algoritmo) y `formato.py` no importan nada.
 
 **POR QUÉ:** El ejercicio exige comprensión profunda. Las librerías son "cajas negras".
 
-**SE USA:** Listas, loops, aritmética básica (Python puro).
+**SE USA:** Listas, loops, aritmética básica (Python puro). `matplotlib` aparece
+solo en `mathrender.py` para convertir LaTeX en imágenes bonitas en la GUI (su
+motor `mathtext`); arrastra NumPy como dependencia suya, que tampoco se usa.
 
 ## 📊 Estado
 
@@ -68,7 +74,7 @@ cd semana2/tarea1
 python3 test_gauss.py     # 21 tests de la lógica pura
 python3 test_formato.py   # 11 tests de fracciones / formato
 python3 test_main.py      # 3 tests de integración de consola
-# Total: 35 tests. O bien: uv run --extra dev pytest
+# Total: 38 tests (test_mathrender se salta si falta matplotlib). O bien: uv run --extra dev pytest
 ```
 
 ## 📁 Estructura
@@ -84,7 +90,8 @@ python3 test_main.py      # 3 tests de integración de consola
 ├── DOCUMENTACION_FEATURE.md   # Detalles extensos
 ├── semana2/tarea1/
 │   ├── gauss.py              # Lógica pura (sin imports)
-│   ├── formato.py            # Presentación: fracciones, notación matemática, LaTeX
+│   ├── formato.py            # Presentación: fracciones, LaTeX (texto), HTML
+│   ├── mathrender.py         # LaTeX -> imagen (matplotlib mathtext) para la GUI
 │   ├── main.py               # Consola
 │   ├── gui.py                # GUI PyQt6
 │   └── test_*.py             # Tests (gauss / formato / main)
@@ -95,6 +102,7 @@ python3 test_main.py      # 3 tests de integración de consola
 
 - **Python:** 3.9+
 - **PyQt6:** 6.6-7 (GUI)
+- **matplotlib:** 3.9+ (render de notación matemática en la GUI; opcional en runtime)
 - **uv:** Gestor de paquetes rápido
 - **unittest:** Tests
 

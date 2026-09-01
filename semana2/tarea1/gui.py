@@ -13,13 +13,12 @@ import sys
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QGuiApplication
-from PyQt6.QtGui import QColor, QPalette
+from PyQt6.QtGui import QColor, QPalette, QPixmap
 from PyQt6.QtWidgets import (
     QApplication,
     QAbstractItemView,
     QComboBox,
     QDialog,
-    QDialogButtonBox,
     QFrame,
     QGridLayout,
     QGroupBox,
@@ -64,15 +63,19 @@ from formato import (
     formatear_valor,
     generar_latex_solucion,
     latex_pmatrix as _pmatrix_latex,
+    latex_valor,
     subindice as _sub,
     var,
     vector_columna_html,
 )
+import mathrender
 
 
 STYLESHEET = """
 QMainWindow { background: #dff7ff; }
-QWidget { color: #153653; font-family: "Avenir Next", "Segoe UI", sans-serif; font-size: 14px; }
+QWidget { color: #153653; font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif; font-size: 14px; }
+QLabel#help { background: #0874a4; color: white; border-radius: 8px; font-weight: 800; font-size: 11px; padding: 0 5px; }
+QLabel#explain { color: #5a7d92; font-size: 12px; }
 QFrame#hero { background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0f8bd5, stop:.56 #39b9e9, stop:1 #b9f6ef); border-bottom: 2px solid #ffffff; }
 QLabel#title { color: white; font-size: 28px; font-weight: 800; }
 QLabel#subtitle { color: #eafcff; font-size: 14px; }
@@ -182,7 +185,9 @@ class GaussWindow(QMainWindow):
         control_layout.addLayout(example_column)
 
         self.notation = QComboBox()
-        self.notation.addItems(["Fracción exacta", "Decimal"])
+        self.notation.addItems(["Fracción", "Decimal"])
+        self.notation.setToolTip("Fracción: recíprocos exactos como 1/2, 1/4, -8/3.\n"
+                                 "Decimal: aproximación con 4 cifras.")
         self.notation.currentIndexChanged.connect(self.on_notation_changed)
         notation_column = QVBoxLayout()
         notation_column.addWidget(QLabel("Notación"))
@@ -257,6 +262,8 @@ class GaussWindow(QMainWindow):
         detail_row = QHBoxLayout()
         self.analysis_button = QPushButton("Ver análisis y LaTeX  ↗")
         self.analysis_button.setObjectName("secondary")
+        self.analysis_button.setToolTip("Abre una ventana con el rango/nulidad explicados, "
+                                        "la solución renderizada y el código LaTeX.")
         self.analysis_button.setEnabled(False)
         self.analysis_button.clicked.connect(self.open_analysis_dialog)
         detail_row.addStretch()
@@ -272,20 +279,138 @@ class GaussWindow(QMainWindow):
         page.addWidget(splitter, 1)
         layout.addWidget(scroll, 1)
 
-    def _build_analysis_widgets(self):
-        """Crea (una sola vez) los widgets del diálogo de análisis y LaTeX."""
-        self.analysis_text = QLabel("Resuelve un sistema para ver el análisis.")
-        self.analysis_text.setWordWrap(True)
-        self.analysis_text.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+    # Explicaciones que aparecen al pasar el ratón por el signo "?" y como
+    # subtítulo en el diálogo de análisis.
+    EXPLICACIONES = {
+        "rango": "Número de filas linealmente independientes de A: cuántas ecuaciones "
+                 "aportan información nueva. Es el número de pivotes de la forma escalonada.",
+        "nulidad": "Dimensión del conjunto de soluciones del sistema homogéneo Ax = 0. "
+                   "Coincide con el número de variables libres (parámetros).",
+        "suma": "Teorema del rango–nulidad: si A tiene n columnas, "
+                "rango(A) + nulidad(A) = n. Sirve de comprobación.",
+        "forma": "REF (escalonada): cada pivote está más a la derecha que el de la fila "
+                 "de arriba y debajo de cada pivote hay ceros. "
+                 "RREF (escalonada reducida): además cada pivote vale 1 y es el único "
+                 "valor no nulo de su columna.",
+    }
 
-        self.latex_render = QLabel("—")
-        self.latex_render.setWordWrap(True)
-        self.latex_render.setTextFormat(Qt.TextFormat.RichText)
-        self.latex_render.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+    def _build_analysis_widgets(self):
+        """Crea (una sola vez) los widgets reutilizables del diálogo."""
+        self.analysis_box = QWidget()
+        self.analysis_layout = QVBoxLayout(self.analysis_box)
+        self.analysis_layout.setContentsMargins(0, 0, 0, 0)
+        self.analysis_layout.setSpacing(10)
+        self.analysis_layout.addWidget(QLabel("Resuelve un sistema para ver el análisis."))
+
+        self.solution_container = QWidget()
+        self.solution_layout = QVBoxLayout(self.solution_container)
+        self.solution_layout.setContentsMargins(2, 2, 2, 2)
+        self.solution_layout.setSpacing(12)
+        self.solution_scroll = QScrollArea()
+        self.solution_scroll.setWidgetResizable(True)
+        self.solution_scroll.setWidget(self.solution_container)
+        self.solution_scroll.setMinimumSize(440, 220)
 
         self.latex_text = QTextEdit()
         self.latex_text.setReadOnly(True)
-        self.latex_text.setMaximumHeight(140)
+        self.latex_text.setMaximumHeight(130)
+
+    @staticmethod
+    def _help_badge(texto):
+        badge = QLabel("?")
+        badge.setObjectName("help")
+        badge.setToolTip(texto)
+        badge.setCursor(Qt.CursorShape.WhatsThisCursor)
+        return badge
+
+    @staticmethod
+    def _clear_layout(layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
+            elif item.layout() is not None:
+                GaussWindow._clear_layout(item.layout())
+                item.layout().deleteLater()
+
+    def _analysis_row(self, titulo, explicacion, clave):
+        fila = QVBoxLayout()
+        fila.setSpacing(1)
+        cabecera = QHBoxLayout()
+        etiqueta = QLabel(f"<b>{titulo}</b>")
+        cabecera.addWidget(etiqueta)
+        cabecera.addWidget(self._help_badge(self.EXPLICACIONES[clave]))
+        cabecera.addStretch()
+        fila.addLayout(cabecera)
+        detalle = QLabel(explicacion)
+        detalle.setObjectName("explain")
+        detalle.setWordWrap(True)
+        fila.addWidget(detalle)
+        return fila
+
+    def _render_analysis(self, rango, nulidad, suma, n, forma_esc):
+        self._clear_layout(self.analysis_layout)
+        forma_txt = {"RREF": "RREF (escalonada reducida)",
+                     "REF": "REF (escalonada)",
+                     "ninguna": "no escalonada"}.get(forma_esc, forma_esc)
+        casa = "✓ coincide con el número de incógnitas" if suma == n else "✗ no coincide"
+        for titulo, explicacion, clave in (
+            (f"Rango(A) = {rango}", "Filas linealmente independientes (nº de pivotes).", "rango"),
+            (f"Nulidad(A) = {nulidad}", "Número de variables libres del sistema.", "nulidad"),
+            (f"Rango + Nulidad = {rango} + {nulidad} = {suma}", f"n = {n} incógnitas · {casa}.", "suma"),
+            (f"Forma escalonada: {forma_txt}", "Cómo quedó la matriz tras la eliminación.", "forma"),
+        ):
+            self.analysis_layout.addLayout(self._analysis_row(titulo, explicacion, clave))
+
+    def _pixmap_label(self, pixmap):
+        etiqueta = QLabel()
+        etiqueta.setPixmap(pixmap)
+        etiqueta.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+        return etiqueta
+
+    def _math_line(self, expr):
+        """QLabel con una expresión matemática renderizada (o texto si no hay matplotlib)."""
+        pixmap = mathrender.latex_a_pixmap(expr) if mathrender.disponible() else None
+        if pixmap is not None:
+            return self._pixmap_label(pixmap)
+        fallback = QLabel(expr)
+        fallback.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        return fallback
+
+    def _render_solution_math(self, payload):
+        """Dibuja la solución (y su comprobación) como notación matemática en el diálogo."""
+        self._clear_layout(self.solution_layout)
+        usar_img = mathrender.disponible()
+
+        if payload["kind"] == "incompatible":
+            self.solution_layout.addWidget(QLabel("El sistema es inconsistente: no hay solución que representar."))
+            return
+
+        fila = QHBoxLayout()
+        fila.setSpacing(6)
+        fila.addWidget(self._math_line(r"\mathbf{x} \;="))
+        if usar_img:
+            fila.addWidget(self._pixmap_label(mathrender.columna_a_pixmap(payload["particular"], MODO_ACTIVO)))
+            for k, vec in enumerate(payload["vectores_nulos"]):
+                fila.addWidget(self._math_line(rf"+\;\; t_{{{k + 1}}}"))
+                fila.addWidget(self._pixmap_label(mathrender.columna_a_pixmap(vec, MODO_ACTIVO)))
+        else:
+            texto = QLabel(self._vector_solution_html(
+                {"particular": payload["particular"], "vectores_nulos": payload["vectores_nulos"]}))
+            texto.setTextFormat(Qt.TextFormat.RichText)
+            fila.addWidget(texto)
+        fila.addStretch()
+        self.solution_layout.addLayout(fila)
+
+        comp = payload.get("comprobacion")
+        if comp:
+            titulo = QLabel(f"<b>{comp['heading']}</b>")
+            self.solution_layout.addWidget(titulo)
+            for expr in comp["lineas"]:
+                self.solution_layout.addWidget(self._math_line(expr))
+        self.solution_layout.addStretch()
 
     def open_analysis_dialog(self):
         """Abre (o trae al frente) la ventana con el análisis y el LaTeX."""
@@ -293,32 +418,36 @@ class GaussWindow(QMainWindow):
             dialog = QDialog(self)
             dialog.setWindowTitle("Análisis avanzado y LaTeX")
             dialog.setStyleSheet(STYLESHEET)
-            dialog.resize(560, 520)
+            dialog.setMinimumWidth(560)
+            dialog.resize(640, 640)
             box = QVBoxLayout(dialog)
 
             rank_group = QGroupBox("Rango, nulidad y forma escalonada")
-            QVBoxLayout(rank_group).addWidget(self.analysis_text)
+            QVBoxLayout(rank_group).addWidget(self.analysis_box)
             box.addWidget(rank_group)
 
-            render_group = QGroupBox("Solución (notación matemática)")
-            QVBoxLayout(render_group).addWidget(self.latex_render)
-            box.addWidget(render_group)
+            render_group = QGroupBox("Solución en notación matemática")
+            QVBoxLayout(render_group).addWidget(self.solution_scroll)
+            box.addWidget(render_group, 1)
 
             code_group = QGroupBox("Código LaTeX (para copiar / pegar en un editor)")
             code_layout = QVBoxLayout(code_group)
             code_layout.addWidget(self.latex_text)
             copy_latex = QPushButton("Copiar LaTeX")
             copy_latex.clicked.connect(self.copy_latex_to_clipboard)
-            row = QHBoxLayout()
-            row.addStretch()
-            row.addWidget(copy_latex)
-            code_layout.addLayout(row)
+            fila_copiar = QHBoxLayout()
+            fila_copiar.addStretch()
+            fila_copiar.addWidget(copy_latex)
+            code_layout.addLayout(fila_copiar)
             box.addWidget(code_group)
 
-            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
-            buttons.rejected.connect(dialog.reject)
-            buttons.accepted.connect(dialog.accept)
-            box.addWidget(buttons)
+            cerrar = QPushButton("Cerrar")
+            cerrar.setObjectName("secondary")
+            cerrar.clicked.connect(dialog.reject)
+            fila_cerrar = QHBoxLayout()
+            fila_cerrar.addStretch()
+            fila_cerrar.addWidget(cerrar)
+            box.addLayout(fila_cerrar)
             self.analysis_dialog = dialog
 
         self.analysis_dialog.show()
@@ -415,16 +544,11 @@ class GaussWindow(QMainWindow):
         rango_nulidad = verificar_rango_nulidad(matrix, n, pivots)
         forma_esc = clasificar_forma_escalonada(matrix, n, pivots)
 
-        analysis_lines = []
-        analysis_lines.append(f"Rango(A): {rango}")
-        analysis_lines.append(f"Nulidad(A): {rango_nulidad['nulidad']}")
-        analysis_lines.append(f"Rango + Nulidad = {rango_nulidad['suma']} (esperado: {n})")
-        analysis_lines.append(f"Forma escalonada: {forma_esc}")
-        self.analysis_text.setText(" | ".join(analysis_lines))
+        self._render_analysis(rango, rango_nulidad["nulidad"], rango_nulidad["suma"], n, forma_esc)
 
         result_lines = []
         self._latex_code = ""
-        self.latex_render.setText("—")
+        payload = {"kind": kind, "particular": [], "vectores_nulos": [], "comprobacion": None}
 
         if kind == "incompatible":
             self.set_status("Sistema inconsistente · no tiene solución", "#ffe6e5", "#9f2520")
@@ -436,13 +560,15 @@ class GaussWindow(QMainWindow):
             self.set_status("Sistema consistente determinado · solución única", "#dff7e7", "#176b46")
             result_lines.append("<b>Solución única</b>")
             result_lines.extend(f"{var(i)} = {format_display(value)}" for i, value in enumerate(solution))
-            result_lines.append(self.verification_html(coefficients, terms, solution))
-            self.latex_text.setPlainText(
-                "\\mathbf{x} = " + _pmatrix_latex(solution)
-            )
-            self.latex_render.setText(
-                "<b>x</b> &nbsp;=&nbsp; " + vector_columna_html(solution, MODO_ACTIVO)
-            )
+            heading = "Comprobación (sustituyendo en el sistema original)"
+            result_lines.append(self.verification_html(coefficients, terms, solution, heading))
+            self._latex_code = "\\mathbf{x} = " + _pmatrix_latex(solution, MODO_ACTIVO)
+            self.latex_text.setPlainText(self._latex_code)
+            payload["particular"] = solution
+            payload["comprobacion"] = {
+                "heading": heading,
+                "lineas": self._verificacion_latex(coefficients, terms, solution),
+            }
         else:
             self.set_status("Sistema consistente indeterminado · infinitas soluciones", "#fff3cf", "#805900")
             reducir_a_escalonada_reducida(matrix, n, pivots, registrar_paso=register)
@@ -462,21 +588,26 @@ class GaussWindow(QMainWindow):
                 result_lines.append(f"{var(variable)} = {expression}")
 
             solucion_vec = solucion_general_vectorial(matrix, n, pivots, free, expressions)
-            result_lines.append("<b>Solución vectorial</b> &nbsp; " + self._vector_solution_html(solucion_vec))
+            result_lines.append("<b>Solución vectorial</b> &nbsp; " + self._solucion_simbolica_html(len(free)))
 
             self._latex_code = generar_latex_solucion(n, free, expressions,
                                                       solucion_vec["particular"],
                                                       solucion_vec["vectores_nulos"], MODO_ACTIVO)
             self.latex_text.setPlainText(self._latex_code)
-            self.latex_render.setText(self._vector_solution_html(solucion_vec))
 
             example_solution = evaluar_solucion_parametrica(n, free, expressions, [0.0] * len(free))
             libres_cero = ", ".join(f"t{_sub(k + 1)} = 0" for k in range(len(free)))
-            result_lines.append(self.verification_html(
-                coefficients, terms, example_solution,
-                f"Comprobación con {libres_cero}"))
+            heading = f"Comprobación con {libres_cero}"
+            result_lines.append(self.verification_html(coefficients, terms, example_solution, heading))
+            payload["particular"] = solucion_vec["particular"]
+            payload["vectores_nulos"] = solucion_vec["vectores_nulos"]
+            payload["comprobacion"] = {
+                "heading": heading,
+                "lineas": self._verificacion_latex(coefficients, terms, example_solution),
+            }
 
         self.result.setText("<br>".join(result_lines))
+        self._render_solution_math(payload)
         self.analysis_button.setEnabled(True)
         self.step_slider.setRange(0, len(self.steps) - 1)
         self.step_slider.setEnabled(True)
@@ -490,6 +621,35 @@ class GaussWindow(QMainWindow):
             piezas.append(f" &nbsp;+&nbsp; t{_sub(k + 1)}")
             piezas.append(vector_columna_html(vec, MODO_ACTIVO))
         return "".join(piezas)
+
+    @staticmethod
+    def _solucion_simbolica_html(num_libres):
+        """Forma simbólica x = x_p + t₁·v₁ + … (el detalle numérico va en el diálogo)."""
+        if num_libres == 0:
+            return ""
+        terminos = " + ".join(f"t<sub>{k + 1}</sub>{POR}v<sub>{k + 1}</sub>"
+                              for k in range(num_libres))
+        return (f"<b>x</b> = <b>x</b><sub>p</sub> + {terminos} &nbsp;"
+                "<span style='color:#5a7d92'>— vectores en «Ver análisis y LaTeX»</span>")
+
+    def _verificacion_latex(self, coefficients, terms, solution):
+        """Lista de expresiones LaTeX (una por ecuación) para la comprobación renderizada."""
+        lineas = []
+        for i, fila in enumerate(verificar_solucion_detallada(coefficients, terms, solution)):
+            activos = [(c, xj, p) for (c, xj, p) in fila["terminos"]
+                       if not valor_casi_cero(c)] or fila["terminos"][:1]
+            partes = []
+            for k, (c, xj, _p) in enumerate(activos):
+                signo = "" if k == 0 else ("+ " if c >= 0 else "- ")
+                coef = latex_valor(abs(c) if k else c, MODO_ACTIVO)
+                partes.append(rf"{signo}{coef} \cdot ({latex_valor(xj, MODO_ACTIVO)})")
+            rel = "=" if fila["coincide"] else r"\neq"
+            lineas.append(
+                rf"\mathrm{{E}}_{{{i + 1}}}:\;\; " + " ".join(partes)
+                + rf" \;=\; {latex_valor(fila['suma'], MODO_ACTIVO)}"
+                + rf" \;{rel}\; {latex_valor(fila['esperado'], MODO_ACTIVO)}"
+            )
+        return lineas
 
     def verification_html(self, coefficients, terms, solution, heading="Comprobación (sustituyendo en el sistema original)"):
         """Demostración de la comprobación término a término (issue #16)."""
@@ -552,6 +712,11 @@ class GaussWindow(QMainWindow):
         self.result.setText("El resultado aparecerá aquí.")
         if hasattr(self, "analysis_button"):
             self.analysis_button.setEnabled(False)
+            self._latex_code = ""
+            self.latex_text.setPlainText("")
+            self._clear_layout(self.analysis_layout)
+            self.analysis_layout.addWidget(QLabel("Resuelve un sistema para ver el análisis."))
+            self._clear_layout(self.solution_layout)
         self.set_status("Matriz actualizada · lista para resolver", "#dff7e7", "#176b46")
 
     def set_status(self, text, background, foreground):

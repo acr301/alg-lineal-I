@@ -26,6 +26,13 @@ pendiente de PR/merge.
   `test_gauss.py`. Suite: 35 tests en verde (`uv run --extra dev pytest`).
 - [x] Documentación actualizada (`README.md`, `AGENTS.md`, `docs/ARQUITECTURA.md`,
   `docs/ALGORITMO.md`).
+- [x] **2ª iteración (feedback):** render real de LaTeX con `mathrender.py`
+  (matplotlib mathtext → `QPixmap`); el diálogo "Ver análisis y LaTeX" ahora
+  muestra la solución y la comprobación como imágenes matemáticas. Rango/nulidad/
+  forma en lista con signos `?` (tooltips explicativos). Botón "Cerrar". Fuente sin
+  "Segoe UI" (quitaba el warning de Qt en macOS). `matplotlib` añadido a
+  `pyproject.toml` (solo render; `gauss.py`/`formato.py` siguen sin imports).
+  Degradación elegante si matplotlib no está (`mathrender.disponible()`).
 - [ ] Abrir PR y mergear a `main` (pendiente de confirmación del usuario).
 
 ## Notes
