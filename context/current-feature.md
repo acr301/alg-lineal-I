@@ -1,16 +1,38 @@
-# Current Feature
+# Current Feature: LaTeX renderizado, verificación explícita y fracciones
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- goals go here -->
+- [ ] **Notación matemática renderizada en la GUI (#15).** Que la solución, los
+  vectores y la matriz se muestren como notación compuesta (corchetes, subíndices
+  reales, fracciones apiladas) con rich-text de Qt (sin dependencias nuevas). El
+  código LaTeX pasa a ser acción secundaria en un `QDialog` aparte y el panel
+  "3 · Proceso y resultado" queda descongestionado.
+- [ ] **Demostración de la comprobación sustituyendo valores (#16).** Nueva función
+  pura `verificar_solucion_detallada()` en `gauss.py` que expone los términos
+  `coef·xᵢ`; consola y GUI muestran `1·(5) + 1·(3) + 1·(-2) = 5 + 3 − 2 = 6`.
+- [ ] **Matriz en fracción exacta en el paso a paso y tablas (#17).** Módulo de
+  presentación `formato.py` con `a_fraccion()` / `formatear_valor()` implementados a
+  mano (Euclides, sin `fractions`). Matriz, pasos, forma final, vectores y
+  verificación se ven en fracción por defecto, con toggle Fracción/Decimal en la GUI.
+- [ ] `main.py` y `gui.py` dejan de duplicar `format_number`; usan `formato.py`.
+- [ ] Tests nuevos (`test_formato.py`, casos en `test_gauss.py`) y suite existente en verde.
+- [ ] Documentación actualizada (`README.md`, `AGENTS.md`, `docs/ARQUITECTURA.md`,
+  `docs/ALGORITMO.md`, `DOCUMENTACION_FEATURE.md`).
 
 ## Notes
 
-<!-- notes go here -->
+- Issues: #15 (LaTeX renderizado + declutter), #16 (verificación sustituyendo
+  valores), #17 (fracciones), #18 (migración a Textual TUI — solo issue/investigación,
+  no se implementa en esta rama).
+- Rama: `fix/latex-renderizado-fracciones-verificacion`.
+- Restricción vigente: `gauss.py` sin librerías externas ni stdlib. El helper de
+  fracciones vive en `formato.py` (capa de presentación) y también evita `import`
+  para mantener el espíritu del ejercicio.
+- El algoritmo sigue trabajando en `float`; las fracciones son solo presentación.
 
 ## History
 
