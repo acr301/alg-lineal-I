@@ -1,86 +1,16 @@
-# Current Feature: LaTeX renderizado, verificación explícita y fracciones
+# Current Feature
 
 ## Status
 
-In Progress — implementado en `fix/latex-renderizado-fracciones-verificacion`,
-pendiente de PR/merge.
+Not Started
 
 ## Goals
 
-- [x] **Notación matemática renderizada en la GUI (#15).** Resultado con subíndices
-  `x₁`, signo `−`, `·` y vectores columna entre corchetes (rich-text de Qt, sin
-  dependencias). Análisis de rango/nulidad y código LaTeX movidos a un `QDialog`
-  ("Ver análisis y LaTeX ↗"); el panel "3 · Proceso y resultado" queda más limpio.
-- [x] **Demostración de la comprobación sustituyendo valores (#16).**
-  `verificar_solucion_detallada()` en `gauss.py` expone los términos `coef·xⱼ`;
-  consola y GUI muestran `1·(5) + 1·(3) + 1·(-2) = 5 + 3 − 2 = 6 = 6`.
-  `verificar_solucion()` pasa a ser vista resumida de la detallada.
-- [x] **Matriz en fracción exacta en el paso a paso y tablas (#17).** `formato.py`
-  con `a_fraccion()` (fracción continua) / `mcd()` (Euclides) / `formatear_valor()`,
-  sin `import`. Matriz, pasos, forma final, vectores y verificación en fracción por
-  defecto; toggle "Fracción ⇄ Decimal" en la GUI y `--decimal/--fraccion` en consola.
-- [x] `main.py` y `gui.py` dejan de duplicar `format_number`; usan `formato.py`.
-  `generar_latex_solucion()` movida de `gauss.py` a `formato.py` (usa `\frac`;
-  corregido el bug que borraba los ceros de `x_p`).
-- [x] Tests nuevos: `test_formato.py` (11) + `TestVerificarSolucionDetallada` en
-  `test_gauss.py`. Suite: 35 tests en verde (`uv run --extra dev pytest`).
-- [x] Documentación actualizada (`README.md`, `AGENTS.md`, `docs/ARQUITECTURA.md`,
-  `docs/ALGORITMO.md`).
-- [x] **2ª iteración (feedback):** render real de LaTeX con `mathrender.py`
-  (matplotlib mathtext → `QPixmap`); el diálogo "Ver análisis y LaTeX" ahora
-  muestra la solución y la comprobación como imágenes matemáticas. Rango/nulidad/
-  forma en lista con signos `?` (tooltips explicativos). Botón "Cerrar". Fuente sin
-  "Segoe UI" (quitaba el warning de Qt en macOS). `matplotlib` añadido a
-  `pyproject.toml` (solo render; `gauss.py`/`formato.py` siguen sin imports).
-  Degradación elegante si matplotlib no está (`mathrender.disponible()`).
-- [x] **3ª iteración (feedback):**
-  - GUI reescrita como paquete `ui/` con flujo de 5 pantallas (menú, dimensiones,
-    entrada guiada término a término, proceso, solución vectorial), navegable con
-    teclado (Enter/Esc/←→/F1). `gui.py` queda como shim.
-  - El multiplicador de cada paso se muestra como fracción: `gauss.escalonar` /
-    `reducir_a_escalonada_reducida` aceptan `formato_numero`; lo usan `ui/state.py`
-    y `main.py`.
-  - `mathrender.matriz_a_pixmap()` para render de matrices; los pasos y la
-    solución vectorial se ven renderizados. Sin matplotlib no se muestra LaTeX
-    crudo (cae a texto/HTML); aviso al arrancar + docs piden `uv run python gui.py`.
-  - Tooltips con `QToolButton` (funcionan con ratón y teclado). Fuente elegida por
-    código → sin warning "missing font family".
-  - Código LaTeX oculto tras "Ver sintaxis LaTeX" en la última pantalla; la
-    comprobación ya no se repite ahí (está en "Proceso y resultado").
-- [x] **4ª iteración (feedback):**
-  - Rama renombrada a `feature/gui-multipantalla-y-notacion-matematica`.
-  - Contenido de todas las pantallas en una columna centrada (máx. 820 px), no de
-    borde a borde; encabezados centrados.
-  - Menú: la info (autores/licencia/repo/método) baja a un pie pequeño.
-    **Autores: Andrés Castillo y Fátima Zogaib (Grupo 7)** (también en `pyproject`).
-  - Bug corregido: Enter elegía nada en las listas del menú →
-    `ui/widgets.ListaOpciones` (emite en Return/Enter, no sólo `itemActivated`).
-  - Elegir un ejemplo salta directo a "Proceso y resultado" (`sesion.origen`);
-    "Atrás" desde ahí vuelve al menú.
-  - Entrada de términos: campo estrecho y centrado (no de lado a lado).
-  - **ADR-0001** (`docs/ADR-0001-entrada-numerica.md`): `formato.normalizar_entrada`
-    ajusta lo tecleado a una fracción tidy (den ≤ 64) o a 4 decimales; el mismo
-    tope rige qué se muestra como fracción. `6.3333`, `19/3` ⇒ `19/3`; `6.33` ⇒ `6.33`.
-- [x] **PR #21 abierto** contra `main` (rama pusheada). Issues nuevos: #19
-  (rework de la GUI), #20 (ADR-0001). Cierra #15, #16, #17, #19, #20. Cerrados
-  como stale (resueltos en PR #12 mergeado): #9, #10, #11.
-- [x] **Bug #22** (sobre el mismo PR): la GUI reventaba al hacer doble clic en
-  "Ejemplo rápido" (doble señal `itemActivated`+`itemDoubleClicked` → el 2º
-  handler recibía un item ya borrado). Fix en `ui/widgets.ListaOpciones` (solo
-  `itemActivated`, emitir una vez) y `PantallaMenu._activar` (tolera item
-  None/borrado). Regresión en `test_ui.py`. 44 tests.
-- [ ] Mergear PR #21 a `main` (tras PR #14 idealmente).
+<!-- goals go here -->
 
 ## Notes
 
-- Issues: #15 (LaTeX renderizado + declutter), #16 (verificación sustituyendo
-  valores), #17 (fracciones), #18 (migración a Textual TUI — solo issue/investigación,
-  no se implementa en esta rama).
-- Rama: `fix/latex-renderizado-fracciones-verificacion`.
-- Restricción vigente: `gauss.py` sin librerías externas ni stdlib. El helper de
-  fracciones vive en `formato.py` (capa de presentación) y también evita `import`
-  para mantener el espíritu del ejercicio.
-- El algoritmo sigue trabajando en `float`; las fracciones son solo presentación.
+<!-- notes go here -->
 
 ## History
 
@@ -120,3 +50,42 @@ determinado / indeterminado con solución paramétrica / incompatible), e incluy
 (`test_gauss.py`) para la lógica pura. Mergeado a `main` (rama
 `feature/eliminacion-gaussiana-interactiva` eliminada). Pendiente: interfaz gráfica con
 PyQt (fuera de alcance de este feature).
+
+### Migración a uv (raíz del repo)
+
+`pyproject.toml` + `uv.lock` versionados; documentación agnóstica de herramienta.
+Cierra acr301/alg-lineal-I#13. Mergeado a `main` vía PR #14 (`67ae726`), rama
+`chore/docs-y-migracion-a-uv` eliminada.
+
+### Notación matemática renderizada y rediseño de la GUI por pantallas (semana2/tarea1)
+
+- **Presentación** (`formato.py`, sin imports): `a_fraccion()` (fracción continua +
+  Euclides), `formatear_valor(v, modo)` (fracción vs decimal, tope de denominador 64),
+  `normalizar_entrada()` (ADR-0001: lo tecleado se ajusta a fracción tidy o a 4
+  decimales), `generar_latex_solucion()` (con `\frac`), `texto/latex_verificacion()`,
+  helpers HTML.
+- **`gauss.py`**: `verificar_solucion_detallada()` (términos `coef·xⱼ` para la
+  comprobación; `verificar_solucion()` queda como vista resumida). `escalonar` y
+  `reducir_a_escalonada_reducida` aceptan `formato_numero` → el multiplicador de cada
+  paso sale como fracción (`F2 ← F2 − (1/2)·F1`).
+- **`mathrender.py`**: LaTeX → `QPixmap` con matplotlib mathtext (`latex_a_pixmap`,
+  `columna_a_pixmap`, `matriz_a_pixmap`); degrada a texto/HTML si falta matplotlib
+  (nunca muestra LaTeX crudo). `matplotlib` en `pyproject.toml` solo como render.
+- **GUI reescrita en `ui/`** (paquete, una pantalla por archivo, `QStackedWidget`):
+  menú → dimensiones y notación → entrada guiada término a término → proceso y
+  resultado (pasos protagonistas + solución + comprobación + análisis) → solución
+  vectorial (código LaTeX oculto tras "Ver sintaxis LaTeX"). Navegable sin ratón
+  (Enter/Esc/←→/F1). Contenido en columna centrada; info de la app en un pie.
+  `gui.py` es un shim → `ui.app.main`. `ui/state.py:Sesion` es el único punto de la
+  GUI que llama a `gauss.py`.
+- **ADR-0001** en `docs/ADR-0001-entrada-numerica.md`.
+- Bugs de UI: `qt.qpa.fonts` "Segoe UI" (fuente elegida por código), tooltips
+  (`QToolButton`), y #22 (crash al doble clic en "Ejemplo rápido" del menú →
+  `ui/widgets.ListaOpciones` + guarda en `_activar`).
+- Autores: **Andrés Castillo y Fátima Zogaib (Grupo 7)**.
+- Tests: `test_formato.py`, `test_mathrender.py`, `test_ui.py` nuevos; 44 en verde.
+- Mergeado a `main` vía PR #21 (`be2d169`). Cierra #15, #16, #17, #19, #20, #22.
+  Ramas `feature/gui-multipantalla-y-notacion-matematica` y
+  `fix/latex-renderizado-fracciones-verificacion` eliminadas.
+- Cerrados como stale (resueltos en PR #12 mergeado): #9, #10, #11.
+- Pendiente (fuera de alcance): #18 (migración de la consola a Textual TUI), #4.
