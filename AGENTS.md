@@ -100,7 +100,7 @@ solución vectorial), navegable **sin ratón**: Enter avanza, Esc retrocede,
 
 ### Al Completar
 
-- [ ] Tests verdes (38 tests deben pasar)
+- [ ] Tests verdes (41 tests deben pasar)
 - [ ] Actualizar `context/current-feature.md`
 - [ ] Commits lógicos (no squash a menos que se pida)
 - [ ] Crear PR mencionando issues relacionados
@@ -182,7 +182,7 @@ solución vectorial), navegable **sin ratón**: Enter avanza, Esc retrocede,
 ## 📊 Métricas Actuales
 
 - **Líneas de código:** ~1000 (gauss.py, formato.py, gui.py, main.py)
-- **Tests:** 38 (todos pasan) — test_gauss (21), test_formato (11), test_main (3), test_mathrender (3)
+- **Tests:** 41 (todos pasan) — test_gauss (21), test_formato (11), test_main (3), test_mathrender (3)
 - **Cobertura:** Lógica principal y capa de formato cubiertas
 - **Estado:** Feature completada y mergeada
 

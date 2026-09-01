@@ -15,6 +15,7 @@ from formato import (
     generar_latex_solucion,
     latex_valor,
     mcd,
+    normalizar_entrada,
 )
 
 
@@ -65,6 +66,28 @@ class TestFormatearValor(unittest.TestCase):
 
     def test_irracional_cae_a_decimal_en_modo_fraccion(self):
         self.assertEqual(formatear_valor(2 ** 0.5, MODO_FRACCION), "1.4142")
+
+
+class TestNormalizarEntrada(unittest.TestCase):
+    """ADR-0001: distintas formas de teclear la misma cantidad convergen."""
+
+    def _frac(self, v):
+        return formatear_valor(normalizar_entrada(v), MODO_FRACCION)
+
+    def test_aproximaciones_de_una_fraccion_convergen(self):
+        self.assertEqual(self._frac(6.3333), "19/3")
+        self.assertEqual(self._frac(6.333333333), "19/3")
+        self.assertEqual(self._frac(19 / 3), "19/3")
+        self.assertEqual(self._frac(0.3333), "1/3")
+
+    def test_decimales_sin_fraccion_tidy_se_redondean_a_4(self):
+        self.assertEqual(self._frac(6.33), "6.33")            # 633/100: den > 64
+        self.assertEqual(self._frac(0.333), "0.333")          # a más de 1e-4 de 1/3
+        self.assertEqual(normalizar_entrada(2 ** 0.5), 1.4142)
+
+    def test_enteros_y_fracciones_pequenas_intactos(self):
+        self.assertEqual(normalizar_entrada(5.0), 5.0)
+        self.assertEqual(self._frac(-2.5), "-5/2")
 
 
 class TestLatex(unittest.TestCase):

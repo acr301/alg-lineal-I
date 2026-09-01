@@ -47,7 +47,7 @@ uv run python main.py
 - ✓ GUI por pantallas (menú → dimensiones → entrada guiada → proceso → vector), teclado-first
 - ✓ Análisis de rango/nulidad/forma en lista con explicaciones y ayudas `?`
 - ✓ Interfaz de consola interactiva (`--decimal` / `--fraccion`)
-- ✓ 38 tests (todos pasan)
+- ✓ 41 tests (todos pasan)
 - ✓ El **algoritmo** no usa NumPy/SymPy (`gauss.py` no importa nada); matplotlib
   se usa solo para dibujar la notación matemática, nunca para calcular
 
@@ -78,7 +78,7 @@ cd semana2/tarea1
 python3 test_gauss.py     # 21 tests de la lógica pura
 python3 test_formato.py   # 11 tests de fracciones / formato
 python3 test_main.py      # 3 tests de integración de consola
-# Total: 38 tests (test_mathrender se salta si falta matplotlib). O bien: uv run --extra dev pytest
+# Total: 41 tests (test_mathrender se salta si falta matplotlib). O bien: uv run --extra dev pytest
 ```
 
 ## 📁 Estructura
