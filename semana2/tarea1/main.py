@@ -18,14 +18,19 @@ Uso:
 
 from gauss import (
     clasificar,
+    clasificar_forma_escalonada,
     copiar_matriz,
     crear_matriz_aumentada,
     escalonar,
     evaluar_solucion_parametrica,
+    generar_latex_solucion,
+    rango_matriz,
     reducir_a_escalonada_reducida,
+    solucion_general_vectorial,
     solucion_parametrica,
     sustitucion_regresiva,
     valor_casi_cero,
+    verificar_rango_nulidad,
     verificar_solucion,
 )
 
@@ -142,6 +147,17 @@ def resolver_sistema(coeficientes, terminos, n):
 
     tipo = clasificar(matriz, n, columnas_pivote)
 
+    # Información sobre rango, nulidad y forma escalonada
+    rango = rango_matriz(matriz, n)
+    info_rango_nulidad = verificar_rango_nulidad(matriz, n, columnas_pivote)
+    forma_esc = clasificar_forma_escalonada(matriz, n, columnas_pivote)
+
+    print("\n--- Análisis de la matriz ---")
+    print(f"Rango(A): {rango}")
+    print(f"Nulidad(A) (variables libres): {info_rango_nulidad['nulidad']}")
+    print(f"Verificación rango-nulidad: {rango} + {info_rango_nulidad['nulidad']} = {info_rango_nulidad['suma']} (esperado: {n})")
+    print(f"Forma escalonada: {forma_esc}")
+
     print("\n--- Clasificación del sistema ---")
     if tipo == "incompatible":
         print("Sistema INCONSISTENTE: no tiene solución.")
@@ -188,6 +204,22 @@ def resolver_sistema(coeficientes, terminos, n):
                     indice_parametro = libres.index(indice_libre) + 1
                     texto += f" {signo} {formatear_numero(abs(coef))}*t{indice_parametro}"
                 print(f"  x{v + 1} = {texto}")
+
+        # Solución vectorial
+        print("\n--- Solución general vectorial ---")
+        solucion_vec = solucion_general_vectorial(matriz, n, columnas_pivote, libres, expresiones)
+        print("x = xp + t1*v1 + t2*v2 + ... + tk*vk")
+        print("\nDonde:")
+        print("xp (solución particular) =", [f"{formatear_numero(v)}" for v in solucion_vec["particular"]])
+        for k, vec in enumerate(solucion_vec["vectores_nulos"]):
+            print(f"v{k + 1} =", [f"{formatear_numero(v)}" for v in vec])
+
+        # LaTeX de la solución
+        print("\n--- Código LaTeX (para copiar) ---")
+        latex_code = generar_latex_solucion(n, libres, expresiones,
+                                             solucion_vec["particular"],
+                                             solucion_vec["vectores_nulos"])
+        print(latex_code)
 
         valores_ejemplo = [0.0] * len(libres)
         x_ejemplo = evaluar_solucion_parametrica(n, libres, expresiones, valores_ejemplo)
