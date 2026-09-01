@@ -20,24 +20,35 @@ from formato import MODO_FRACCION
 
 
 class ListaOpciones(QListWidget):
-    """QListWidget que emite ``elegido`` con Enter/Return (además del doble clic).
+    """QListWidget que emite ``elegido`` una sola vez por gesto, con Enter/Return
+    o con doble clic.
 
-    En macOS ``itemActivated`` no siempre se dispara con Enter; esto lo arregla."""
+    En macOS ``itemActivated`` no se dispara con Enter (de ahí ``keyPressEvent``).
+    NO se conecta ``itemDoubleClicked`` además de ``itemActivated``: haría que un
+    doble clic emitiera dos veces, y si el primer handler repuebla la lista el
+    segundo recibe un item ya borrado (``None``) -> AttributeError."""
 
     elegido = pyqtSignal(object)  # el QListWidgetItem seleccionado
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.itemActivated.connect(self.elegido.emit)
-        self.itemDoubleClicked.connect(self.elegido.emit)
+        self._emitiendo = False
+        self.itemActivated.connect(self._emitir)
+
+    def _emitir(self, item):
+        if item is None or self._emitiendo:
+            return
+        self._emitiendo = True
+        try:
+            self.elegido.emit(item)
+        finally:
+            self._emitiendo = False
 
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            item = self.currentItem()
-            if item is not None:
-                self.elegido.emit(item)
-                return
+            self._emitir(self.currentItem())
+            return
         super().keyPressEvent(event)
 
 

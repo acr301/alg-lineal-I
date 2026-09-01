@@ -12,9 +12,11 @@ import unittest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 try:
-    from PyQt6.QtGui import QGuiApplication
+    # QApplication (no QGuiApplication) para poder coexistir con test_ui.py, que
+    # necesita widgets.
+    from PyQt6.QtWidgets import QApplication
 
-    _APP = QGuiApplication.instance() or QGuiApplication([])
+    _APP = QApplication.instance() or QApplication([])
     import mathrender
 
     _LISTO = mathrender.disponible()

@@ -75,7 +75,15 @@ class PantallaMenu(PantallaBase):
     # -- eventos ---------------------------------------------------------- #
 
     def _activar(self, item):
-        texto = item.text()
+        # Un gesto que repuebla la lista (p. ej. doble clic en "Ejemplo rápido")
+        # puede reinvocar este handler con un item ya borrado: Qt lo entrega como
+        # None o como un wrapper de C++ inválido. En ambos casos, no hacer nada.
+        try:
+            texto = item.text() if item is not None else None
+        except RuntimeError:
+            texto = None
+        if texto is None:
+            return
         if self._modo == _PRINCIPAL:
             if texto.startswith("Iniciar"):
                 self.sesion.iniciar_manual()

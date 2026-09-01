@@ -69,7 +69,7 @@ uv run python main.py     # --decimal / --fraccion para cambiar la notación
 ```bash
 # Desde la raíz del repo (deben pasar):
 uv run --extra dev pytest
-# Salida esperada: 41 passed
+# Salida esperada: 44 passed
 ```
 
 ## 5️⃣ Entender la Estructura (3 minutos)
@@ -89,7 +89,7 @@ semana2/tarea1/
 │   ├── theme.py          estilo, paleta, fuente
 │   ├── widgets.py        PantallaBase, MatrizGrid, navegación, ayudas
 │   └── screen_*.py       menú, dimensiones, entrada, proceso, resultado
-└── test_*.py         ← TESTS (gauss 21 · formato 14 · mathrender 3 · main 3)
+└── test_*.py         ← TESTS (gauss 21 · formato 14 · mathrender 3 · ui 3 · main 3)
 ```
 
 ## 🚫 Restricción Crítica
@@ -122,7 +122,7 @@ vim semana2/tarea1/gauss.py
 # (No modifiques aún, solo lee)
 
 # 5. Corre los tests
-python3 test_gauss.py  # Debe pasar
+uv run --extra dev pytest  # Debe pasar
 ```
 
 ## ✅ Checklist: "Estoy Listo"
@@ -130,7 +130,7 @@ python3 test_gauss.py  # Debe pasar
 - [ ] He instalado uv y ejecutado `uv sync`
 - [ ] He ejecutado la GUI sin errores
 - [ ] He visto los 3 casos de prueba ejemplo
-- [ ] He corrido todos los tests (21 pass)
+- [ ] He corrido todos los tests (44 pass)
 - [ ] He leído `docs/PROYECTO.md`
 - [ ] Sé dónde está la lógica (`gauss.py`)
 - [ ] Entiendo la restricción: sin NumPy

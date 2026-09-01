@@ -131,7 +131,7 @@ uv run --extra dev pytest
 # test_infinitas_soluciones ... ok
 # test_sin_solucion ... ok
 # ...
-# 41 passed
+# 44 passed
 # OK
 ```
 

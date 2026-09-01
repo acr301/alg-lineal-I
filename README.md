@@ -47,7 +47,7 @@ uv run python main.py
 - ✓ GUI por pantallas (menú → dimensiones → entrada guiada → proceso → vector), teclado-first
 - ✓ Análisis de rango/nulidad/forma en lista con explicaciones y ayudas `?`
 - ✓ Interfaz de consola interactiva (`--decimal` / `--fraccion`)
-- ✓ 41 tests (todos pasan)
+- ✓ 44 tests (todos pasan)
 - ✓ El **algoritmo** no usa NumPy/SymPy (`gauss.py` no importa nada); matplotlib
   se usa solo para dibujar la notación matemática, nunca para calcular
 
@@ -68,19 +68,21 @@ motor `mathtext`); arrastra NumPy como dependencia suya, que tampoco se usa.
 - ✅ Feature 2: Verificación de soluciones
 - ✅ Feature 3: Solución vectorial, rango, nulidad, LaTeX, formas
 - ✅ Chore: Migración a `uv`
-- 🔄 Fix: LaTeX renderizado, comprobación explícita y fracciones (issues #15/#16/#17)
+- 🔄 Feature (PR #21): notación matemática renderizada + rediseño de la GUI por
+  pantallas (issues #15/#16/#17/#19/#20, bug #22)
 - 📋 Issue #18: migración de la consola a Textual TUI (propuesta)
 
 ## 🧪 Tests
 
 ```bash
 # Desde la raíz del repo:
-uv run --extra dev pytest        # 41 tests (test_mathrender se salta si falta matplotlib)
+uv run --extra dev pytest        # 44 tests (test_mathrender/test_ui se saltan sin PyQt/matplotlib)
 ```
 
 - `test_gauss.py` — lógica pura (21)
 - `test_formato.py` — fracciones, normalización de entrada, LaTeX (14)
 - `test_mathrender.py` — render de LaTeX a imagen (3)
+- `test_ui.py` — humo de la GUI / regresión del menú (3)
 - `test_main.py` — integración de consola (3)
 
 ## 📁 Estructura

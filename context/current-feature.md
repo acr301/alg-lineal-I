@@ -61,7 +61,15 @@ pendiente de PR/merge.
   - **ADR-0001** (`docs/ADR-0001-entrada-numerica.md`): `formato.normalizar_entrada`
     ajusta lo tecleado a una fracción tidy (den ≤ 64) o a 4 decimales; el mismo
     tope rige qué se muestra como fracción. `6.3333`, `19/3` ⇒ `19/3`; `6.33` ⇒ `6.33`.
-- [ ] Abrir PR y mergear a `main` (pendiente de confirmación del usuario).
+- [x] **PR #21 abierto** contra `main` (rama pusheada). Issues nuevos: #19
+  (rework de la GUI), #20 (ADR-0001). Cierra #15, #16, #17, #19, #20. Cerrados
+  como stale (resueltos en PR #12 mergeado): #9, #10, #11.
+- [x] **Bug #22** (sobre el mismo PR): la GUI reventaba al hacer doble clic en
+  "Ejemplo rápido" (doble señal `itemActivated`+`itemDoubleClicked` → el 2º
+  handler recibía un item ya borrado). Fix en `ui/widgets.ListaOpciones` (solo
+  `itemActivated`, emitir una vez) y `PantallaMenu._activar` (tolera item
+  None/borrado). Regresión en `test_ui.py`. 44 tests.
+- [ ] Mergear PR #21 a `main` (tras PR #14 idealmente).
 
 ## Notes
 

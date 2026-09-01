@@ -70,7 +70,7 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
   `formato_numero` en `escalonar` (multiplicador de cada paso como fracción).
 - GUI reescrita en `ui/` como flujo de 5 pantallas navegable con teclado.
 - ADR-0001: normalización de la entrada numérica.
-- Cierra issues #15, #16, #17 (y los nuevos de rework/ADR). 41 tests.
+- PR #21. Cierra #15, #16, #17, #19 (rework), #20 (ADR), #22 (bug doble clic). 44 tests.
 
 ### 📋 Planificado (Futura)
 
@@ -87,7 +87,7 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
 | Métrica | Valor |
 |---------|-------|
 | Líneas de código | ~1600 (con `ui/`) |
-| Tests | 41 (100% pass) |
+| Tests | 44 (100% pass) |
 | Restricción sin librerías (algoritmo) | ✓ Cumplida |
 | Documentación | ✓ Completa |
 | GUI funcional | ✓ Sí (flujo de pantallas, teclado-first) |
@@ -140,18 +140,15 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
 
 ## 🧪 Testing
 
-- **test_gauss.py**: 18 tests unitarios
-  - Sistemas determinados
-  - Sistemas indeterminados
-  - Sistemas inconsistentes
-  - Rango y nulidad
-  - Formas escalonadas
-  - Solución vectorial
+- **test_gauss.py** (21): lógica pura — sistemas determinados/indeterminados/
+  inconsistentes, rango y nulidad, formas escalonadas, solución vectorial,
+  comprobación detallada.
+- **test_formato.py** (14): fracciones, `normalizar_entrada` (ADR-0001), LaTeX.
+- **test_mathrender.py** (3): render de LaTeX a imagen (se salta sin matplotlib).
+- **test_ui.py** (3): humo de la GUI + regresión del menú (se salta sin PyQt6).
+- **test_main.py** (3): flujo completo de consola.
 
-- **test_main.py**: 3 tests de integración
-  - Flujo completo consola
-
-**Ejecución:** `python3 test_gauss.py && python3 test_main.py`
+**Ejecución:** `uv run --extra dev pytest` (44 passed)
 
 ## 👥 Colaboradores
 
@@ -181,6 +178,6 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
 
 ---
 
-**Última actualización:** 2026-08-31  
+**Última actualización:** 2026-09-01  
 **Versión del proyecto:** 1.0.0  
-**Estatus:** En desarrollo activo (Feature 3 mergeada, Feature 4 en progreso)
+**Estatus:** En desarrollo activo (PR #14 uv y PR #21 notación/GUI en revisión)
