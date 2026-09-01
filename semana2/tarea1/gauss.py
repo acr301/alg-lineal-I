@@ -259,3 +259,223 @@ def verificar_solucion(coeficientes, terminos_independientes, x):
         coincide = valor_casi_cero(valor_calculado - b_i)
         resultados.append((valor_calculado, b_i, coincide))
     return resultados
+
+
+def rango_matriz(matriz, n_incognitas):
+    """
+    Calcula el rango de una matriz (número de filas no nulas o número de
+    pivotes). La matriz debe estar en forma escalonada.
+    """
+    rango = 0
+    for fila in matriz:
+        tiene_pivote = any(not valor_casi_cero(fila[col]) for col in range(n_incognitas))
+        if tiene_pivote:
+            rango += 1
+    return rango
+
+
+def verificar_rango_nulidad(matriz, n_incognitas, columnas_pivote):
+    """
+    Verifica el teorema del rango-nulidad: Rango(A) + Nulidad(A) = n.
+
+    Devuelve un diccionario con:
+      - rango: número de pivotes
+      - nulidad: número de variables libres
+      - suma: rango + nulidad
+      - es_valido: True si suma == n_incognitas
+    """
+    rango = len(columnas_pivote)
+    nulidad = n_incognitas - rango
+    suma = rango + nulidad
+
+    return {
+        "rango": rango,
+        "nulidad": nulidad,
+        "suma": suma,
+        "es_valido": suma == n_incognitas
+    }
+
+
+def es_forma_escalonada(matriz, n_incognitas, columnas_pivote):
+    """
+    Verifica si una matriz está en forma escalonada por filas (REF).
+    Condiciones:
+      1. Las filas nulas están al final.
+      2. En cada fila no nula, el pivote está a la derecha del pivote de la fila anterior.
+      3. Los pivotes no tienen que ser 1, ni ser los únicos valores no nulos en su columna.
+    """
+    if not columnas_pivote:
+        # Sin pivotes: todas las filas deben ser nulas
+        return all(all(valor_casi_cero(v) for v in fila[:n_incognitas])
+                   for fila in matriz)
+
+    # Verificar que hay exactamente len(columnas_pivote) filas no nulas
+    num_filas_nulas = 0
+    for fila in matriz:
+        if all(valor_casi_cero(v) for v in fila[:n_incognitas]):
+            num_filas_nulas += 1
+
+    num_filas_no_nulas = len(matriz) - num_filas_nulas
+
+    # Si hay distinto número de filas no nulas que pivotes, algo está mal
+    if num_filas_no_nulas != len(columnas_pivote):
+        return False
+
+    # Verificar que las filas nulas están al final
+    primera_fila_nula = -1
+    for i, fila in enumerate(matriz):
+        es_nula = all(valor_casi_cero(v) for v in fila[:n_incognitas])
+        if es_nula and primera_fila_nula == -1:
+            primera_fila_nula = i
+        elif not es_nula and primera_fila_nula != -1:
+            return False
+
+    # Verificar que los pivotes están en orden (columna creciente)
+    # y que cada pivote realmente existe en su posición
+    for i in range(len(columnas_pivote)):
+        if i > 0 and columnas_pivote[i] <= columnas_pivote[i - 1]:
+            return False
+        # Verificar que la fila i tiene un pivote no nulo en columnas_pivote[i]
+        if valor_casi_cero(matriz[i][columnas_pivote[i]]):
+            return False
+
+    return True
+
+
+def es_forma_escalonada_reducida(matriz, n_incognitas, columnas_pivote):
+    """
+    Verifica si una matriz está en forma escalonada reducida por filas (RREF).
+    Condiciones (además de REF):
+      1. Cada pivote es 1.
+      2. Cada pivote es el único valor no nulo en su columna.
+    """
+    if not es_forma_escalonada(matriz, n_incognitas, columnas_pivote):
+        return False
+
+    for i, col in enumerate(columnas_pivote):
+        # Verificar que el pivote es 1
+        if not valor_casi_cero(matriz[i][col] - 1.0):
+            return False
+
+        # Verificar que es el único valor no nulo en su columna
+        for j in range(len(matriz)):
+            if i != j and not valor_casi_cero(matriz[j][col]):
+                return False
+
+    return True
+
+
+def clasificar_forma_escalonada(matriz, n_incognitas, columnas_pivote):
+    """
+    Clasifica la forma de una matriz ya en forma escalonada.
+
+    Devuelve:
+      - "RREF": forma escalonada reducida por filas
+      - "REF": forma escalonada por filas (pero no reducida)
+      - "ninguna": no está en ninguna forma escalonada
+    """
+    if es_forma_escalonada_reducida(matriz, n_incognitas, columnas_pivote):
+        return "RREF"
+    elif es_forma_escalonada(matriz, n_incognitas, columnas_pivote):
+        return "REF"
+    else:
+        return "ninguna"
+
+
+def solucion_general_vectorial(matriz, n_incognitas, columnas_pivote, libres, expresiones):
+    """
+    Construye la solución general vectorial en la forma:
+    x = xp + t1*v1 + t2*v2 + ... + tk*vk
+
+    donde:
+      - xp es una solución particular (con variables libres = 0)
+      - v1, v2, ..., vk son los vectores de espacio nulo (k = número de variables libres)
+      - t1, t2, ..., tk son los parámetros libres
+
+    Devuelve un diccionario:
+      - particular: vector solución particular
+      - vectores_nulos: lista de vectores del espacio nulo
+      - variables_libres: lista de índices de variables libres
+      - expresion_str: descripción en forma string de la solución
+    """
+    # Solución particular: asignar 0 a todas las variables libres
+    particular = evaluar_solucion_parametrica(n_incognitas, libres, expresiones, [0] * len(libres))
+
+    # Vectores del espacio nulo
+    vectores_nulos = []
+    for k, indice_libre in enumerate(libres):
+        # Vector correspondiente a la variable libre k-ésima
+        vec = [0.0] * n_incognitas
+        vec[indice_libre] = 1.0  # Este parámetro vale 1
+
+        # Asignar valores a las otras variables libres (todos 0 excepto este)
+        valores_libres_temp = [0.0] * len(libres)
+        valores_libres_temp[k] = 1.0
+        x_temp = evaluar_solucion_parametrica(n_incognitas, libres, expresiones, valores_libres_temp)
+
+        # El vector es x_temp - particular
+        for i in range(n_incognitas):
+            vec[i] = x_temp[i] - particular[i]
+
+        vectores_nulos.append(vec)
+
+    return {
+        "particular": particular,
+        "vectores_nulos": vectores_nulos,
+        "variables_libres": libres,
+        "expresion_str": _construir_expresion_string(particular, vectores_nulos, libres)
+    }
+
+
+def _construir_expresion_string(particular, vectores_nulos, variables_libres):
+    """Helper para construir una descripción textual de la solución vectorial."""
+    if not variables_libres:
+        # Solución única
+        return f"x = {particular}"
+
+    parts = [f"x = {particular}"]
+    for k, (vec, var_idx) in enumerate(zip(vectores_nulos, variables_libres)):
+        parts.append(f" + t{k + 1} * {vec}")
+
+    return "".join(parts)
+
+
+def generar_latex_solucion(n_incognitas, libres, expresiones, particular, vectores_nulos):
+    """
+    Genera código LaTeX para la solución general vectorial.
+
+    Devuelve un string con código LaTeX que puede copiarse.
+    """
+    lines = []
+
+    # Solución particular
+    lines.append("\\text{Solución particular (variables libres } = 0\\text{):}")
+    lines.append("\\\\")
+    x_p_components = []
+    for val in particular:
+        x_p_components.append(f"{val:.6g}".rstrip('0').rstrip('.'))
+    lines.append(f"\\mathbf{{x_p}} = \\begin{{pmatrix}} {' \\\\ '.join(x_p_components)} \\end{{pmatrix}}")
+    lines.append("\\\\")
+    lines.append("\\\\")
+
+    # Vectores del espacio nulo
+    if vectores_nulos:
+        lines.append("\\text{Vectores del espacio nulo (base):}")
+        lines.append("\\\\")
+        for k, vec in enumerate(vectores_nulos):
+            v_components = []
+            for val in vec:
+                v_components.append(f"{val:.6g}".rstrip('0').rstrip('.'))
+            lines.append(f"\\mathbf{{v_{k + 1}}} = \\begin{{pmatrix}} {' \\\\ '.join(v_components)} \\end{{pmatrix}}")
+            if k < len(vectores_nulos) - 1:
+                lines.append(", \\quad ")
+            lines.append("\\\\")
+        lines.append("\\\\")
+
+        # Solución general
+        lines.append("\\text{Solución general:}")
+        lines.append("\\\\")
+        params = " + ".join([f"t_{k + 1} \\mathbf{{v_{k + 1}}}" for k in range(len(vectores_nulos))])
+        lines.append(f"\\mathbf{{x}} = \\mathbf{{x_p}} + {params}")
+
+    return "".join(lines)
