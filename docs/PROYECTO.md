@@ -34,7 +34,7 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
 
 **Razón:** El ejercicio requiere implementar desde cero para comprensión profunda.
 
-## 📊 Estado Actual (2026-08-31)
+## 📊 Estado Actual (2026-09-01)
 
 ### ✅ Completado
 
@@ -55,18 +55,22 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
 - `es_forma_escalonada()` y `es_forma_escalonada_reducida()` - Detectan REF/RREF
 - `clasificar_forma_escalonada()` - Clasifica la forma
 - `solucion_general_vectorial()` - Expresión vectorial
-- `generar_latex_solucion()` - Código LaTeX copiable
-- Panel de análisis en GUI
-- 18 nuevos tests
-- Mergeado a main
+- `generar_latex_solucion()` - Código LaTeX (movido luego a `formato.py`)
+- Cierra issues #9, #10, #11 · Mergeado a main (PR #12)
 
 ### 🔄 En Progreso
 
-#### Chore: Migración a `uv` para Gestión de Paquetes
-- `pyproject.toml` creado
-- `uv.lock` sincronizado
-- Documentación actualizada (AGENTS.md, docs/*)
-- Estado: PR pendiente
+#### Chore: Migración a `uv` (PR #14, abierto)
+- `pyproject.toml` + `uv.lock`; documentación agnóstica de herramienta.
+
+#### Feature: Notación matemática y rediseño de la GUI (PR pendiente)
+- `formato.py` (fracciones, `normalizar_entrada`, LaTeX, HTML) y `mathrender.py`
+  (LaTeX → imagen con matplotlib mathtext).
+- `gauss.verificar_solucion_detallada()` (comprobación término a término) y
+  `formato_numero` en `escalonar` (multiplicador de cada paso como fracción).
+- GUI reescrita en `ui/` como flujo de 5 pantallas navegable con teclado.
+- ADR-0001: normalización de la entrada numérica.
+- Cierra issues #15, #16, #17 (y los nuevos de rework/ADR). 41 tests.
 
 ### 📋 Planificado (Futura)
 
@@ -82,21 +86,19 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código | ~800 |
-| Tests | 21 (100% pass) |
-| Funciones en gauss.py | 20+ |
-| Restricción sin librerías | ✓ Cumplida |
+| Líneas de código | ~1600 (con `ui/`) |
+| Tests | 41 (100% pass) |
+| Restricción sin librerías (algoritmo) | ✓ Cumplida |
 | Documentación | ✓ Completa |
-| GUI funcional | ✓ Sí |
+| GUI funcional | ✓ Sí (flujo de pantallas, teclado-first) |
 
 ## 🏗️ Arquitectura de Alto Nivel
 
 ```
 ┌─────────────────────────────────────────┐
-│      Interfaz Gráfica (gui.py)          │
-│    - Entrada de matriz (tabla)          │
-│    - Visualización paso a paso          │
-│    - Panel de análisis avanzado         │
+│   GUI PyQt6 — paquete ui/ (gui.py shim) │
+│   Menú → Dimensiones → Entrada guiada   │
+│        → Proceso → Solución vectorial   │
 └──────────────┬──────────────────────────┘
                │
 ┌──────────────┴──────────────────────────┐

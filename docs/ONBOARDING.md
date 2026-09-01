@@ -35,19 +35,25 @@ cat context/current-feature.md
 ### Opción A: Interfaz Gráfica (recomendado)
 ```bash
 cd semana2/tarea1
-python3 gui.py
+uv run python gui.py     # con `uv run` para que matplotlib renderice las fórmulas
 ```
 
-**Qué hacer:**
-1. Haz clic en "Ejemplo rápido" → "Solución única"
-2. Haz clic en "Resolver sistema"
-3. Usa el slider para ver cada paso
-4. Abre el panel "4 · Análisis avanzado"
+La GUI es un flujo de pantallas navegable **sin ratón** (Enter avanza, Esc
+retrocede, ← → recorren pasos, F1 vuelve al menú):
+
+1. **Menú** → elige "Ejemplo rápido" → "Solución única" (salta directo al proceso).
+2. **Proceso y resultado**: recorre los pasos con ← →; abajo, la solución y su
+   comprobación término a término, y el análisis de rango/nulidad/forma.
+3. **Solución vectorial**: la notación renderizada; el código LaTeX está detrás de
+   "Ver sintaxis LaTeX".
+
+Para crear un sistema propio: "Iniciar" → dimensiones y notación → entrada
+guiada término a término.
 
 ### Opción B: Consola
 ```bash
 cd semana2/tarea1
-python3 main.py
+uv run python main.py     # --decimal / --fraccion para cambiar la notación
 ```
 
 **Qué hacer:**
@@ -61,34 +67,29 @@ python3 main.py
 ## 4️⃣ Tests (2 minutos)
 
 ```bash
-cd semana2/tarea1
-
-# Todos los tests (deben pasar)
-python3 test_gauss.py
-python3 test_main.py
-
-# Salida esperada:
-# Ran 21 tests... OK
+# Desde la raíz del repo (deben pasar):
+uv run --extra dev pytest
+# Salida esperada: 41 passed
 ```
 
 ## 5️⃣ Entender la Estructura (3 minutos)
 
 ```
 semana2/tarea1/
-├── gauss.py          ← LÓGICA PURA (sin I/O)
-│                       - Eliminación de Gauss
-│                       - Rango, nulidad
-│                       - Formas escalonadas
-│                       - Solución vectorial
+├── gauss.py          ← LÓGICA PURA (sin I/O, sin imports)
+│                       - Eliminación de Gauss, rango/nulidad,
+│                         formas escalonadas, solución vectorial
+├── formato.py        ← PRESENTACIÓN texto (float → fracción/decimal, LaTeX, HTML)
+├── mathrender.py     ← PRESENTACIÓN imagen (LaTeX → QPixmap con matplotlib)
 ├── main.py           ← CONSOLA (lee, escribe)
-│                       - Pide entrada
-│                       - Muestra resultados
-├── gui.py            ← GUI PyQt6 (visual)
-│                       - Tabla de entrada
-│                       - Slider de pasos
-│                       - Panel de análisis
-├── test_gauss.py     ← TESTS (18 tests)
-└── test_main.py      ← TESTS (3 tests)
+├── gui.py            ← punto de entrada de la GUI (shim)
+├── ui/               ← GUI PyQt6 por pantallas
+│   ├── app.py            ventana principal (QStackedWidget) + atajos
+│   ├── state.py          Sesion: único punto de la GUI que llama a gauss.py
+│   ├── theme.py          estilo, paleta, fuente
+│   ├── widgets.py        PantallaBase, MatrizGrid, navegación, ayudas
+│   └── screen_*.py       menú, dimensiones, entrada, proceso, resultado
+└── test_*.py         ← TESTS (gauss 21 · formato 14 · mathrender 3 · main 3)
 ```
 
 ## 🚫 Restricción Crítica
@@ -145,10 +146,12 @@ Si completaste lo anterior, lee en orden:
 ## 🆘 Ayuda Rápida
 
 **"¿Cómo agrego una función?"**
-1. Agrégala en `gauss.py` (lógica pura)
+1. Agrégala en `gauss.py` (lógica pura, sin imports)
 2. Escribe test en `test_gauss.py`
-3. Verifica: `python3 test_gauss.py` (debe pasar)
-4. Si usas en GUI/consola, integra en `main.py` o `gui.py`
+3. Verifica: `uv run --extra dev pytest` (debe pasar)
+4. Si se usa en la GUI, llámala desde `ui/state.py:Sesion` y muéstrala en la
+   pantalla que corresponda (`ui/screen_*.py`); en consola, desde `main.py`.
+   Para formatear números usa `formato.formatear_valor` / `sesion.fmt`.
 
 **"¿Cómo aumento los tests?"**
 1. Abre `test_gauss.py`
@@ -157,10 +160,10 @@ Si completaste lo anterior, lee en orden:
 4. Usa `self.assertEqual()`, `self.assertTrue()`, etc.
 
 **"¿Está mal algo?"**
-1. Corre: `python3 test_gauss.py`
+1. Corre: `uv run --extra dev pytest`
 2. Busca el test fallido
 3. Lee el error: te dice exactamente qué está mal
-4. Si es de compilación: `python3 -m py_compile gauss.py main.py gui.py`
+4. Si es de compilación: `uv run python -m py_compile semana2/tarea1/*.py semana2/tarea1/ui/*.py`
 
 ## 🎓 Después del Onboarding
 
