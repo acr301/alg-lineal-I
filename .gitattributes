@@ -1,0 +1,25 @@
+# Normaliza los finales de línea: en el repositorio siempre LF, y en el
+# checkout también LF en todas las plataformas (evita que un editor en
+# Windows convierta todo el árbol a CRLF y ensucie el diff).
+* text=auto eol=lf
+
+# Archivos de texto del proyecto (explícito para que quede documentado).
+*.py     text eol=lf
+*.md     text eol=lf
+*.toml   text eol=lf
+*.lock   text eol=lf
+*.txt    text eol=lf
+*.cfg    text eol=lf
+*.ini    text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+*.json   text eol=lf
+.gitignore      text eol=lf
+.gitattributes  text eol=lf
+
+# Binarios: git no debe tocarlos nunca.
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.ico    binary
+*.pdf    binary
