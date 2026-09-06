@@ -13,10 +13,34 @@ from formato import (
     a_fraccion,
     formatear_valor,
     generar_latex_solucion,
+    latex_combinacion_lineal,
     latex_valor,
     mcd,
     normalizar_entrada,
+    texto_combinacion_lineal,
 )
+
+
+class TestFormatoCombinacionLineal(unittest.TestCase):
+    def test_latex_usa_vectores_columna_y_fracciones(self):
+        latex = latex_combinacion_lineal(
+            [2, 0], [[1, 2], [3, -1]], [0.5, 0.5], MODO_FRACCION
+        )
+
+        self.assertIn(r"\mathbf{b}", latex)
+        self.assertEqual(latex.count(r"\begin{pmatrix}"), 3)
+        self.assertIn(r"\frac{1}{2}", latex)
+
+    def test_texto_muestra_pesos_y_resultado(self):
+        texto = texto_combinacion_lineal(
+            [-1, 5], [[1, 2], [3, -1]], [2, -1], MODO_FRACCION
+        )
+
+        self.assertEqual(texto, "b = 2·v1 − 1·v2 = [−1, 5]ᵀ")
+
+    def test_rechaza_cantidad_incorrecta_de_pesos(self):
+        with self.assertRaises(ValueError):
+            latex_combinacion_lineal([1, 2], [[1, 0]], [1, 2])
 
 
 class TestMcd(unittest.TestCase):
