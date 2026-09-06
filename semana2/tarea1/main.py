@@ -40,6 +40,13 @@ from formato import (
     MODO_FRACCION,
     formatear_valor,
     generar_latex_solucion,
+    latex_combinacion_lineal,
+    texto_combinacion_lineal,
+)
+from vectores import (
+    combinacion_lineal,
+    es_combinacion_lineal,
+    verificar_propiedades,
 )
 
 # Modo de presentación numérica; se ajusta según los argumentos de línea de
@@ -93,6 +100,80 @@ def leer_sistema():
         terminos.append(b)
 
     return coeficientes, terminos, m, n
+
+
+def leer_vector(n, nombre):
+    """Lee las ``n`` componentes de un vector por consola."""
+    print(f"\n-- Vector {nombre} de R^{n} --")
+    return [pedir_flotante(f"  Componente {i + 1}: ") for i in range(n)]
+
+
+def resolver_combinacion_vectorial(vectores, pesos):
+    """Calcula y presenta una combinación lineal en consola."""
+    resultado = combinacion_lineal(vectores, pesos)
+    print("\n--- Resultado de la combinación lineal ---")
+    print(texto_combinacion_lineal(resultado, vectores, pesos, MODO))
+    print("\nCódigo LaTeX:")
+    print(latex_combinacion_lineal(resultado, vectores, pesos, MODO))
+    return resultado
+
+
+def comprobar_combinacion_vectorial(objetivo, vectores):
+    """Explica en consola si un objetivo pertenece al generado."""
+    pertenece, pesos = es_combinacion_lineal(objetivo, vectores)
+    print("\n--- ¿Es combinación lineal? ---")
+    if not pertenece:
+        print("El vector objetivo NO es combinación lineal de los vectores dados.")
+        return pertenece, pesos
+    print("El vector objetivo SÍ es combinación lineal.")
+    print("Pesos encontrados:")
+    for i, peso in enumerate(pesos):
+        print(f"  c{i + 1} = {formatear_numero(peso)}")
+    print(latex_combinacion_lineal(objetivo, vectores, pesos, MODO))
+    return pertenece, pesos
+
+
+def imprimir_propiedades_vectoriales(u, v, w, a, b):
+    """Muestra el resultado de los ocho axiomas evaluados."""
+    propiedades = verificar_propiedades(u, v, w, a, b)
+    print("\n--- Propiedades algebraicas de R^n ---")
+    for datos in propiedades.values():
+        estado = "OK" if datos["cumple"] else "NO cumple"
+        izquierdo = [formatear_numero(x) for x in datos["lado_izquierdo"]]
+        derecho = [formatear_numero(x) for x in datos["lado_derecho"]]
+        print(f"  {datos['propiedad']}: {izquierdo} = {derecho} -> {estado}")
+    return propiedades
+
+
+def flujo_vectores():
+    """Flujo interactivo de la Tarea 3 para consola."""
+    print("\n=== Vectores y propiedades algebraicas de R^n ===")
+    print("1. Calcular una combinación lineal")
+    print("2. Comprobar si un objetivo es combinación lineal")
+    print("3. Verificar las ocho propiedades algebraicas")
+    opcion = pedir_entero("Opción: ")
+    while opcion not in (1, 2, 3):
+        print("  Elige 1, 2 o 3.")
+        opcion = pedir_entero("Opción: ")
+
+    n = pedir_entero("Dimensión n de los vectores: ")
+    if opcion in (1, 2):
+        p = pedir_entero("Cantidad p de vectores: ")
+        vectores = [leer_vector(n, f"v{i + 1}") for i in range(p)]
+        if opcion == 1:
+            pesos = [pedir_flotante(f"Peso c{i + 1}: ") for i in range(p)]
+            resolver_combinacion_vectorial(vectores, pesos)
+        else:
+            objetivo = leer_vector(n, "objetivo b")
+            comprobar_combinacion_vectorial(objetivo, vectores)
+        return
+
+    u = leer_vector(n, "u")
+    v = leer_vector(n, "v")
+    w = leer_vector(n, "w")
+    a = pedir_flotante("Escalar a: ")
+    b = pedir_flotante("Escalar b: ")
+    imprimir_propiedades_vectoriales(u, v, w, a, b)
 
 
 def formatear_numero(valor):
@@ -286,10 +367,20 @@ def main():
     print(f"(Los valores se muestran en {etiqueta}; usa --decimal o --fraccion para cambiar.)\n")
 
     while True:
-        coeficientes, terminos, m, n = leer_sistema()
-        resolver_sistema(coeficientes, terminos, n)
+        print("¿Qué quieres estudiar?")
+        print("1. Sistemas de ecuaciones lineales")
+        print("2. Vectores y propiedades de R^n")
+        opcion = pedir_entero("Opción: ")
+        while opcion not in (1, 2):
+            print("  Elige 1 o 2.")
+            opcion = pedir_entero("Opción: ")
+        if opcion == 1:
+            coeficientes, terminos, _m, n = leer_sistema()
+            resolver_sistema(coeficientes, terminos, n)
+        else:
+            flujo_vectores()
 
-        respuesta = input("\n¿Deseas resolver otro sistema? (s/n): ").strip().lower()
+        respuesta = input("\n¿Deseas realizar otra operación? (s/n): ").strip().lower()
         if respuesta != "s":
             print("¡Hasta luego!")
             break
