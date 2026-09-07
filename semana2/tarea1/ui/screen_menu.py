@@ -56,11 +56,12 @@ class PantallaMenu(PantallaBase):
         self.titulo_lista.setText("¿Qué quieres hacer?")
         self.lista.clear()
         for texto in ("Iniciar — crear un sistema nuevo",
+                      "Vectores y propiedades de Rⁿ",
                       "Ejemplo rápido — cargar un caso de muestra",
                       "Salir"):
             self.lista.addItem(QListWidgetItem(texto))
         self.lista.setCurrentRow(0)
-        self.lista.setFixedHeight(self.lista.sizeHintForRow(0) * 3 + 22)
+        self.lista.setFixedHeight(self.lista.sizeHintForRow(0) * 4 + 28)
 
     def _poblar_ejemplos(self):
         self._modo = _EJEMPLOS
@@ -88,6 +89,8 @@ class PantallaMenu(PantallaBase):
             if texto.startswith("Iniciar"):
                 self.sesion.iniciar_manual()
                 self.win.ir("dimensiones")
+            elif texto.startswith("Vectores"):
+                self.win.ir("vectores")
             elif texto.startswith("Ejemplo"):
                 self._poblar_ejemplos()
             else:

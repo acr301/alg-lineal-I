@@ -21,6 +21,7 @@ from formato import (
     generar_latex_solucion,
     latex_pmatrix,
 )
+from vectores import combinacion_lineal, es_combinacion_lineal, verificar_propiedades
 
 
 EJEMPLOS = {
@@ -40,6 +41,7 @@ class Sesion:
         self.matriz = self._matriz_ceros(3, 3)
         self.resultado = None  # dict tras resolver(), o None
         self.origen = "manual"  # "manual" (flujo completo) | "ejemplo" (salta a proceso)
+        self.resultado_vectores = None
 
     # ---- helpers de forma -------------------------------------------------- #
 
@@ -71,6 +73,37 @@ class Sesion:
     def fmt(self, valor):
         """Formatea un número según la notación elegida (fracción o decimal)."""
         return formatear_valor(valor, self.modo)
+
+    # ---- vectores de R^n ------------------------------------------------- #
+
+    def calcular_combinacion(self, vectores, pesos):
+        resultado = combinacion_lineal(vectores, pesos)
+        self.resultado_vectores = {
+            "tipo": "combinacion",
+            "resultado": resultado,
+            "vectores": vectores,
+            "pesos": pesos,
+        }
+        return self.resultado_vectores
+
+    def comprobar_combinacion(self, objetivo, vectores):
+        pertenece, pesos = es_combinacion_lineal(objetivo, vectores)
+        self.resultado_vectores = {
+            "tipo": "pertenencia",
+            "objetivo": objetivo,
+            "vectores": vectores,
+            "pertenece": pertenece,
+            "pesos": pesos,
+        }
+        return self.resultado_vectores
+
+    def comprobar_propiedades(self, u, v, w, a, b):
+        propiedades = verificar_propiedades(u, v, w, a, b)
+        self.resultado_vectores = {
+            "tipo": "propiedades",
+            "propiedades": propiedades,
+        }
+        return self.resultado_vectores
 
     # ---- celdas de la matriz aumentada ----------------------------------- #
 
