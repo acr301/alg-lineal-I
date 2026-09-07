@@ -31,6 +31,8 @@ uv run python main.py
 - [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) - Diseño técnico
 - [docs/ALGORITMO.md](docs/ALGORITMO.md) - Explicación matemática
 - [docs/CASOS_PRUEBA.md](docs/CASOS_PRUEBA.md) - Playbook con datos
+- [docs/FEATURE_PROPIEDADES_RN.md](docs/FEATURE_PROPIEDADES_RN.md) - Tarea 3: vectores y combinaciones
+- [docs/ADR-0002-pesos-combinacion-lineal.md](docs/ADR-0002-pesos-combinacion-lineal.md) - Convención para pesos no únicos
 - [DOCUMENTACION_FEATURE.md](DOCUMENTACION_FEATURE.md) - Detalles completos
 
 ## ✨ Características
@@ -47,14 +49,18 @@ uv run python main.py
 - ✓ GUI por pantallas (menú → dimensiones → entrada guiada → proceso → vector), teclado-first
 - ✓ Análisis de rango/nulidad/forma en lista con explicaciones y ayudas `?`
 - ✓ Interfaz de consola interactiva (`--decimal` / `--fraccion`)
-- ✓ 44 tests (todos pasan)
-- ✓ El **algoritmo** no usa NumPy/SymPy (`gauss.py` no importa nada); matplotlib
+- ✓ Operaciones, combinaciones lineales y ocho propiedades algebraicas de `R^n`
+- ✓ Gauss-Jordan/RREF separado en `gauss_jordan.py`, con API histórica compatible
+- ✓ Pantalla gráfica de vectores y propiedades, más su flujo de consola
+- ✓ 71 tests (todos pasan en la rama del issue #23)
+- ✓ El **algoritmo** no usa NumPy/SymPy; matplotlib
   se usa solo para dibujar la notación matemática, nunca para calcular
 
 ## 🎓 Restricción Deliberada
 
 **NO se usa** NumPy, SymPy, scipy ni funciones preconstruidas de álgebra lineal
-**para calcular**. `gauss.py` (el algoritmo) y `formato.py` no importan nada.
+**para calcular**. `gauss.py`, `gauss_jordan.py` y `vectores.py` solo usan
+Python y módulos propios del proyecto; `formato.py` continúa sin dependencias.
 
 **POR QUÉ:** El ejercicio exige comprensión profunda. Las librerías son "cajas negras".
 
@@ -68,22 +74,25 @@ motor `mathtext`); arrastra NumPy como dependencia suya, que tampoco se usa.
 - ✅ Feature 2: Verificación de soluciones
 - ✅ Feature 3: Solución vectorial, rango, nulidad, LaTeX, formas
 - ✅ Chore: Migración a `uv`
-- 🔄 Feature (PR #21): notación matemática renderizada + rediseño de la GUI por
-  pantallas (issues #15/#16/#17/#19/#20, bug #22)
+- ✅ Notación matemática renderizada + rediseño de la GUI por pantallas (PR #21)
+- 🔄 Issue #23: propiedades algebraicas de `R^n` y combinación lineal,
+  implementado en `feature/propiedades-algebraicas-rn` y pendiente de PR
 - 📋 Issue #18: migración de la consola a Textual TUI (propuesta)
 
 ## 🧪 Tests
 
 ```bash
 # Desde la raíz del repo:
-uv run --extra dev pytest        # 44 tests (test_mathrender/test_ui se saltan sin PyQt/matplotlib)
+uv run --extra dev pytest        # 71 tests en la rama del issue #23
 ```
 
 - `test_gauss.py` — lógica pura (21)
-- `test_formato.py` — fracciones, normalización de entrada, LaTeX (14)
+- `test_gauss_jordan.py` — RREF y soluciones paramétricas (6)
+- `test_vectores.py` — operaciones, combinaciones y propiedades (12)
+- `test_formato.py` — fracciones, normalización de entrada, LaTeX (17)
 - `test_mathrender.py` — render de LaTeX a imagen (3)
-- `test_ui.py` — humo de la GUI / regresión del menú (3)
-- `test_main.py` — integración de consola (3)
+- `test_ui.py` — humo de la GUI / regresión del menú (6)
+- `test_main.py` — integración de consola (6)
 
 ## 📁 Estructura
 
@@ -94,16 +103,21 @@ uv run --extra dev pytest        # 44 tests (test_mathrender/test_ui se saltan s
 │   ├── ARQUITECTURA.md
 │   ├── ONBOARDING.md
 │   ├── ALGORITMO.md
-│   └── CASOS_PRUEBA.md
+│   ├── CASOS_PRUEBA.md
+│   ├── FEATURE_PROPIEDADES_RN.md
+│   ├── ADR-0001-entrada-numerica.md
+│   └── ADR-0002-pesos-combinacion-lineal.md
 ├── DOCUMENTACION_FEATURE.md   # Detalles extensos
 ├── semana2/tarea1/
-│   ├── gauss.py              # Lógica pura (sin imports)
+│   ├── gauss.py              # Gauss / REF + compatibilidad
+│   ├── gauss_jordan.py       # Gauss-Jordan / RREF y parámetros
+│   ├── vectores.py           # Operaciones y propiedades de R^n
 │   ├── formato.py            # Presentación: fracciones, LaTeX (texto), HTML
 │   ├── mathrender.py         # LaTeX -> imagen (matplotlib mathtext) para la GUI
 │   ├── main.py               # Consola
 │   ├── gui.py                # Punto de entrada de la GUI (shim)
-│   ├── ui/                   # GUI PyQt6 por pantallas (app, state, theme, widgets, screen_*)
-│   └── test_*.py             # Tests (gauss / formato / mathrender / main)
+│   ├── ui/                   # GUI por pantallas, incluida screen_vectores.py
+│   └── test_*.py             # Tests de algoritmos, formato, consola y GUI
 └── context/current-feature.md # Estado desarrollo
 ```
 
@@ -146,6 +160,14 @@ x + y = 5
 Resultado: Inconsistente (contradicción)
 ```
 
+### Combinación lineal en R²
+
+```text
+v₁ = [1, 2]ᵀ, v₂ = [3, -1]ᵀ, c₁ = 2, c₂ = -1
+
+Resultado: 2v₁ - v₂ = [-1, 5]ᵀ
+```
+
 ## 👥 Contribuir
 
 1. Lee [AGENTS.md](AGENTS.md)
@@ -154,6 +176,9 @@ Resultado: Inconsistente (contradicción)
 
 ---
 
-**Autores:** Andrés Castillo y Fátima Zogaib (Grupo 7) | **Última actualización:** 2026-09-01 | **Licencia:** MIT
+**Autores:** Andrés Castillo y Fátima Zogaib (Grupo 7) | **Última actualización:** 2026-09-07 | **Licencia:** MIT
 
 Ver también [docs/ADR-0001-entrada-numerica.md](docs/ADR-0001-entrada-numerica.md) — cómo la calculadora normaliza los números que teclea el usuario.
+
+La convención para combinaciones con pesos no únicos está en
+[docs/ADR-0002-pesos-combinacion-lineal.md](docs/ADR-0002-pesos-combinacion-lineal.md).

@@ -29,6 +29,10 @@ matriz de coeficientes y resuelve el sistema asociado. Devuelve si el vector
 objetivo pertenece al espacio generado y, cuando pertenece, un conjunto de
 pesos que reproduce el objetivo.
 
+Cuando hay infinitas respuestas, se elige la solución que asigna cero a los
+parámetros libres. Esta convención se propone formalmente en
+`docs/ADR-0002-pesos-combinacion-lineal.md`.
+
 ### Ocho propiedades verificadas
 
 1. Conmutatividad de la suma.
@@ -107,7 +111,7 @@ La aplicación debe responder que sí pertenece y mostrar pesos válidos.
 
 Resultado local al cerrar la rama: **71 tests aprobados**.
 
-## Historial de commits de la rama
+## Historial previo al cierre documental
 
 Los cambios se separaron por responsabilidad para facilitar la revisión:
 
@@ -117,10 +121,11 @@ Los cambios se separaron por responsabilidad para facilitar la revisión:
 4. `726cd53` — agrega presentación con vectores columna y LaTeX.
 5. `e3b13ea` — integra el flujo de consola.
 6. `6f9086c` — integra la pantalla gráfica.
+7. `f7a2203` — agrega la guía inicial y actualiza el estado compartido.
 
 ## Límites respetados
 
 Esta rama no modifica la configuración de dependencias, la paleta general ni
-la notación global de subíndices. Esos trabajos pertenecen a otros issues y se
-dejan separados para evitar conflictos con las ramas de los compañeros.
-
+la notación global de subíndices. La documentación general solo recibe las
+secciones necesarias para explicar el issue #23; el versionado, changelog y
+demás housekeeping permanecen en su issue correspondiente.

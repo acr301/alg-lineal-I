@@ -2,7 +2,7 @@
 
 ## Status
 
-Ready for local review — no publicado en GitHub
+Ready for review — rama publicada, PR pendiente
 
 ## Goals
 
@@ -18,9 +18,10 @@ Ready for local review — no publicado en GitHub
 - Responsable: Andrés Castillo.
 - Verificación actual: 71 tests aprobados.
 - Guía de revisión: `docs/FEATURE_PROPIEDADES_RN.md`.
-- No se tocó GitHub ni se hizo `push`.
+- Rama publicada en `origin/feature/propiedades-algebraicas-rn`; `main` no fue
+  modificado y todavía no se creó el PR.
 - Fuera de alcance para evitar conflictos: subíndices globales, cambios de
-  paleta/degradados y housekeeping de `pyproject.toml`/documentación general.
+  paleta/degradados y housekeeping de metadatos, versionado y changelog.
 
 ## History
 

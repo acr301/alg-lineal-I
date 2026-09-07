@@ -5,7 +5,9 @@
 ### 1. Separación Estricta de Responsabilidades
 
 ```
-gauss.py     → LÓGICA PURA (sin I/O, sin efectos secundarios, sin imports)
+gauss.py     → GAUSS / REF (lógica pura; compatibilidad con nombres históricos)
+gauss_jordan.py → GAUSS-JORDAN / RREF y soluciones paramétricas
+vectores.py  → OPERACIONES Y PROPIEDADES DE R^n
 formato.py   → PRESENTACIÓN texto (float → fracción/decimal, LaTeX, HTML) — sin deps
 mathrender.py→ PRESENTACIÓN imagen (LaTeX → QPixmap con matplotlib mathtext)
 main.py      → CONSOLA (input, print, flujo interactivo)
@@ -14,9 +16,9 @@ ui/          → INTERFAZ GRÁFICA PyQt6 por pantallas (ver "Flujo de la GUI")
 tests/       → VERIFICACIÓN (unittest, no parte del "ejercicio")
 ```
 
-**Ventaja:** `gauss.py` puede ser usado por cualquier interfaz sin duplicar lógica,
-y `formato.py` centraliza *cómo se muestran* los números (antes cada interfaz tenía
-su propio `format_number` duplicado).
+**Ventaja:** cada algoritmo puede probarse por separado. `gauss.py` conserva
+funciones de compatibilidad para consumidores antiguos, `vectores.py` reutiliza
+Gauss/Gauss-Jordan y `formato.py` centraliza *cómo se muestran* los números.
 
 ### 2. No Usar Librerías de Álgebra Lineal
 
@@ -29,7 +31,7 @@ su propio `format_number` duplicado).
 
 **Consecuencia:** Implementamos TODO desde cero con listas y loops.
 
-### 3. Pure Functions en gauss.py
+### 3. Funciones puras en los módulos de cálculo
 
 ```python
 def escalonar(matriz, n_incognitas, registrar_paso=None):
@@ -39,6 +41,9 @@ def escalonar(matriz, n_incognitas, registrar_paso=None):
     # NO accede a archivos
     # Operación: entrada → transformación → salida
 ```
+
+La misma regla se aplica a `gauss_jordan.py` y `vectores.py`: no hacen
+`input()`, `print()`, acceso a archivos ni llamadas a la GUI.
 
 ## Arquitectura de Capas
 
@@ -63,12 +68,9 @@ def escalonar(matriz, n_incognitas, registrar_paso=None):
                │ import
 ┌──────────────▼────────────────────────────┐
 │  LÓGICA DE NEGOCIO                        │
-│  └─ gauss.py                [puro]        │
-│     ├─ Eliminación Gaussiana              │
-│     ├─ Análisis de Rango/Nulidad          │
-│     ├─ Formas Escalonadas                 │
-│     ├─ Solución Vectorial                 │
-│     └─ Verificación (detallada)           │
+│  ├─ gauss.py         [Gauss / REF]        │
+│  ├─ gauss_jordan.py  [RREF / parámetros]  │
+│  └─ vectores.py      [operaciones de R^n] │
 └──────────────┬────────────────────────────┘
                │
 ┌──────────────▼────────────────────────────┐
@@ -113,16 +115,39 @@ gauss.py:escalonar() → REF + columnas_pivote
     ↓
 gauss.py:clasificar() → "indeterminado"
     ↓
-gauss.py:reducir_a_escalonada_reducida() → RREF
+gauss_jordan.py:reducir_a_escalonada_reducida() → RREF
     ↓
-gauss.py:solucion_parametrica() → (libres, expresiones)
+gauss_jordan.py:solucion_parametrica() → (libres, expresiones)
     ↓
-gauss.py:solucion_general_vectorial() → {particular, vectores_nulos}
+gauss_jordan.py:solucion_general_vectorial() → {particular, vectores_nulos}
     ↓
 formato.py:generar_latex_solucion() → código LaTeX (con \frac)
     ↓
 main.py/gui.py: mostrar resultado (GUI: notación matemática renderizada
                 + diálogo aparte con análisis y LaTeX)
+```
+
+Los mismos nombres continúan disponibles desde `gauss.py` como delegados de
+compatibilidad.
+
+### Combinación lineal de vectores
+
+```
+Usuario ingresa v1 ... vp, pesos c1 ... cp y, si aplica, objetivo b
+    ↓
+ui/screen_vectores.py o main.py valida la entrada
+    ↓
+ui/state.py:Sesion (solo GUI) llama a vectores.py
+    ↓
+vectores.py:combinacion_lineal() → suma componente a componente
+    o
+vectores.py:es_combinacion_lineal() → [v1 ... vp | b]
+    ↓
+gauss.py + gauss_jordan.py → compatibilidad y pesos
+    ↓
+formato.py:latex_combinacion_lineal() → vectores columna
+    ↓
+Consola o pantalla de vectores muestra resultado y LaTeX
 ```
 
 ## Decisiones Técnicas y Justificación
@@ -231,8 +256,12 @@ Menú  →  Dimensiones y notación  →  Entrada guiada  →  Proceso y resulta
                                                          comprobación + análisis) oculto)
 ```
 
+Desde el menú existe además una ruta independiente a
+`ui/screen_vectores.py`, que reúne combinación lineal, pertenencia y
+verificación de propiedades sin alterar el flujo de sistemas `Ax = b`.
+
 - Estado compartido en `ui/state.py:Sesion`; es el **único** punto de la GUI que
-  llama a `gauss.py`. `Sesion.resolver()` produce un dict con pasos, tipo,
+  llama a los módulos de cálculo. `Sesion.resolver()` produce un dict con pasos, tipo,
   rango/nulidad, solución, vectorial, verificación y LaTeX.
 - Navegación **sin ratón**: Enter avanza (botón por defecto), Esc retrocede
   (atajo de ventana → `pantalla.al_atras()`), ← → recorren los pasos, F1 al menú.
@@ -241,14 +270,28 @@ Menú  →  Dimensiones y notación  →  Entrada guiada  →  Proceso y resulta
   entrada), `boton_ayuda` (`QToolButton` con tooltip que también responde al
   teclado), `FilaAnalisis`.
 
+### 8. Separación Gauss / Gauss-Jordan / vectores (issue #23)
+
+- `gauss.py` conserva la eliminación hacia adelante, clasificación,
+  sustitución regresiva, rango y verificaciones.
+- `gauss_jordan.py` contiene RREF y las soluciones paramétricas/vectoriales.
+- `vectores.py` contiene operaciones de `R^n` y solo importa módulos propios del
+  proyecto para resolver pertenencia.
+- Los nombres históricos movidos siguen accesibles desde `gauss.py`; sus imports
+  locales evitan un ciclo durante la carga de los módulos.
+- Cuando una combinación admite infinitos pesos, se elige la solución con
+  parámetros libres iguales a cero. La decisión está en ADR-0002.
+
 ## Extensibilidad
 
 ### Agregar Nueva Funcionalidad
 
 **Patrón:**
 
-1. **Implementar en gauss.py** como función pura
-2. **Agregar test en test_gauss.py** que verifique
+1. **Elegir el módulo puro correcto**: `gauss.py`, `gauss_jordan.py` o
+   `vectores.py`.
+2. **Agregar el test correspondiente** (`test_gauss.py`,
+   `test_gauss_jordan.py` o `test_vectores.py`).
 3. **Integrar en main.py o gui.py** según corresponda
 
 **Ejemplo: Agregar método de Cramer**
@@ -279,7 +322,8 @@ def resolver_sistema(coeficientes, terminos, n):
 
 ## Testsabilidad
 
-Cada función en `gauss.py` es testeada porque:
+Las funciones de `gauss.py`, `gauss_jordan.py` y `vectores.py` son fáciles de
+probar porque:
 
 1. **Entrada simple:** Datos básicos (listas)
 2. **Salida predecible:** Valores determinísticos

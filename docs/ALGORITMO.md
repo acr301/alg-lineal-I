@@ -86,7 +86,79 @@ Características:
 
 Funciones:
 - `es_forma_escalonada_reducida(matriz, n, columnas_pivote)` → bool
-- Generada por `reducir_a_escalonada_reducida(matriz, ...)`
+- Generada por `gauss_jordan.reducir_a_escalonada_reducida(matriz, ...)`.
+  `gauss.py` conserva un nombre compatible que delega en ese módulo.
+
+## Separación entre Gauss y Gauss-Jordan
+
+Los dos métodos comparten la representación de matriz aumentada, pero tienen
+responsabilidades distintas:
+
+- `gauss.py` lleva la matriz a REF con pivoteo parcial, clasifica el sistema y
+  resuelve los casos de solución única por sustitución regresiva.
+- `gauss_jordan.py` continúa desde REF hasta RREF y construye las expresiones
+  paramétricas y la solución vectorial.
+- `gauss.py` mantiene funciones de compatibilidad con los nombres históricos.
+  Así, código anterior como `gauss.solucion_parametrica(...)` continúa válido.
+
+Esta separación permite que `vectores.py` plantee el sistema de una combinación
+lineal y reutilice ambos métodos sin duplicar eliminación de filas.
+
+## Vectores de R^n
+
+Un vector se representa con una lista de números. Todas las operaciones validan
+que los vectores pertenezcan al mismo `R^n` y se implementan componente a
+componente, sin NumPy, SymPy, `fractions` ni rutinas externas de álgebra lineal.
+
+```text
+suma:       u + v = [u1 + v1, ..., un + vn]
+escalar:    c·v   = [c·v1, ..., c·vn]
+cero:       0     = [0, ..., 0]
+opuesto:   -v     = [-v1, ..., -vn]
+```
+
+`iguales(u, v)` usa una tolerancia de `1e-9`, igual que el algoritmo de Gauss,
+para no considerar distintos dos resultados equivalentes por redondeo.
+
+### Combinación lineal
+
+Para vectores `v1, ..., vp` y pesos `c1, ..., cp`:
+
+```text
+b = c1·v1 + c2·v2 + ... + cp·vp
+```
+
+`combinacion_lineal(vectores, pesos)` calcula el vector resultante. Para decidir
+si un objetivo `b` puede escribirse de esa forma,
+`es_combinacion_lineal(objetivo, vectores)` construye el sistema
+
+```text
+[v1  v2  ...  vp | b]
+```
+
+donde cada `vk` es una **columna**. Gauss determina si el sistema es compatible:
+
+- incompatible → el objetivo no es combinación lineal;
+- determinado → los pesos son únicos;
+- indeterminado → existen infinitos pesos y se devuelve una solución concreta
+  fijando los parámetros libres en cero (ver ADR-0002).
+
+### Verificación de los ocho axiomas
+
+`verificar_propiedades(u, v, w, a, b)` calcula ambos lados de cada igualdad y
+devuelve el nombre, los dos resultados y si coinciden:
+
+1. `u + v = v + u`.
+2. `(u + v) + w = u + (v + w)`.
+3. `u + 0 = u`.
+4. `u + (-u) = 0`.
+5. `1·u = u`.
+6. `a·(b·u) = (a·b)·u`.
+7. `a·(u + v) = a·u + a·v`.
+8. `(a + b)·u = a·u + b·u`.
+
+La función demuestra los axiomas con los valores recibidos; no intenta decidir
+si un conjunto arbitrario con operaciones desconocidas es un espacio vectorial.
 
 ## Solución Vectorial
 
@@ -207,3 +279,6 @@ notación matemática (vectores columna entre corchetes, subíndices reales).
 - `DOCUMENTACION_FEATURE.md` - Explicación detallada y playbook
 - `CASOS_PRUEBA.md` - Datos listos para probar
 - `test_gauss.py` - Ejemplos reales de uso
+- `FEATURE_PROPIEDADES_RN.md` - Alcance y recorrido manual del issue #23
+- `ADR-0002-pesos-combinacion-lineal.md` - Convención para soluciones no únicas
+- `test_gauss_jordan.py` y `test_vectores.py` - Casos de la Tarea 3
