@@ -77,13 +77,15 @@ class Sesion:
     def total_celdas(self):
         return self.n_eq * (self.n_var + 1)
 
+    #aqui se crearon los cambios Para inyectar la función subindice() en las etiquetas de la matriz
     def etiqueta_celda(self, indice):
-        """Nombre de la celda 'indice' (recorrido por filas): a11, a12, ..., b1, a21..."""
+        from formato import subindice
         fila, col = divmod(indice, self.n_var + 1)
         if col == self.n_var:
-            return f"b{fila + 1}", f"término independiente de la ecuación {fila + 1}"
-        return (f"a{fila + 1}{col + 1}",
-                f"coeficiente de x{col + 1} en la ecuación {fila + 1}")
+            return (f"b{subindice(fila + 1)}",
+                f"término independiente de la ecuación {fila + 1}")
+        return (f"a{subindice(fila + 1)}{subindice(col + 1)}",
+            f"coeficiente de x{subindice(col + 1)} en la ecuación {fila + 1}")
 
     def set_celda(self, indice, valor):
         fila, col = divmod(indice, self.n_var + 1)
