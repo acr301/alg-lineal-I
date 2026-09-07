@@ -17,8 +17,7 @@ APP_INFO = {
 STYLESHEET = """
 QWidget { color: #153653; font-size: 14px; }
 #pantalla { background: transparent; }
-QFrame#hero { background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-    stop:0 #0f8bd5, stop:.56 #39b9e9, stop:1 #b9f6ef); border-radius: 16px; }
+QFrame#hero { background: #0f8bd5; border-radius: 16px; }
 QLabel#title { color: white; font-size: 26px; font-weight: 800; }
 QLabel#subtitle { color: #eafcff; font-size: 13px; }
 QLabel#h1 { font-size: 20px; font-weight: 800; color: #0874a4; }
@@ -35,9 +34,15 @@ QSpinBox, QComboBox, QLineEdit { background: white; border: 1px solid #86cde3;
     border-radius: 9px; padding: 8px; min-height: 22px; selection-background-color: #9de6f2; }
 QLineEdit#cell { font-size: 22px; font-weight: 700; padding: 12px; }
 QSpinBox:focus, QComboBox:focus, QLineEdit:focus { border: 2px solid #087fca; }
-QPushButton { background: qlineargradient(x1:0,y1:0,x2:0,y2:1,stop:0 #4bc9ef,stop:1 #0685cc);
-    color: white; border: 1px solid #0572b2; border-radius: 10px; padding: 9px 16px; font-weight: 700; }
-QPushButton:hover { background: #0695dc; }
+QPushButton {
+    background: #0685cc;
+    color: white;
+    border: 1px solid #0572b2;
+    border-radius: 10px;
+    padding: 9px 16px;
+    font-weight: 700;
+}
+QPushButton:hover { background: #0572b2; }
 QPushButton:pressed { background: #056da8; }
 QPushButton:focus { border: 2px solid #08405f; }
 QPushButton:disabled { background: #bcd9e6; color: #eef; border-color: #a7c7d6; }
