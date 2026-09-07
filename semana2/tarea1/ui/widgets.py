@@ -182,8 +182,9 @@ class MatrizGrid(QFrame):
         col_rbrk = 4 + n
 
         for j in range(n):
-            enc = QLabel(f"x{j + 1}")
-            enc.setObjectName("hint")
+        from formato import var
+        enc = QLabel(var(j, "x"))
+        et_fila = QLabel(var(i, "E"))
             enc.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self._grid.addWidget(enc, 0, 2 + j)
         enc_b = QLabel("b")
