@@ -37,18 +37,23 @@ Si falta una captura, deja un recuadro **[PENDIENTE]** en su sitio.
 
 ## Capturas
 
-Se generan desde la GUI real. De forma reproducible (con el paquete instalado,
-`uv sync --extra qt`), desde la raíz del repo:
+Se generan de la GUI **real** (backend nativo de macOS, tema y render de la app),
+de forma reproducible. Con el paquete instalado (`uv sync --extra qt`), desde la
+raíz del repo:
 
 ```bash
 uv run python informes/plantilla/generar-capturas.py \
     informes/Informe_Programa_N_Grupo_7/img
 ```
 
-Renderiza la pantalla "Proceso y resultado" para los tres casos del menú
-(única / infinitas / inconsistente), saltando al último paso (forma escalonada
-final / RREF), y guarda `caso1-unica.png`, `caso2-libres.png`,
-`caso3-inconsistente.png`.
+Por cada caso del menú (única / infinitas / inconsistente) deja dos PNG:
 
-Para tomarlas a mano: `uv run aqua-gauss` → menú → "Ejemplo rápido" → el caso →
-recorrer los pasos con `→`.
+| archivo | pantalla |
+|---|---|
+| `casoN-proceso.png` | "3 · Proceso y resultado" en el último paso (RREF / forma escalonada final) |
+| `casoN-vectorial.png` | "4 · Solución en notación vectorial" |
+
+El script usa `QWidget.grab()` (los mismos píxeles que pinta la app, sin la barra
+de título del sistema): es determinista y no necesita permiso de *Grabación de
+pantalla*. Para tomarlas a mano en su lugar: `uv run aqua-gauss` → menú →
+"Ejemplo rápido" → el caso → `→` hasta el último paso, luego `Enter`.

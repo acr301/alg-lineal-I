@@ -57,17 +57,26 @@
 }
 \lstset{style=pseudo}
 
-% --- Placeholder para capturas todavía no tomadas --------------------
+% --- Una captura (o recuadro [PENDIENTE] si aún no se tomó) ----------
 \newcommand{\captura}[2]{%
   \begin{center}
-  \IfFileExists{img/#1}{\includegraphics[width=0.92\linewidth]{#1}}{%
+  \IfFileExists{img/#1}{%
+    \fbox{\includegraphics[width=0.96\linewidth]{#1}}\\[0.3em]
+    {\footnotesize #2}%
+  }{%
     \fbox{\parbox{0.9\linewidth}{\centering\vspace{1.2em}
       \textbf{[PENDIENTE: captura de pantalla]}\\[0.4em]
       \small #2\\[0.2em]
-      Guardar como \texttt{img/#1} (ejecutar \texttt{uv run aqua-gauss}).
+      Guardar como \texttt{img/#1}
+      (\texttt{informes/plantilla/generar-capturas.py}).
       \vspace{1.2em}}}%
   }
   \end{center}%
+}
+% --- Las dos capturas de un caso: pantalla de proceso + de vector ----
+\newcommand{\capturaCaso}[2]{%
+  \captura{#1-proceso.png}{Pantalla \emph{Proceso y resultado}: #2}%
+  \captura{#1-vectorial.png}{Pantalla \emph{Soluci\'on en notaci\'on vectorial}.}%
 }
 
 \begin{document}
@@ -291,8 +300,9 @@ RREF esperada $\left[\begin{smallmatrix}1&0&0&5\\0&1&0&3\\0&0&1&-2\end{smallmatr
 columnas pivote: 1, 2 y 3; todas las variables son b\'asicas (no hay libres);
 $\text{rango}=3=n$. Soluci\'on \'unica $x_1=5,\ x_2=3,\ x_3=-2$.
 
-\captura{caso1-unica.png}{Caso 1: sistema consistente determinado --- RREF, columnas
-pivote 1,2,3 y soluci\'on \'unica $(5,3,-2)$.}
+\capturaCaso{caso1}{el \'ultimo paso es la forma escalonada final; abajo, la
+soluci\'on \'unica $(5,3,-2)$ y su comprobaci\'on. Columnas pivote 1, 2 y 3
+(todas b\'asicas), $\text{rango}=3$.}
 
 \subsection{Sistema con variables libres (infinitas soluciones)}
 
@@ -317,8 +327,9 @@ $\text{nulidad}=1$. Soluci\'on general
       + t_1\begin{pmatrix}-\tfrac12\\[2pt]-\tfrac12\\[2pt]1\end{pmatrix}.
 \]
 
-\captura{caso2-libres.png}{Caso 2: sistema consistente indeterminado --- RREF,
-columnas pivote 1 y 2, $x_3$ libre, soluci\'on vectorial $\mathbf{x}_p + t_1\mathbf{v}_1$.}
+\capturaCaso{caso2}{el \'ultimo paso (10 de 10) es la \textbf{RREF}
+$\left[\begin{smallmatrix}1&0&\tfrac12&3\\0&1&\tfrac12&3\\0&0&0&0\end{smallmatrix}\right]$;
+columnas pivote 1 y 2, $x_3$ libre, $\text{rango}=2$, $\text{nulidad}=1$.}
 
 \subsection{Sistema sin soluci\'on (inconsistente)}
 
@@ -337,8 +348,9 @@ Al restar $F_2 \leftarrow F_2 - F_1$ queda $[\,0\ \ 0 \mid 3\,]$: una ecuaci\'on
 $0 = 3$. El sistema es \textbf{inconsistente}; no hay soluci\'on ni forma
 vectorial.
 
-\captura{caso3-inconsistente.png}{Caso 3: fila $[0\ 0\mid 3]$ tras reducir ---
-estado ``Sistema inconsistente $\cdot$ no tiene soluci\'on''.}
+\capturaCaso{caso3}{la forma escalonada final tiene la fila $[\,0\ \ 0\mid 3\,]$
+(``$0 = 3$''); estado en rojo ``Sistema inconsistente''. No hay soluci\'on ni
+forma vectorial.}
 
 % ===================== CONCLUSIÓN ===================================
 \section{Conclusi\'on}

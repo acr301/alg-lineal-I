@@ -1,61 +1,80 @@
-"""Genera las 3 capturas de la pantalla "Proceso y resultado" para el informe.
+"""Capturas de la app para el informe, fieles a lo que se ve en pantalla.
 
-Renderiza la GUI real (`aqua_gauss.clients.qt`) en modo offscreen, carga cada
-ejemplo del menú, salta al último paso (forma escalonada final / RREF) y guarda
-un PNG.
+Lanza la GUI (`aqua_gauss.clients.qt`) con el backend **nativo** de macOS (no
+"offscreen"), aplica el tema real y fotografía cada ventana con
+``QWidget.grab()``: los mismos píxeles que pinta la app —tipografía del sistema,
+degradado del encabezado, matrices renderizadas con matplotlib— sin la barra de
+título del sistema (que no es contenido de la app).
 
-Uso (desde la raíz del repo, con el paquete instalado — `uv sync --extra qt`):
+Se prefiere ``grab()`` a ``screencapture`` de macOS porque no depende del orden
+de ventanas ni de permisos de *Grabación de pantalla*: es determinista.
+
+Uso (desde la raíz del repo, con el paquete instalado — ``uv sync --extra qt``):
 
     uv run python informes/plantilla/generar-capturas.py informes/Informe_Programa_2_Grupo_7/img
 
-Deja: caso1-unica.png · caso2-libres.png · caso3-inconsistente.png
+Deja, por cada caso (única / infinitas / inconsistente):
+    casoN-proceso.png     pantalla "Proceso y resultado" en el último paso (RREF)
+    casoN-vectorial.png   pantalla "Solución en notación vectorial"
 """
 
 import os
 import sys
+import time
 
-os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+os.environ.pop("QT_QPA_PLATFORM", None)  # backend nativo (cocoa), no "offscreen"
 os.environ.setdefault("AQUA_GAUSS_SILENCIAR", "1")
 
-from PyQt6.QtWidgets import QApplication, QScrollArea  # noqa: E402
+from PyQt6.QtWidgets import QApplication  # noqa: E402
 
 from aqua_gauss.clients.qt.app import VentanaPrincipal  # noqa: E402
+from aqua_gauss.clients.qt.theme import aplicar_tema  # noqa: E402
 
 CASOS = [
-    ("Solución única", "caso1-unica.png"),
-    ("Infinitas soluciones", "caso2-libres.png"),
-    ("Sistema inconsistente", "caso3-inconsistente.png"),
+    ("Solución única", "caso1"),
+    ("Infinitas soluciones", "caso2"),
+    ("Sistema inconsistente", "caso3"),
 ]
+TAM = (1040, 760)  # tamaño por defecto de la ventana de la app
+
+
+def _asentar(app, veces=25):
+    for _ in range(veces):
+        app.processEvents()
+        time.sleep(0.04)
+    time.sleep(0.5)
+    app.processEvents()
+
+
+def _foto(win, ruta):
+    win.grab().save(ruta, "PNG")
+    print(f"OK  {ruta}")
 
 
 def main() -> int:
     out = sys.argv[1] if len(sys.argv) > 1 else "."
     os.makedirs(out, exist_ok=True)
+
     app = QApplication(sys.argv)
+    aplicar_tema(app)
 
-    for etiqueta, archivo in CASOS:
+    for etiqueta, base in CASOS:
         win = VentanaPrincipal()
-        win.resize(1100, 1400)
+        win.setFixedSize(*TAM)
         win.sesion.cargar_ejemplo(etiqueta)
-        win.ir("proceso")
-        for _ in range(6):
-            app.processEvents()
 
+        win.ir("proceso")
         proceso = win.pantallas["proceso"]
         if getattr(proceso, "pasos", None):
-            proceso._mostrar_paso(len(proceso.pasos) - 1)
-        for _ in range(4):
-            app.processEvents()
+            proceso._mostrar_paso(len(proceso.pasos) - 1)  # último paso: RREF / escalonada final
+        win.show()
+        _asentar(app)
+        _foto(win, os.path.join(out, f"{base}-proceso.png"))
 
-        area = proceso.findChild(QScrollArea)
-        objetivo = area.widget() if area is not None else proceso
-        objetivo.adjustSize()
-        for _ in range(3):
-            app.processEvents()
+        win.ir("resultado")  # pantalla "4 · Solución en notación vectorial"
+        _asentar(app, veces=15)
+        _foto(win, os.path.join(out, f"{base}-vectorial.png"))
 
-        ruta = os.path.join(out, archivo)
-        ok = objetivo.grab().save(ruta, "PNG")
-        print(f"{'OK ' if ok else 'FALLO '} {ruta}")
         win.close()
         win.deleteLater()
         app.processEvents()
