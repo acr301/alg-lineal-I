@@ -20,6 +20,8 @@ alg-lineal-I/
 │   ├── ALGORITMO.md             # Explicación matemática detallada
 │   ├── CASOS_PRUEBA.md          # Playbook con datos listos
 │   ├── FEATURE_PROPIEDADES_RN.md # Recorrido del issue #23
+│   ├── GLOSARIO.md              # Terminología unificada
+│   ├── ADR-0001-entrada-numerica.md
 │   └── ADR-0002-pesos-combinacion-lineal.md
 ├── semana2/tarea1/
 │   ├── gauss.py                 # Gauss / REF + API histórica compatible
@@ -154,6 +156,10 @@ Esc retrocede, ← → recorren los pasos, F1 vuelve al menú.
 ### docs/FEATURE_PROPIEDADES_RN.md
 - Alcance del issue #23, ejemplos manuales y mapa de archivos
 - Separación de Gauss/Gauss-Jordan, vectores columna y pruebas agregadas
+
+### docs/GLOSARIO.md
+- Terminología unificada: base, span, pesos/coeficientes, variable libre, EPS
+- Reglas de consistencia (`pesos` en código y ADR; `EPS` ≠ umbral de ADR-0001)
 
 ### docs/CASOS_PRUEBA.md
 - 3 casos de prueba principales

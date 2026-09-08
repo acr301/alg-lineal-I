@@ -33,6 +33,7 @@ uv run python main.py
 - [docs/CASOS_PRUEBA.md](docs/CASOS_PRUEBA.md) - Playbook con datos
 - [docs/FEATURE_PROPIEDADES_RN.md](docs/FEATURE_PROPIEDADES_RN.md) - Tarea 3: vectores y combinaciones
 - [docs/ADR-0002-pesos-combinacion-lineal.md](docs/ADR-0002-pesos-combinacion-lineal.md) - Convención para pesos no únicos
+- [docs/GLOSARIO.md](docs/GLOSARIO.md) - Terminología (base, span, pesos/coeficientes, tolerancia)
 - [DOCUMENTACION_FEATURE.md](DOCUMENTACION_FEATURE.md) - Detalles completos
 
 ## ✨ Características
@@ -105,6 +106,7 @@ uv run --extra dev pytest        # 71 tests en la rama del issue #23
 │   ├── ALGORITMO.md
 │   ├── CASOS_PRUEBA.md
 │   ├── FEATURE_PROPIEDADES_RN.md
+│   ├── GLOSARIO.md
 │   ├── ADR-0001-entrada-numerica.md
 │   └── ADR-0002-pesos-combinacion-lineal.md
 ├── DOCUMENTACION_FEATURE.md   # Detalles extensos
