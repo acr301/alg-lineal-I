@@ -20,6 +20,10 @@ from formato import (
     formatear_valor,
     generar_latex_solucion,
     latex_pmatrix,
+    var,
+    parametro,
+    entrada_A,
+    entrada_b,
 )
 from vectores import combinacion_lineal, es_combinacion_lineal, verificar_propiedades
 
@@ -111,12 +115,13 @@ class Sesion:
         return self.n_eq * (self.n_var + 1)
 
     def etiqueta_celda(self, indice):
-        """Nombre de la celda 'indice' (recorrido por filas): a11, a12, ..., b1, a21..."""
+        """Nombre y ayuda de la celda 'indice' (recorrido por filas): a₁₁, a₁₂, …, b₁, a₂₁…"""
         fila, col = divmod(indice, self.n_var + 1)
         if col == self.n_var:
-            return f"b{fila + 1}", f"término independiente de la ecuación {fila + 1}"
-        return (f"a{fila + 1}{col + 1}",
-                f"coeficiente de x{col + 1} en la ecuación {fila + 1}")
+            return (entrada_b(fila),
+                    f"término independiente de la ecuación {fila + 1}")
+        return (entrada_A(fila, col),
+                f"coeficiente de {var(col, 'x')} en la ecuación {fila + 1}")
 
     def set_celda(self, indice, valor):
         fila, col = divmod(indice, self.n_var + 1)
@@ -181,7 +186,7 @@ class Sesion:
                 n, libres, expresiones, datos["vectorial"]["particular"],
                 datos["vectorial"]["vectores_nulos"], self.modo)
             x_ej = evaluar_solucion_parametrica(n, libres, expresiones, [0.0] * len(libres))
-            etiqueta = ", ".join(f"t{k + 1} = 0" for k in range(len(libres))) or "sin parámetros"
+            etiqueta = ", ".join(f"{parametro(k)} = 0" for k in range(len(libres))) or "sin parámetros"
             datos["verificacion"] = (
                 f"Comprobación con {etiqueta}",
                 verificar_solucion_detallada(coeficientes, terminos, x_ej),

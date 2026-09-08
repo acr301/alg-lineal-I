@@ -148,13 +148,26 @@ def subindice(numero):
 
 
 def var(indice, nombre="x"):
-    """Nombre de variable con subíndice Unicode: ``var(1)`` -> ``"x₁"``."""
+    """Nombre de variable con subíndice Unicode: ``var(0)`` -> ``"x₁"``."""
     return f"{nombre}{subindice(indice + 1)}"
 
 
 def parametro(indice):
     """Parámetro libre con subíndice: ``parametro(0)`` -> ``"t₁"``."""
     return f"t{subindice(indice + 1)}"
+
+
+def entrada_A(fila, col):
+    """Coeficiente de la matriz con doble subíndice: ``entrada_A(0, 0)`` -> ``"a₁₁"``.
+
+    El índice empieza en 0, igual que ``var`` y ``parametro``.
+    """
+    return f"a{subindice(fila + 1)}{subindice(col + 1)}"
+
+
+def entrada_b(fila):
+    """Término independiente con subíndice: ``entrada_b(0)`` -> ``"b₁"``."""
+    return f"b{subindice(fila + 1)}"
 
 
 # --------------------------------------------------------------------------- #

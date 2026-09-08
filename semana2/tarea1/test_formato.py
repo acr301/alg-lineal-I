@@ -11,14 +11,35 @@ from formato import (
     MODO_DECIMAL,
     MODO_FRACCION,
     a_fraccion,
+    entrada_A,
+    entrada_b,
     formatear_valor,
     generar_latex_solucion,
     latex_combinacion_lineal,
     latex_valor,
     mcd,
     normalizar_entrada,
+    parametro,
+    subindice,
     texto_combinacion_lineal,
+    var,
 )
+
+
+class TestNotacionSubindices(unittest.TestCase):
+    def test_subindice_convierte_cada_digito_y_el_signo(self):
+        self.assertEqual(subindice(12), "₁₂")
+        self.assertEqual(subindice("-3"), "₋₃")
+
+    def test_var_y_parametro_indexan_desde_cero(self):
+        self.assertEqual(var(0), "x₁")
+        self.assertEqual(var(2, "E"), "E₃")
+        self.assertEqual(parametro(0), "t₁")
+
+    def test_entrada_A_y_entrada_b_usan_doble_subindice_desde_cero(self):
+        self.assertEqual(entrada_A(0, 0), "a₁₁")
+        self.assertEqual(entrada_A(1, 2), "a₂₃")
+        self.assertEqual(entrada_b(0), "b₁")
 
 
 class TestFormatoCombinacionLineal(unittest.TestCase):
