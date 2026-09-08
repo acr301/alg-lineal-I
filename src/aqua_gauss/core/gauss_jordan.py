@@ -57,9 +57,7 @@ def solucion_parametrica(matriz, n_incognitas, columnas_pivote):
     return libres, expresiones
 
 
-def evaluar_solucion_parametrica(
-    n_incognitas, libres, expresiones, valores_libres
-):
+def evaluar_solucion_parametrica(n_incognitas, libres, expresiones, valores_libres):
     """Evalúa una solución paramétrica para valores concretos."""
     x = [0.0] * n_incognitas
     for indice_libre, valor in zip(libres, valores_libres):
@@ -77,21 +75,15 @@ def evaluar_solucion_parametrica(
     return x
 
 
-def solucion_general_vectorial(
-    matriz, n_incognitas, columnas_pivote, libres, expresiones
-):
+def solucion_general_vectorial(matriz, n_incognitas, columnas_pivote, libres, expresiones):
     """Construye una solución particular y una base del espacio nulo."""
-    particular = evaluar_solucion_parametrica(
-        n_incognitas, libres, expresiones, [0] * len(libres)
-    )
+    particular = evaluar_solucion_parametrica(n_incognitas, libres, expresiones, [0] * len(libres))
 
     vectores_nulos = []
     for k, indice_libre in enumerate(libres):
         valores_libres = [0.0] * len(libres)
         valores_libres[k] = 1.0
-        x_temporal = evaluar_solucion_parametrica(
-            n_incognitas, libres, expresiones, valores_libres
-        )
+        x_temporal = evaluar_solucion_parametrica(n_incognitas, libres, expresiones, valores_libres)
         vector = [0.0] * n_incognitas
         vector[indice_libre] = 1.0
         for i in range(n_incognitas):
@@ -102,9 +94,7 @@ def solucion_general_vectorial(
         "particular": particular,
         "vectores_nulos": vectores_nulos,
         "variables_libres": libres,
-        "expresion_str": _construir_expresion_string(
-            particular, vectores_nulos, libres
-        ),
+        "expresion_str": _construir_expresion_string(particular, vectores_nulos, libres),
     }
 
 

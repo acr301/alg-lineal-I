@@ -89,8 +89,8 @@ class LocalSolver:
             "n": n,
             "forma": clasificar_forma_escalonada(aumentada, n, pivotes),
             "solucion": None,
-            "parametrica": None,   # (libres, expresiones)
-            "vectorial": None,     # {particular, vectores_nulos}
+            "parametrica": None,  # (libres, expresiones)
+            "vectorial": None,  # {particular, vectores_nulos}
             "verificacion": None,  # (encabezado, filas_detalladas)
             "latex": "",
         }
@@ -104,18 +104,27 @@ class LocalSolver:
                 verificar_solucion_detallada(coeficientes, terminos, x),
             )
         elif tipo == "indeterminado":
-            reducir_a_escalonada_reducida(aumentada, n, pivotes,
-                                          registrar_paso=registrar, formato_numero=fmt)
+            reducir_a_escalonada_reducida(
+                aumentada, n, pivotes, registrar_paso=registrar, formato_numero=fmt
+            )
             pasos.append(("Forma escalonada reducida", copiar_matriz(aumentada)))
             libres, expresiones = solucion_parametrica(aumentada, n, pivotes)
             datos["parametrica"] = (libres, expresiones)
             datos["vectorial"] = solucion_general_vectorial(
-                aumentada, n, pivotes, libres, expresiones)
+                aumentada, n, pivotes, libres, expresiones
+            )
             datos["latex"] = generar_latex_solucion(
-                n, libres, expresiones, datos["vectorial"]["particular"],
-                datos["vectorial"]["vectores_nulos"], modo)
+                n,
+                libres,
+                expresiones,
+                datos["vectorial"]["particular"],
+                datos["vectorial"]["vectores_nulos"],
+                modo,
+            )
             x_ej = evaluar_solucion_parametrica(n, libres, expresiones, [0.0] * len(libres))
-            etiqueta = ", ".join(f"{parametro(k)} = 0" for k in range(len(libres))) or "sin parámetros"
+            etiqueta = (
+                ", ".join(f"{parametro(k)} = 0" for k in range(len(libres))) or "sin parámetros"
+            )
             datos["verificacion"] = (
                 f"Comprobación con {etiqueta}",
                 verificar_solucion_detallada(coeficientes, terminos, x_ej),

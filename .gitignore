@@ -24,3 +24,16 @@ env/
 
 # macOS
 .DS_Store
+
+# Scratchpad de sesión del skill "feature": local, NO se versiona.
+# La plantilla vacía sí (context/current-feature.md.template); el resumen de
+# cada entrega vive en docs/ y en el PR (ver #26).
+context/current-feature.md
+
+# Informe 1 (borrador del alumno) y PDFs compilados de informes/
+semana2/
+informes/**/informe.pdf
+informes/**/*.aux
+informes/**/*.log
+informes/**/*.out
+informes/**/*.toc

@@ -47,8 +47,14 @@ alg-lineal-I/
 │   ├── core/                   # test_gauss, test_gauss_jordan, test_vectores, test_formato
 │   └── qt/                     # test_mathrender, test_ui
 └── context/
-    └── current-feature.md       # Estado actual del desarrollo (local, ver #26)
+    ├── current-feature.md          # Scratchpad de sesión — LOCAL, en .gitignore
+    └── current-feature.md.template # Estructura vacía (esto sí se versiona)
 ```
+
+> **`context/current-feature.md` no se commitea** (skill `feature`). Es un
+> borrador de sesión; generaba commits de ruido ("reset current-feature.md…").
+> El historial de cada feature vive en su PR y el resumen en `docs/`. Para
+> empezar en limpio: `cp context/current-feature.md.template context/current-feature.md`.
 
 ## 🚀 Inicio Rápido (para Agentes)
 
@@ -207,11 +213,12 @@ Esc retrocede, ← → recorren los pasos, F1 vuelve al menú.
 
 ## 📊 Métricas Actuales
 
-- **Tests:** 78 (todos pasan en `main`) — `uv run --extra dev pytest`
-- **Suites:** `test_gauss`, `test_gauss_jordan`, `test_vectores`, `test_formato`,
-  `test_mathrender`, `test_main`, `test_ui`
-- **Cobertura:** Lógica principal y capa de formato cubiertas
-- **Estado:** Tareas 1–3 en `main`. Próximo trabajo estructural en #28 (ver `docs/RUMBO.md`)
+- **Tests:** 70 (todos pasan) — `uv run --extra dev pytest`
+- **Suites:** `tests/core/` (`test_gauss`, `test_gauss_jordan`, `test_vectores`,
+  `test_formato`) · `tests/qt/` (`test_mathrender`, `test_ui`)
+- **Lint + formato:** `uv run ruff check .` y `uv run ruff format --check .`
+- **Estado:** Tareas 1–3 + refactor a paquete `aqua-gauss` (#28) en `main`.
+  En curso: housekeeping/versionado (#26) y CI/release (#27) — ver `docs/RUMBO.md`.
 
 ## 🤖 Memoria para Agentes
 
@@ -255,7 +262,7 @@ LaTeX renderizado, comprobación explícita y fracciones. Issues #15, #16, #17.
 
 **Migración a `uv`:** `pyproject.toml` + `uv.lock` en su sitio; documentación actualizada.
 
-### Decisiones Tomales Anteriormente
+### Decisiones Tomadas Anteriormente
 
 1. **Sin librerías externas** - Exigencia del ejercicio educativo
 2. **Solución vectorial explícita** - Para entendimiento matemático

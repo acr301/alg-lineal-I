@@ -122,9 +122,7 @@ def es_combinacion_lineal(objetivo, vectores):
 
     reducir_a_escalonada_reducida(matriz, cantidad, pivotes)
     libres, expresiones = solucion_parametrica(matriz, cantidad, pivotes)
-    pesos = evaluar_solucion_parametrica(
-        cantidad, libres, expresiones, [0.0] * len(libres)
-    )
+    pesos = evaluar_solucion_parametrica(cantidad, libres, expresiones, [0.0] * len(libres))
     return True, pesos
 
 
@@ -145,23 +143,15 @@ def verificar_propiedades(u, v, w, a, b):
     vector_nulo = cero(dimension)
 
     return {
-        "conmutatividad_suma": _igualdad(
-            "Conmutatividad de la suma", suma(u, v), suma(v, u)
-        ),
+        "conmutatividad_suma": _igualdad("Conmutatividad de la suma", suma(u, v), suma(v, u)),
         "asociatividad_suma": _igualdad(
             "Asociatividad de la suma",
             suma(suma(u, v), w),
             suma(u, suma(v, w)),
         ),
-        "neutro_aditivo": _igualdad(
-            "Elemento neutro aditivo", suma(u, vector_nulo), list(u)
-        ),
-        "inverso_aditivo": _igualdad(
-            "Inverso aditivo", suma(u, opuesto(u)), vector_nulo
-        ),
-        "identidad_escalar": _igualdad(
-            "Identidad escalar", escalar(1, u), list(u)
-        ),
+        "neutro_aditivo": _igualdad("Elemento neutro aditivo", suma(u, vector_nulo), list(u)),
+        "inverso_aditivo": _igualdad("Inverso aditivo", suma(u, opuesto(u)), vector_nulo),
+        "identidad_escalar": _igualdad("Identidad escalar", escalar(1, u), list(u)),
         "asociatividad_escalar": _igualdad(
             "Asociatividad del producto por escalares",
             escalar(a, escalar(b, u)),

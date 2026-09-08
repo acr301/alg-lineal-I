@@ -5,8 +5,8 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QFrame,
     QGridLayout,
-    QHeaderView,
     QHBoxLayout,
+    QHeaderView,
     QLabel,
     QLineEdit,
     QPushButton,
@@ -17,13 +17,13 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from aqua_gauss.clients.qt.widgets import PantallaBase
 from aqua_gauss.core.formato import (
     latex_combinacion_lineal,
     normalizar_entrada,
     texto_combinacion_lineal,
     vector_columna_html,
 )
-from aqua_gauss.clients.qt.widgets import PantallaBase
 
 
 def _parsear(texto):
@@ -164,9 +164,7 @@ class PantallaVectores(PantallaBase):
                 item = QTableWidgetItem("0")
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.tabla.setItem(fila, columna, item)
-        self.tabla.horizontalHeader().setSectionResizeMode(
-            QHeaderView.ResizeMode.Stretch
-        )
+        self.tabla.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.resultado.clear()
         self.latex.clear()
         self.error.setText("")
@@ -176,10 +174,7 @@ class PantallaVectores(PantallaBase):
         return _parsear(item.text() if item else "")
 
     def _leer_vector(self, columna, fila_inicial=0):
-        return [
-            self._valor(fila_inicial + i, columna)
-            for i in range(self.dimension.value())
-        ]
+        return [self._valor(fila_inicial + i, columna) for i in range(self.dimension.value())]
 
     def _calcular(self):
         try:
@@ -203,8 +198,11 @@ class PantallaVectores(PantallaBase):
         datos = self.sesion.calcular_combinacion(vectores, pesos)
         objetivo = datos["resultado"]
         self.resultado.setHtml(
-            "<b>Vector resultante:</b><br>" + vector_columna_html(objetivo, self.sesion.modo)
-            + "<p>" + texto_combinacion_lineal(objetivo, vectores, pesos, self.sesion.modo) + "</p>"
+            "<b>Vector resultante:</b><br>"
+            + vector_columna_html(objetivo, self.sesion.modo)
+            + "<p>"
+            + texto_combinacion_lineal(objetivo, vectores, pesos, self.sesion.modo)
+            + "</p>"
         )
         self.latex.setPlainText(
             latex_combinacion_lineal(objetivo, vectores, pesos, self.sesion.modo)

@@ -48,8 +48,8 @@ class TestMenu(unittest.TestCase):
         # Simula el doble disparo (itemActivated + itemDoubleClicked): el 1er
         # _activar repuebla la lista, el 2º recibiría un item ya borrado.
         menu._activar(item)
-        menu._activar(item)          # con el fix: no-op / repoblar, sin crash
-        menu._activar(None)          # gesto sobre lista ya cambiada
+        menu._activar(item)  # con el fix: no-op / repoblar, sin crash
+        menu._activar(None)  # gesto sobre lista ya cambiada
         self.assertEqual(menu._modo, "ejemplos")
 
     def test_elegir_ejemplo_salta_a_proceso(self):
@@ -87,8 +87,7 @@ class TestMenu(unittest.TestCase):
         pantalla.dimension.setValue(2)
         pantalla.cantidad.setValue(2)
         pantalla.operacion.setCurrentText("Calcular combinación lineal")
-        valores = ((0, 0, "2"), (1, 0, "1"), (2, 0, "2"),
-                   (0, 1, "-1"), (1, 1, "3"), (2, 1, "-1"))
+        valores = ((0, 0, "2"), (1, 0, "1"), (2, 0, "2"), (0, 1, "-1"), (1, 1, "3"), (2, 1, "-1"))
         for fila, columna, valor in valores:
             pantalla.tabla.item(fila, columna).setText(valor)
 
@@ -97,9 +96,7 @@ class TestMenu(unittest.TestCase):
         self.assertEqual(datos["resultado"], [-1, 5])
 
     def test_estado_verifica_propiedades(self):
-        datos = self.win.sesion.comprobar_propiedades(
-            [1, 2], [3, -1], [0, 4], 2, -3
-        )
+        datos = self.win.sesion.comprobar_propiedades([1, 2], [3, -1], [0, 4], 2, -3)
 
         self.assertEqual(len(datos["propiedades"]), 8)
         self.assertTrue(all(p["cumple"] for p in datos["propiedades"].values()))
@@ -124,9 +121,7 @@ class TestNotacionSubindices(unittest.TestCase):
 
         grid = MatrizGrid()
         grid.poblar(Sesion())
-        encabezados = {
-            grid._grid.itemAtPosition(0, 2 + j).widget().text() for j in range(3)
-        }
+        encabezados = {grid._grid.itemAtPosition(0, 2 + j).widget().text() for j in range(3)}
         self.assertEqual(encabezados, {"x₁", "x₂", "x₃"})
         self.assertEqual(grid._grid.itemAtPosition(1, 0).widget().text(), "E₁")
 

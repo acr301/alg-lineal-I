@@ -35,7 +35,6 @@ uv run aqua-gauss         # equivalente:  uv run python -m aqua_gauss   /   uv r
 - [docs/FEATURE_PROPIEDADES_RN.md](docs/FEATURE_PROPIEDADES_RN.md) - Tarea 3: vectores y combinaciones
 - [docs/ADR-0002-pesos-combinacion-lineal.md](docs/ADR-0002-pesos-combinacion-lineal.md) - Convención para pesos no únicos
 - [docs/GLOSARIO.md](docs/GLOSARIO.md) - Terminología (base, span, pesos/coeficientes, tolerancia)
-- [DOCUMENTACION_FEATURE.md](DOCUMENTACION_FEATURE.md) - Detalles completos
 
 ## ✨ Características
 
@@ -82,12 +81,11 @@ motor `mathtext`); arrastra NumPy como dependencia suya, que tampoco se usa.
 - ✅ Notación matemática renderizada + rediseño de la GUI por pantallas (PR #21, `v2.0.0`)
 - ✅ Tarea 3: propiedades algebraicas de `R^n` y combinación lineal (#29, `v3.0.0`)
 - ✅ Subíndices Unicode consistentes + rediseño visual plano (#30)
+- ✅ #28: `core/` + `clients/qt` (MVC), paquete instalable `aqua-gauss`, baja de la consola
 
 **Planificado** — ver [`docs/RUMBO.md`](docs/RUMBO.md):
 
-- 🔄 #28: `core/` + `clients/` (MVC), paquete instalable, baja de `main.py`
-  (pasos 1 y 3 en PR; paso 2 MVC en curso)
-- 📋 #26 / #27: housekeeping + versionado → CI + release
+- 🔄 #26 / #27: housekeeping + versionado → CI + release
 - 📋 #31: glosario como fuente única + tooltips didácticos
 - 📋 #18: cliente de terminal con Textual
 - 📋 #32: API FastAPI sobre `core/`
@@ -122,7 +120,6 @@ uv run --extra dev pytest        # 70 tests
 │   ├── GLOSARIO.md
 │   ├── ADR-0001-entrada-numerica.md
 │   └── ADR-0002-pesos-combinacion-lineal.md
-├── DOCUMENTACION_FEATURE.md   # Detalles extensos
 ├── pyproject.toml             # Paquete `aqua-gauss`; entry point + extras qt/dev
 ├── gui.py                     # Lanzador de la GUI (shim -> aqua_gauss.app:main)
 ├── src/aqua_gauss/

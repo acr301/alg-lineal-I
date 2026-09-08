@@ -1,7 +1,7 @@
 """Pantalla de menú: punto de entrada al flujo. Info de la app abajo, pequeña."""
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QLabel, QListWidgetItem, QVBoxLayout
+from PyQt6.QtWidgets import QApplication, QLabel, QListWidgetItem
 
 from aqua_gauss.clients.qt.state import EJEMPLOS
 from aqua_gauss.clients.qt.theme import APP_INFO
@@ -39,7 +39,8 @@ class PantallaMenu(PantallaBase):
         pie = QLabel(
             f"v{APP_INFO['version']}  ·  {APP_INFO['autores']}  ·  "
             f"Licencia {APP_INFO['licencia']}  ·  {APP_INFO['repo']}  ·  "
-            "Método: eliminación de Gauss (sin NumPy/SymPy)")
+            "Método: eliminación de Gauss (sin NumPy/SymPy)"
+        )
         pie.setObjectName("pie")
         pie.setWordWrap(True)
         pie.setAlignment(Qt.AlignmentFlag.AlignHCenter)
@@ -55,10 +56,12 @@ class PantallaMenu(PantallaBase):
         self._modo = _PRINCIPAL
         self.titulo_lista.setText("¿Qué quieres hacer?")
         self.lista.clear()
-        for texto in ("Iniciar — crear un sistema nuevo",
-                      "Vectores y propiedades de Rⁿ",
-                      "Ejemplo rápido — cargar un caso de muestra",
-                      "Salir"):
+        for texto in (
+            "Iniciar — crear un sistema nuevo",
+            "Vectores y propiedades de Rⁿ",
+            "Ejemplo rápido — cargar un caso de muestra",
+            "Salir",
+        ):
             self.lista.addItem(QListWidgetItem(texto))
         self.lista.setCurrentRow(0)
         self.lista.setFixedHeight(self.lista.sizeHintForRow(0) * 4 + 28)

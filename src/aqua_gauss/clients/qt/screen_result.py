@@ -13,16 +13,18 @@ from PyQt6.QtWidgets import (
 )
 
 from aqua_gauss.clients.qt import mathrender
-from aqua_gauss.core.formato import vector_columna_html
 from aqua_gauss.clients.qt.widgets import PantallaBase
+from aqua_gauss.core.formato import vector_columna_html
 
 
 class PantallaResultado(PantallaBase):
     def __init__(self, win):
         super().__init__(win)
-        self.encabezado("4 · Solución en notación vectorial",
-                        "La solución escrita como un vector particular más una "
-                        "combinación de vectores, tal como se hace a mano.")
+        self.encabezado(
+            "4 · Solución en notación vectorial",
+            "La solución escrita como un vector particular más una "
+            "combinación de vectores, tal como se hace a mano.",
+        )
 
         self.tarjeta = QFrame()
         self.tarjeta.setObjectName("card")
@@ -71,8 +73,9 @@ class PantallaResultado(PantallaBase):
     def al_entrar(self, **kw):
         datos = self.sesion.resultado or self.sesion.resolver()
         self._render(datos)
-        self.latex_text.setPlainText(datos.get("latex", "") or
-                                     "(sin solución vectorial para este sistema)")
+        self.latex_text.setPlainText(
+            datos.get("latex", "") or "(sin solución vectorial para este sistema)"
+        )
         self.caja_latex.setVisible(False)
         self.toggle_latex.setText("▸  Ver sintaxis LaTeX")
 
@@ -104,9 +107,12 @@ class PantallaResultado(PantallaBase):
         tipo = datos["tipo"]
 
         if tipo == "incompatible":
-            self.host.addWidget(QLabel(
-                "El sistema es inconsistente: no existe solución, "
-                "por lo que no hay forma vectorial."))
+            self.host.addWidget(
+                QLabel(
+                    "El sistema es inconsistente: no existe solución, "
+                    "por lo que no hay forma vectorial."
+                )
+            )
             self.host.addStretch()
             return
 
@@ -120,7 +126,9 @@ class PantallaResultado(PantallaBase):
         usar_img = mathrender.disponible()
         if usar_img:
             self.host.addWidget(QLabel("<b>x</b>  ="))
-            self.host.addWidget(self._pix(mathrender.columna_a_pixmap(componentes, modo, fontsize=18)))
+            self.host.addWidget(
+                self._pix(mathrender.columna_a_pixmap(componentes, modo, fontsize=18))
+            )
             for k, vec in enumerate(vectores):
                 mas = mathrender.latex_a_pixmap(rf"+\;\; t_{{{k + 1}}}", fontsize=18)
                 self.host.addWidget(self._pix(mas))
@@ -140,8 +148,9 @@ class PantallaResultado(PantallaBase):
     def _alternar_latex(self):
         visible = not self.caja_latex.isVisible()
         self.caja_latex.setVisible(visible)
-        self.toggle_latex.setText(("▾  Ocultar sintaxis LaTeX" if visible
-                                   else "▸  Ver sintaxis LaTeX"))
+        self.toggle_latex.setText(
+            "▾  Ocultar sintaxis LaTeX" if visible else "▸  Ver sintaxis LaTeX"
+        )
 
     def _copiar_latex(self):
         QGuiApplication.clipboard().setText(self.latex_text.toPlainText())

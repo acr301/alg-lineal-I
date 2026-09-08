@@ -70,7 +70,7 @@ class PantallaBase(QWidget):
         columna = QWidget()
         columna.setMaximumWidth(self.ANCHO_MAX)
         columna.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        exterior.addWidget(columna, 8)   # 8:1:1 -> ocupa el centro pero topado en ANCHO_MAX
+        exterior.addWidget(columna, 8)  # 8:1:1 -> ocupa el centro pero topado en ANCHO_MAX
         exterior.addStretch(1)
 
         self.raiz = QVBoxLayout(columna)
@@ -193,12 +193,16 @@ class MatrizGrid(QFrame):
         self._grid.addWidget(enc_b, 0, col_b)
 
         izq = QLabel()
-        izq.setStyleSheet("border:3px solid #153653; border-right:none;"
-                          " border-top-left-radius:3px; border-bottom-left-radius:3px;")
+        izq.setStyleSheet(
+            "border:3px solid #153653; border-right:none;"
+            " border-top-left-radius:3px; border-bottom-left-radius:3px;"
+        )
         izq.setFixedWidth(10)
         der = QLabel()
-        der.setStyleSheet("border:3px solid #153653; border-left:none;"
-                          " border-top-right-radius:3px; border-bottom-right-radius:3px;")
+        der.setStyleSheet(
+            "border:3px solid #153653; border-left:none;"
+            " border-top-right-radius:3px; border-bottom-right-radius:3px;"
+        )
         der.setFixedWidth(10)
         self._grid.addWidget(izq, 1, 1, filas, 1)
         self._grid.addWidget(der, 1, col_rbrk, filas, 1)
@@ -221,7 +225,8 @@ class MatrizGrid(QFrame):
                     celda.setObjectName("celda_activa")
                     celda.setStyleSheet(
                         "#celda_activa{background:#fff3cf; border:2px solid #e0a400;"
-                        " border-radius:6px; padding:2px 8px; font-weight:800;}")
+                        " border-radius:6px; padding:2px 8px; font-weight:800;}"
+                    )
                 else:
                     celda.setStyleSheet("padding:2px 8px;")
                 self._grid.addWidget(celda, i + 1, (2 + j) if j < n else col_b)

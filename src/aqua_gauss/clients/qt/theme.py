@@ -1,14 +1,30 @@
 """Hoja de estilo, paleta y fuente de la aplicación."""
 
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _dist_version
+
 from PyQt6.QtGui import QColor, QFont, QFontDatabase, QPalette
+
+
+def _version() -> str:
+    """Versión instalada del paquete. Fuente de verdad: ``pyproject.toml``."""
+    try:
+        return _dist_version("aqua-gauss")
+    except PackageNotFoundError:  # ejecutado sin instalar (p. ej. tests sueltos)
+        return "0.0.0+dev"
+
 
 APP_INFO = {
     "nombre": "Aqua Gauss",
-    "version": "2.0.0",
-    "resumen": ("Resuelve y analiza sistemas de ecuaciones lineales Ax = b por "
-                "eliminación de Gauss, paso a paso y sin librerías de álgebra."),
-    "autores": ("Andrés Castillo (@acr301) · Fátima Zogaib (@fmariezgg) · "
-                "Roberto Macías (@roberto7503) · Reynaldo Molina (@ReynaldoZr)"),
+    "version": _version(),
+    "resumen": (
+        "Resuelve y analiza sistemas de ecuaciones lineales Ax = b por "
+        "eliminación de Gauss, paso a paso y sin librerías de álgebra."
+    ),
+    "autores": (
+        "Andrés Castillo (@acr301) · Fátima Zogaib (@fmariezgg) · "
+        "Roberto Macías (@roberto7503) · Reynaldo Molina (@ReynaldoZr)"
+    ),
     "licencia": "MIT",
     "repo": "github.com/acr301/alg-lineal-I",
 }
@@ -74,8 +90,14 @@ def _familia_disponible():
         familias = set(QFontDatabase.families())
     except Exception:
         return None
-    for candidata in ("Avenir Next", "Helvetica Neue", "Helvetica", "Segoe UI",
-                      "Arial", "DejaVu Sans"):
+    for candidata in (
+        "Avenir Next",
+        "Helvetica Neue",
+        "Helvetica",
+        "Segoe UI",
+        "Arial",
+        "DejaVu Sans",
+    ):
         if candidata in familias:
             return candidata
     return None

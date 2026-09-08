@@ -151,8 +151,7 @@ class TestVerificarSolucionDetallada(unittest.TestCase):
 
         self.assertEqual(len(detalle), 3)
         # Ecuación 1: términos (coef, x_j, producto)
-        self.assertEqual(detalle[0]["terminos"],
-                         [(1, 5, 5), (1, 3, 3), (1, -2, -2)])
+        self.assertEqual(detalle[0]["terminos"], [(1, 5, 5), (1, 3, 3), (1, -2, -2)])
         self.assertAlmostEqual(detalle[0]["suma"], 6)
         self.assertEqual(detalle[0]["esperado"], 6)
         for fila in detalle:
