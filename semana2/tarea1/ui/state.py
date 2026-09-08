@@ -30,7 +30,7 @@ from vectores import combinacion_lineal, es_combinacion_lineal, verificar_propie
 
 EJEMPLOS = {
     "Solución única": [[1, 1, 1, 6], [0, 2, 5, -4], [2, 5, -1, 27]],
-    "Variables libres": [[1, 1, 1, 6], [2, 2, 2, 12], [1, -1, 0, 0]],
+    "Infinitas soluciones": [[1, 1, 1, 6], [2, 2, 2, 12], [1, -1, 0, 0]],
     "Sistema inconsistente": [[1, 1, 2], [1, 1, 5]],
 }
 
