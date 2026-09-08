@@ -229,7 +229,16 @@ class MatrizGrid(QFrame):
 
 
 def matriz_widget(filas, sesion, col_barra=True):
-    """Devuelve un widget con la matriz 'filas' bien compuesta."""
+    """Devuelve un widget con la matriz 'filas' bien compuesta: imagen si hay
+    matplotlib (corchetes y fracciones de verdad), rejilla como alternativa."""
+    n_sep = (len(filas[0]) - 1) if (col_barra and filas) else None
+    pix = mathrender.matriz_a_pixmap(filas, col_barra=n_sep, modo=sesion.modo, fontsize=17)
+    if pix is not None:
+        lbl = QLabel()
+        lbl.setPixmap(pix)
+        lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        return lbl
+    # alternativa sin matplotlib
     tmp = _SesionVista(sesion, filas)
     grid = MatrizGrid()
     grid.poblar(tmp)
