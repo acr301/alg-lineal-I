@@ -98,8 +98,10 @@ responsabilidades distintas:
   resuelve los casos de solución única por sustitución regresiva.
 - `gauss_jordan.py` continúa desde REF hasta RREF y construye las expresiones
   paramétricas y la solución vectorial.
-- `gauss.py` mantiene funciones de compatibilidad con los nombres históricos.
-  Así, código anterior como `gauss.solucion_parametrica(...)` continúa válido.
+- `gauss.py` mantiene delegadores con los nombres históricos para `main.py` y
+  `ui/state.py`, que aún importan esos nombres desde `gauss`. Así, código como
+  `gauss.solucion_parametrica(...)` sigue válido (ver ADR-0002, «nombres
+  históricos en gauss.py»).
 
 Esta separación permite que `vectores.py` plantee el sistema de una combinación
 lineal y reutilice ambos métodos sin duplicar eliminación de filas.
@@ -117,8 +119,11 @@ cero:       0     = [0, ..., 0]
 opuesto:   -v     = [-v1, ..., -vn]
 ```
 
-`iguales(u, v)` usa una tolerancia de `1e-9`, igual que el algoritmo de Gauss,
-para no considerar distintos dos resultados equivalentes por redondeo.
+`iguales(u, v)` usa la tolerancia única del proyecto (`EPS = 1e-9` definida en
+`gauss.py` e importada por `vectores.py`), para no considerar distintos dos
+resultados equivalentes por redondeo. Es la misma `EPS` de toda la eliminación
+(ver `ARQUITECTURA.md` §1); la normalización de lo que teclea el usuario se rige
+aparte por `ADR-0001`.
 
 ### Combinación lineal
 
@@ -141,7 +146,8 @@ donde cada `vk` es una **columna**. Gauss determina si el sistema es compatible:
 - incompatible → el objetivo no es combinación lineal;
 - determinado → los pesos son únicos;
 - indeterminado → existen infinitos pesos y se devuelve una solución concreta
-  fijando los parámetros libres en cero (ver ADR-0002).
+  fijando los parámetros libres en cero, es decir, representando `b` solo con
+  los vectores de columnas pivote (ver ADR-0002 y `GLOSARIO.md`).
 
 ### Verificación de los ocho axiomas
 
@@ -281,4 +287,5 @@ notación matemática (vectores columna entre corchetes, subíndices reales).
 - `test_gauss.py` - Ejemplos reales de uso
 - `FEATURE_PROPIEDADES_RN.md` - Alcance y recorrido manual del issue #23
 - `ADR-0002-pesos-combinacion-lineal.md` - Convención para soluciones no únicas
+- `GLOSARIO.md` - Terminología (base, span, pesos/coeficientes, tolerancia)
 - `test_gauss_jordan.py` y `test_vectores.py` - Casos de la Tarea 3

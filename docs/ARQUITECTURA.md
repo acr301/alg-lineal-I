@@ -165,6 +165,12 @@ def valor_casi_cero(valor):
 
 **Consecuencia:** Comparaciones siempre con `valor_casi_cero()`, nunca con `== 0`
 
+**Fuente única:** `EPS` se define en `gauss.py`. `gauss_jordan.py` y `vectores.py`
+lo importan de ahí (p. ej. `iguales()` y la compatibilidad del sistema de pesos
+en `es_combinacion_lineal`). No confundir con `ADR-0001`, que fija un umbral
+distinto (`1e-4`, denominador ≤ 64) para interpretar y mostrar lo que teclea el
+usuario.
+
 ### 2. Pivoteo Parcial en Eliminación
 
 ```python

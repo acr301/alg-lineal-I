@@ -6,6 +6,7 @@ algoritmos propios de Gauss y Gauss-Jordan del proyecto.
 """
 
 from gauss import (
+    EPS,
     clasificar,
     crear_matriz_aumentada,
     escalonar,
@@ -17,7 +18,9 @@ from gauss_jordan import (
     solucion_parametrica,
 )
 
-EPS = 1e-9
+# EPS se reutiliza de gauss.py: una sola tolerancia para todo el proyecto (ver
+# docs/ARQUITECTURA.md §1). La normalización de la entrada del usuario se rige
+# aparte por docs/ADR-0001-entrada-numerica.md.
 
 
 def _validar_vector(vector):
