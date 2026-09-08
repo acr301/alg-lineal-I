@@ -18,9 +18,15 @@ alg-lineal-I/
 │   ├── ARQUITECTURA.md          # Diseño técnico y decisiones
 │   ├── ONBOARDING.md            # Guía rápida de inicio
 │   ├── ALGORITMO.md             # Explicación matemática detallada
-│   └── CASOS_PRUEBA.md          # Playbook con datos listos
+│   ├── CASOS_PRUEBA.md          # Playbook con datos listos
+│   ├── FEATURE_PROPIEDADES_RN.md # Recorrido del issue #23
+│   ├── GLOSARIO.md              # Terminología unificada
+│   ├── ADR-0001-entrada-numerica.md
+│   └── ADR-0002-pesos-combinacion-lineal.md
 ├── semana2/tarea1/
-│   ├── gauss.py                 # Lógica pura (sin I/O, sin imports)
+│   ├── gauss.py                 # Gauss / REF + API histórica compatible
+│   ├── gauss_jordan.py          # RREF y soluciones paramétricas
+│   ├── vectores.py              # Operaciones y propiedades de R^n
 │   ├── formato.py               # Presentación: fracciones, LaTeX (texto), helpers HTML
 │   ├── mathrender.py            # LaTeX -> imagen (matplotlib mathtext) para la GUI
 │   ├── main.py                  # Interfaz de consola (--decimal / --fraccion)
@@ -32,6 +38,8 @@ alg-lineal-I/
 │   │   ├── widgets.py           #   PantallaBase, MatrizGrid, barra de navegación, ayuda
 │   │   └── screen_*.py          #   menú, dimensiones, entrada guiada, proceso, resultado
 │   ├── test_gauss.py            # Tests de la lógica pura
+│   ├── test_gauss_jordan.py     # Tests directos de RREF y parámetros
+│   ├── test_vectores.py         # Tests de operaciones y ocho axiomas
 │   ├── test_formato.py          # Tests de fracciones / formato
 │   ├── test_mathrender.py       # Tests del render de LaTeX (se salta si falta matplotlib)
 │   ├── test_main.py             # Tests de integración de consola
@@ -78,9 +86,10 @@ uv run python main.py
 uv run --extra dev pytest        # desde la raíz del repo
 ```
 
-La GUI es un flujo de pantallas (menú → dimensiones → entrada guiada → proceso →
-solución vectorial), navegable **sin ratón**: Enter avanza, Esc retrocede,
-← → recorren los pasos, F1 vuelve al menú.
+La GUI mantiene el flujo de sistemas (menú → dimensiones → entrada guiada →
+proceso → solución vectorial) y agrega desde el menú una pantalla independiente
+de vectores y propiedades de `R^n`. Es navegable **sin ratón**: Enter avanza,
+Esc retrocede, ← → recorren los pasos, F1 vuelve al menú.
 
 ## 🎯 Responsabilidades del Agente
 
@@ -94,13 +103,14 @@ solución vectorial), navegable **sin ratón**: Enter avanza, Esc retrocede,
 ### Durante el Trabajo
 
 - [ ] NO usar NumPy, SymPy ni librerías de álgebra lineal (restricción del ejercicio)
-- [ ] Mantener separación: `gauss.py` (lógica pura), `main.py` (consola), `gui.py` (GUI)
+- [ ] Mantener separación: `gauss.py` (REF), `gauss_jordan.py` (RREF),
+      `vectores.py` (R^n), `main.py` (consola) y `ui/` (GUI)
 - [ ] NO romper tests existentes
 - [ ] Commits atómicos con mensajes descriptivos
 
 ### Al Completar
 
-- [ ] Tests verdes (44 tests deben pasar)
+- [ ] Tests verdes (71 tests deben pasar en la rama del issue #23)
 - [ ] Actualizar `context/current-feature.md`
 - [ ] Commits lógicos (no squash a menos que se pida)
 - [ ] Crear PR mencionando issues relacionados
@@ -139,6 +149,18 @@ solución vectorial), navegable **sin ratón**: Enter avanza, Esc retrocede,
 - Cómo se normaliza lo que teclea el usuario (fracción tidy ≤ 64 o 4 decimales)
 - `formato.normalizar_entrada`, `MAX_DEN_DISPLAY`, `DECIMALES_ENTRADA`
 
+### docs/ADR-0002-pesos-combinacion-lineal.md
+- Convención determinista para una combinación lineal con infinitos pesos
+- Los parámetros libres se fijan en cero para devolver una solución concreta
+
+### docs/FEATURE_PROPIEDADES_RN.md
+- Alcance del issue #23, ejemplos manuales y mapa de archivos
+- Separación de Gauss/Gauss-Jordan, vectores columna y pruebas agregadas
+
+### docs/GLOSARIO.md
+- Terminología unificada: base, span, pesos/coeficientes, variable libre, EPS
+- Reglas de consistencia (`pesos` en código y ADR; `EPS` ≠ umbral de ADR-0001)
+
 ### docs/CASOS_PRUEBA.md
 - 3 casos de prueba principales
 - Datos listos para copiar/pegar
@@ -154,8 +176,8 @@ solución vectorial), navegable **sin ratón**: Enter avanza, Esc retrocede,
 | matplotlib | 3.9+ | SOLO render de notación matemática (mathtext) en la GUI; arrastra NumPy como dep. suya |
 | uv | 0.10+ | Gestor de paquetes rápido |
 | unittest | stdlib | Tests sin dependencias |
-| Algoritmo | Puro | Sin NumPy/SymPy — `gauss.py` no importa nada |
-| `gauss.py` / `formato.py` | Puro | Sin imports (ni `fractions`): fracción por Euclides + fracción continua |
+| Algoritmo | Puro | `gauss.py`, `gauss_jordan.py` y `vectores.py` sin librerías de AL |
+| `formato.py` | Puro | Sin imports (ni `fractions`): fracción por Euclides + fracción continua |
 
 ## 🚫 Restricciones Críticas
 
@@ -163,32 +185,47 @@ solución vectorial), navegable **sin ratón**: Enter avanza, Esc retrocede,
    - Razón: El ejercicio exige implementación desde cero
    - Usar: Listas, loops, aritmética básica
    - `matplotlib` está permitido **solo** como motor de render (LaTeX → imagen) en
-     `mathrender.py`; nunca para calcular. `gauss.py` y `formato.py` siguen sin imports.
+     `mathrender.py`; nunca para calcular. Los módulos algorítmicos solo usan
+     Python y, cuando corresponde, imports de otros módulos propios.
 
 2. **NO romper funcionalidades existentes**
    - Todos los tests deben pasar
    - Si modificas `gauss.py`, actualiza tests
 
 3. **Separación de responsabilidades**
-   - `gauss.py`: Lógica pura (SIN input/print, SIN imports)
+   - `gauss.py`: eliminación hacia adelante, clasificación y compatibilidad
+   - `gauss_jordan.py`: RREF y solución paramétrica/vectorial
+   - `vectores.py`: operaciones, combinaciones y propiedades de `R^n`
+   - Los tres módulos son lógica pura (sin input/print y sin librerías de AL)
    - `formato.py`: Presentación texto (float → fracción/decimal, LaTeX, HTML)
    - `mathrender.py`: Presentación imagen (LaTeX → QPixmap con matplotlib)
    - `main.py`: UI de consola
    - `ui/`: UI PyQt6 por pantallas; `ui/state.py:Sesion` es el ÚNICO sitio de la
-     GUI que llama a `gauss.py`. Cada pantalla es un `ui/screen_*.py`.
+     GUI que llama a los módulos de cálculo. Cada pantalla es un `ui/screen_*.py`.
    - No dupliques formateo de números: usa `formato.formatear_valor(v, modo)` o
      `sesion.fmt(v)`.
 
 ## 📊 Métricas Actuales
 
-- **Líneas de código:** ~1000 (gauss.py, formato.py, gui.py, main.py)
-- **Tests:** 44 (todos pasan) — test_gauss (21), test_formato (14), test_mathrender (3), test_main (3), test_ui (3)
+- **Tests:** 71 (todos pasan en `feature/propiedades-algebraicas-rn`)
+- **Suites nuevas:** `test_gauss_jordan.py` y `test_vectores.py`; también se
+  ampliaron formato, consola y GUI
 - **Cobertura:** Lógica principal y capa de formato cubiertas
-- **Estado:** Feature completada y mergeada
+- **Estado:** issue #23 implementado en rama y pendiente de PR/revisión
 
 ## 🤖 Memoria para Agentes
 
 ### Contexto Compartido
+
+**Issue #23 (rama `feature/propiedades-algebraicas-rn`, pendiente de PR):**
+- `gauss_jordan.py` separa RREF y soluciones paramétricas; `gauss.py` mantiene
+  delegados compatibles con los nombres anteriores.
+- `vectores.py` implementa operaciones, combinación lineal, pertenencia y los
+  ocho axiomas de `R^n` sin librerías externas de álgebra lineal.
+- `formato.py`, consola y `ui/screen_vectores.py` muestran vectores columna y
+  LaTeX coherente con la aplicación existente.
+- Convención de pesos no únicos documentada en ADR-0002.
+- 71 tests aprobados.
 
 **Última feature (rama `fix/latex-renderizado-fracciones-verificacion`):**
 LaTeX renderizado, comprobación explícita y fracciones. Issues #15, #16, #17.
@@ -262,7 +299,8 @@ gh pr create --title "..." --body "..." --reviewer @colega
 R: NO. Es una restricción deliberada del ejercicio. Usa listas y loops.
 
 **P: ¿Cómo agrego una nueva función?**  
-R: 1) Agregar en `gauss.py`, 2) Agregar tests en `test_gauss.py`, 3) Integrar en `main.py` o `gui.py`
+R: 1) Elegir `gauss.py`, `gauss_jordan.py` o `vectores.py`, 2) agregar el test
+correspondiente, 3) integrar en `main.py` o mediante `ui/state.py` + una pantalla.
 
 **P: ¿Los tests deben pasar?**  
 R: SÍ. Siempre. Si algo falla, es un bloqueador.
@@ -275,6 +313,7 @@ R: En `docs/ALGORITMO.md` (completa) y `docs/CASOS_PRUEBA.md` (práctica)
 
 ---
 
-**Última actualización:** 2026-08-31  
-**Versión:** 1.0.0  
-**Estado del Repo:** rama `fix/latex-renderizado-fracciones-verificacion` en curso (issues #15/#16/#17); issue #18 (Textual TUI) abierto
+**Última actualización:** 2026-09-07
+
+**Estado del Repo:** issue #23 implementado en
+`feature/propiedades-algebraicas-rn`, pendiente de PR y revisión.

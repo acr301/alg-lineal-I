@@ -272,6 +272,43 @@ def latex_pmatrix(componentes, modo=MODO_FRACCION):
     return f"\\begin{{pmatrix}} {cuerpo} \\end{{pmatrix}}"
 
 
+def latex_combinacion_lineal(objetivo, vectores, pesos, modo=MODO_FRACCION):
+    """Presenta ``b = c₁v₁ + ... + cₚvₚ`` usando vectores columna."""
+    if len(vectores) != len(pesos):
+        raise ValueError("Debe existir exactamente un peso por cada vector.")
+
+    terminos = []
+    for k, (vector, peso) in enumerate(zip(vectores, pesos)):
+        magnitud = latex_valor(abs(peso), modo)
+        termino = rf"{magnitud}\,{latex_pmatrix(vector, modo)}"
+        if k == 0:
+            terminos.append(("-" if peso < 0 else "") + termino)
+        else:
+            terminos.append((" - " if peso < 0 else " + ") + termino)
+
+    return (
+        rf"\mathbf{{b}} = {latex_pmatrix(objetivo, modo)} = "
+        + "".join(terminos)
+    )
+
+
+def texto_combinacion_lineal(objetivo, vectores, pesos, modo=MODO_FRACCION):
+    """Alternativa de texto para consola cuando no se renderiza LaTeX."""
+    if len(vectores) != len(pesos):
+        raise ValueError("Debe existir exactamente un peso por cada vector.")
+
+    terminos = []
+    for k, peso in enumerate(pesos):
+        magnitud = formatear_display(abs(peso), modo)
+        termino = f"{magnitud}·v{k + 1}"
+        if k == 0:
+            terminos.append(("−" if peso < 0 else "") + termino)
+        else:
+            terminos.append((" − " if peso < 0 else " + ") + termino)
+    resultado = ", ".join(formatear_display(v, modo) for v in objetivo)
+    return "b = " + "".join(terminos) + f" = [{resultado}]ᵀ"
+
+
 def generar_latex_solucion(n_incognitas, libres, expresiones, particular,
                            vectores_nulos, modo=MODO_FRACCION):
     """

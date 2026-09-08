@@ -26,6 +26,7 @@ from formato import (
     entrada_A,
     entrada_b,
 )
+from vectores import combinacion_lineal, es_combinacion_lineal, verificar_propiedades
 
 
 EJEMPLOS = {
@@ -43,8 +44,11 @@ class Sesion:
         self.n_var = 3
         self.modo = MODO_FRACCION
         self.matriz = self._matriz_ceros(3, 3)
-        self.resultado = None
-        self.origen = "manual"
+        self.resultado = None  # dict tras resolver(), o None
+        self.origen = "manual"  # "manual" (flujo completo) | "ejemplo" (salta a proceso)
+        self.resultado_vectores = None
+
+    # ---- helpers de forma -------------------------------------------------- #
 
     @staticmethod
     def _matriz_ceros(n_eq, n_var):
@@ -72,6 +76,39 @@ class Sesion:
 
     def fmt(self, valor):
         return formatear_valor(valor, self.modo)
+
+    # ---- vectores de R^n ------------------------------------------------- #
+
+    def calcular_combinacion(self, vectores, pesos):
+        resultado = combinacion_lineal(vectores, pesos)
+        self.resultado_vectores = {
+            "tipo": "combinacion",
+            "resultado": resultado,
+            "vectores": vectores,
+            "pesos": pesos,
+        }
+        return self.resultado_vectores
+
+    def comprobar_combinacion(self, objetivo, vectores):
+        pertenece, pesos = es_combinacion_lineal(objetivo, vectores)
+        self.resultado_vectores = {
+            "tipo": "pertenencia",
+            "objetivo": objetivo,
+            "vectores": vectores,
+            "pertenece": pertenece,
+            "pesos": pesos,
+        }
+        return self.resultado_vectores
+
+    def comprobar_propiedades(self, u, v, w, a, b):
+        propiedades = verificar_propiedades(u, v, w, a, b)
+        self.resultado_vectores = {
+            "tipo": "propiedades",
+            "propiedades": propiedades,
+        }
+        return self.resultado_vectores
+
+    # ---- celdas de la matriz aumentada ----------------------------------- #
 
     def total_celdas(self):
         return self.n_eq * (self.n_var + 1)
