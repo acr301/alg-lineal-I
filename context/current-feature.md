@@ -2,9 +2,11 @@
 
 ## Status
 
-In Progress — #28 (rama `refactor/core-clients-mvc`)
+In Progress — #28 pasos 1+3 en review (**PR #45**, rama `refactor/core-clients-mvc`).
+Siguiente: #26 (rama `chore/housekeeping-pyproject-docs-versionado`, se ramifica
+de `refactor/core-clients-mvc`). Paso 2 de #28 → PR de seguimiento tras #26/#27.
 
-### Avance de #28
+### Avance de #28 (PR #45)
 
 - [x] Paso 1 · Mover (mecánico): `git mv` de `semana2/tarea1/` → `src/aqua_gauss/`
   (`core/` puro + `clients/qt/`), tests a `tests/core` y `tests/qt`. Historial
