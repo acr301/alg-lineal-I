@@ -22,7 +22,9 @@ from formato import (
     latex_pmatrix,
     subindice,
     var,
-    parametro
+    parametro,
+    entrada_A,
+    entrada_b,
 )
 
 
@@ -75,12 +77,11 @@ class Sesion:
         return self.n_eq * (self.n_var + 1)
 
     def etiqueta_celda(self, indice):
-        # Se removió la importación local recursiva que enmascaraba funciones
         fila, col = divmod(indice, self.n_var + 1)
         if col == self.n_var:
-            return (f"b{subindice(fila + 1)}",
+            return (entrada_b(fila + 1),
                     f"término independiente de la ecuación {fila + 1}")
-        return (f"a{subindice(fila + 1)}{subindice(col + 1)}",
+        return (entrada_A(fila + 1, col + 1),
                 f"coeficiente de {var(col, 'x')} en la ecuación {fila + 1}")
 
     def set_celda(self, indice, valor):
