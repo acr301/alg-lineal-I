@@ -19,22 +19,20 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
 4. Expresión de soluciones vectoriales: x = xp + t₁v₁ + ... + tₖvₖ
 5. Codificación de conceptos matemáticos en software
 
-## 🎓 Restricciones Deliberadas
+## 🎓 Restricción Deliberada (fase actual)
 
-### NO se permite:
-- NumPy, SymPy, scipy
-- Funciones de álgebra lineal preconstruidas
-- Librerías matemáticas externas
+En `aqua_gauss.core` **no** se usan NumPy, SymPy, scipy ni funciones de álgebra
+lineal preconstruidas: solo listas, bucles y aritmética. **Es una fase**, no una
+prohibición permanente: se irá levantando a medida que avance el contenido del
+curso, y se levantará en `core/` sin tocar los clientes (ver
+[`docs/RUMBO.md`](RUMBO.md)).
 
-### SÍ se permite:
-- Listas y diccionarios básicos
-- Loops y condicionales
-- Aritmética de punto flotante
-- PyQt6 (solo para GUI, no matemática)
+`PyQt6` y `matplotlib` sí se usan, pero solo en `aqua_gauss.clients.qt` (interfaz
+y render de LaTeX a imagen), nunca para calcular.
 
-**Razón:** El ejercicio requiere implementar desde cero para comprensión profunda.
+**Razón:** el ejercicio requiere implementar desde cero para comprensión profunda.
 
-## 📊 Estado Actual (2026-09-01)
+## 📊 Estado Actual (2026-09-08)
 
 ### ✅ Completado
 
@@ -86,73 +84,63 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
 
 | Métrica | Valor |
 |---------|-------|
-| Líneas de código | ~1600 (con `ui/`) |
-| Tests | 78 (100% pass) |
-| Restricción sin librerías (algoritmo) | ✓ Cumplida |
-| Documentación | ✓ Completa |
+| Paquete | `aqua-gauss` (instalable, layout `src/`) |
+| Tests | 70 (100% pass) |
+| Restricción sin librerías (`core/`) | ✓ Cumplida (fase actual) |
+| Lint + formato | `ruff` (`uv run ruff check . && ruff format --check .`) |
 | GUI funcional | ✓ Sí (flujo de pantallas, teclado-first) |
 
 ## 🏗️ Arquitectura de Alto Nivel
 
 ```
-┌─────────────────────────────────────────┐
-│   GUI PyQt6 — paquete ui/ (gui.py shim) │
-│   Menú → Dimensiones → Entrada guiada   │
-│        → Proceso → Solución vectorial   │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────┴──────────────────────────┐
-│     Interfaz de Consola (main.py)       │
-│    - Entrada interactiva                │
-│    - Salida formateada                  │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│      Lógica Pura (gauss.py)             │
-│   - Eliminación de Gauss                │
-│   - Clasificación del sistema           │
-│   - Análisis de rango/nulidad           │
-│   - Formas escalonadas                  │
-│   - Solución vectorial                  │
-│   - Generación LaTeX                    │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│        Python 3.9+ puro                 │
-│    (Listas, loops, aritmética)          │
-└─────────────────────────────────────────┘
+┌───────────────────────────────────────────────┐
+│  aqua_gauss.clients.qt   — cliente PyQt6       │
+│  Views = screen_*  ·  Controllers = handlers   │
+│  Models = SistemaModel / VectoresModel         │
+│  Menú → Dimensiones → Entrada → Proceso → Vec. │
+└───────────────┬───────────────────────────────┘
+                │  SolverPort  (LocalSolver hoy; RemoteSolver con el server #32)
+┌───────────────▼───────────────────────────────┐
+│  aqua_gauss.core   — MODEL puro, sin framework │
+│  gauss.py (REF) · gauss_jordan.py (RREF)       │
+│  vectores.py (R^n) · formato.py (presentación) │
+└───────────────┬───────────────────────────────┘
+                │
+┌───────────────▼───────────────────────────────┐
+│        Python 3.9+ puro                        │
+│   (listas, bucles, aritmética; sin AL externa)│
+└───────────────────────────────────────────────┘
 ```
+
+`gui.py` es un shim a `aqua_gauss.app:main`. La consola (`main.py`) se retiró en
+#28; el terminal lo cubrirá la TUI (#18).
 
 ## 🔗 Dependencias
 
-### Runtime
-- **PyQt6** >= 6.6: GUI moderna y responsiva
-
-### Development
-- **uv**: Gestor de paquetes rápido
-- **pytest** (opcional): Tests avanzados
-
-### Nulas
-- ❌ NumPy
-- ❌ SymPy
-- ❌ scipy
-- ❌ Cualquier álgebra lineal
+- **Núcleo (`core/`):** ninguna — solo la stdlib de Python.
+- **Extra `qt`:** `PyQt6` >= 6.6 (GUI) y `matplotlib` >= 3.9 (solo render de
+  notación; arrastra NumPy como dep. suya, que no se usa para calcular).
+- **Extra `dev`:** `pytest`, `pytest-cov`, `ruff`.
+- **Tooling:** `uv` (gestor de paquetes y entorno).
 
 ## 🧪 Testing
 
-- **test_gauss.py** (21): lógica pura — sistemas determinados/indeterminados/
-  inconsistentes, rango y nulidad, formas escalonadas, solución vectorial,
-  comprobación detallada.
-- **test_formato.py** (14): fracciones, `normalizar_entrada` (ADR-0001), LaTeX.
-- **test_mathrender.py** (3): render de LaTeX a imagen (se salta sin matplotlib).
-- **test_ui.py** (3): humo de la GUI + regresión del menú (se salta sin PyQt6).
-- **test_main.py** (3): flujo completo de consola.
+- **tests/core/test_gauss.py** (21): lógica pura — determinado/indeterminado/
+  inconsistente, rango y nulidad, formas escalonadas, solución vectorial.
+- **tests/core/test_gauss_jordan.py** (6): RREF y soluciones paramétricas.
+- **tests/core/test_vectores.py** (12): operaciones, combinaciones y 8 axiomas.
+- **tests/core/test_formato.py** (20): fracciones, `normalizar_entrada`
+  (ADR-0001), LaTeX.
+- **tests/qt/test_mathrender.py** (3): render de LaTeX a imagen (se salta sin
+  matplotlib).
+- **tests/qt/test_ui.py** (8): humo de la GUI + regresión del menú (se salta sin
+  PyQt6).
 
-**Ejecución:** `uv run --extra dev pytest` (78 passed)
+**Ejecución:** `uv run --extra dev pytest` (70 passed)
 
 ## 👥 Colaboradores
 
-- **Autores:** Andrés Castillo y Fátima Zogaib (Grupo 7)
+- **Autores (Grupo 7):** Andrés Castillo, Fátima Zogaib, Roberto Macías, Reynaldo Molina.
 
 ## 📝 Cómo Contribuir
 

@@ -1,0 +1,21 @@
+# Current Feature
+
+## Status
+
+Not Started
+
+## Goals
+
+<!-- Qué significa "hecho": bullets concretos y verificables. -->
+
+## Notes
+
+<!-- Contexto, restricciones, decisiones y detalles del spec que no van en el código. -->
+
+## History
+
+<!--
+Append-only. Un párrafo por feature completado (qué cambió y por qué).
+El resumen "de verdad" de cada entrega vive en docs/ y en el PR; esto es solo
+un rastro local para no perder el hilo entre sesiones.
+-->
