@@ -1,13 +1,18 @@
 % ======================================================================
-%  Informe_Programa 2_Grupo 7.pdf
+%  PLANTILLA — Informe de una entrega "Programa N"
 %  Proyecto Integrador: Calculadora de Álgebra Lineal — UAM (MTM0120)
 %
-%  Compilar:  pdflatex informe.tex   (dos veces, para el índice)
-%  o bien:    latexmk -pdf informe.tex
+%  Este archivo SÍ se versiona (portada + estructura reutilizables).
+%  Los datos personales (nombres legales de los integrantes, grupo, docente,
+%  fecha) van en un `datos.tex` que NO se versiona. Ver `informes/README.md`.
 %
-%  Plantilla replicada de "Informe_Programa_1_Grupo_7.pdf" (hecho en Word).
-%  Reutilizable entre entregas: sólo cambia la portada (título del Programa),
-%  la sección "Explicación del algoritmo" y las 3 capturas de "Casos de prueba".
+%  Uso:
+%    1. cp -r informes/plantilla informes/Informe_Programa_N_Grupo_7
+%    2. cd informes/Informe_Programa_N_Grupo_7
+%    3. cp datos.example.tex datos.tex   &&   editar datos.tex
+%    4. poner img/uam-logo.png y las capturas img/casoN-*.png
+%    5. pdflatex informe.tex && pdflatex informe.tex   (dos veces, por el índice)
+%    6. renombrar informe.pdf -> "Informe_Programa N_Grupo 7.pdf"
 % ======================================================================
 \documentclass[11pt,a4paper]{article}
 
@@ -27,21 +32,19 @@
 
 \graphicspath{{img/}}
 
-% --- Datos de la entrega (editar aquí) --------------------------------
-\newcommand{\programaTitulo}{Programa 2: Reducci\'on a Forma Escalonada Reducida (Gauss--Jordan) e Identificaci\'on de Columnas Pivote}
+% --- Datos de la entrega -------------------------------------------------
+% Valores por defecto (para que la plantilla compile sin datos.tex).
+% Los reales viven en datos.tex, que NO se versiona.
+\newcommand{\programaTitulo}{Programa N: [t\'itulo de la tarea]}
 \newcommand{\grupoNum}{7}
 \newcommand{\docente}{Jos\'e Andr\'es Mungu\'ia Cort\'ez}
 \newcommand{\ciudadFecha}{Managua, \today}
-% Integrantes del Grupo 7. NOTA: completar los nombres legales de Roberto y
-% Reynaldo (segundo nombre / apellidos) si el formato de la entrega lo exige;
-% en el informe 1 se usaron nombres completos.
-\newcommand{\integrantes}{%
-  Andr\'es Ernesto Castillo Rothschuh\\
-  F\'atima Marie Zogaib Gradiz\\
-  Roberto Mac\'ias\\
-  Reynaldo Molina%
+\newcommand{\integrantes}{[integrantes: ver datos.tex]}
+
+\IfFileExists{datos.tex}{\input{datos.tex}}{%
+  \typeout{*** AVISO: falta datos.tex; usando valores por defecto (ver informes/README.md) ***}%
 }
-% --------------------------------------------------------------------
+% ----------------------------------------------------------------------
 
 % --- Caja de pseudocódigo (imita los recuadros oscuros del informe 1) -
 \definecolor{codebg}{HTML}{2B2B2B}

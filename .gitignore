@@ -30,10 +30,19 @@ env/
 # cada entrega vive en docs/ y en el PR (ver #26).
 context/current-feature.md
 
-# Informe 1 (borrador del alumno) y PDFs compilados de informes/
+# Informe 1 (borrador del alumno)
 semana2/
-informes/**/informe.pdf
-informes/**/*.aux
-informes/**/*.log
-informes/**/*.out
-informes/**/*.toc
+
+# informes/: solo se versiona la plantilla y el README. Los informes concretos
+# (nombres legales en datos.tex, capturas, logo) y los PDF compilados NO.
+informes/*
+!informes/README.md
+!informes/plantilla/
+informes/plantilla/datos.tex
+informes/plantilla/img/*
+!informes/plantilla/img/.gitkeep
+informes/plantilla/*.pdf
+informes/plantilla/*.aux
+informes/plantilla/*.log
+informes/plantilla/*.out
+informes/plantilla/*.toc
