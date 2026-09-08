@@ -184,7 +184,7 @@ Resultado: 2v₁ - v₂ = [-1, 5]ᵀ
 
 ---
 
-**Autores:** Andrés Castillo y Fátima Zogaib (Grupo 7) · Roberto Macías ([@roberto7503](https://github.com/roberto7503)) y Reynaldo Molina ([@ReynaldoZr](https://github.com/ReynaldoZr)) | **Última actualización:** 2026-09-08 | **Licencia:** MIT
+**Autores:** Andrés Castillo ([@acr301](https://github.com/acr301)) · Fátima Zogaib ([@fmariezgg](https://github.com/fmariezgg)) · Roberto Macías ([@roberto7503](https://github.com/roberto7503)) · Reynaldo Molina ([@ReynaldoZr](https://github.com/ReynaldoZr)) | **Última actualización:** 2026-09-08 | **Licencia:** MIT
 
 Ver también [docs/ADR-0001-entrada-numerica.md](docs/ADR-0001-entrada-numerica.md) — cómo la calculadora normaliza los números que teclea el usuario.
 

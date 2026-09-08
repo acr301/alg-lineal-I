@@ -7,8 +7,8 @@ APP_INFO = {
     "version": "2.0.0",
     "resumen": ("Resuelve y analiza sistemas de ecuaciones lineales Ax = b por "
                 "eliminación de Gauss, paso a paso y sin librerías de álgebra."),
-    "autores": ("Andrés Castillo y Fátima Zogaib (Grupo 7); "
-                "Roberto Macías (@roberto7503) y Reynaldo Molina (@ReynaldoZr)"),
+    "autores": ("Andrés Castillo (@acr301) · Fátima Zogaib (@fmariezgg) · "
+                "Roberto Macías (@roberto7503) · Reynaldo Molina (@ReynaldoZr)"),
     "licencia": "MIT",
     "repo": "github.com/acr301/alg-lineal-I",
 }
