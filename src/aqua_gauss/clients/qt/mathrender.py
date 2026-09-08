@@ -114,12 +114,29 @@ def columna_a_pixmap(componentes, modo=MODO_FRACCION, fontsize=15, color=COLOR_T
     return _fig_a_pixmap(fig, escala)
 
 
+# Fondos suaves para resaltar columnas en la matriz (deben coincidir con
+# screen_process.COL_BASICA / COL_LIBRE).
+_COL_BASICA_BG = "#d3e8ff"
+_COL_LIBRE_BG = "#ffeec2"
+
+
 def matriz_a_pixmap(
-    filas, col_barra=None, modo=MODO_FRACCION, fontsize=15, color=COLOR_TEXTO, escala=2
+    filas,
+    col_barra=None,
+    modo=MODO_FRACCION,
+    fontsize=15,
+    color=COLOR_TEXTO,
+    escala=2,
+    col_basicas=None,
+    col_libres=None,
 ):
     """
     Una matriz entre corchetes. 'col_barra' (int) dibuja una regla vertical
     fina antes de esa columna (para separar A | b en la matriz aumentada).
+
+    'col_basicas' / 'col_libres' (iterables de índices, base 0) pintan un fondo
+    suave detrás de esas columnas: azul para las pivote/básicas, ámbar para las
+    libres.
     """
     if not _DISPONIBLE or not filas:
         return None
@@ -133,6 +150,11 @@ def matriz_a_pixmap(
     ax.set_axis_off()
     ax.set_xlim(0, ncols)
     ax.set_ylim(0, n)
+
+    for grupo, bg in ((col_basicas or (), _COL_BASICA_BG), (col_libres or (), _COL_LIBRE_BG)):
+        for j in grupo:
+            if 0 <= j < ncols:
+                ax.axvspan(j + 0.06, j + 0.94, color=bg, lw=0, zorder=0)
 
     for i, fila in enumerate(tokens):
         for j, token in enumerate(fila):
