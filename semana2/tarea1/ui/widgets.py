@@ -16,7 +16,8 @@ from PyQt6.QtWidgets import (
 )
 
 import mathrender
-from formato import MODO_FRACCION
+from formato import 
+MODO_FRACCION, var
 
 
 class ListaOpciones(QListWidget):
@@ -167,7 +168,7 @@ class MatrizGrid(QFrame):
         contorno.addLayout(self._grid)
         contorno.addStretch()
 
-    def poblar(self, sesion, resaltar=None):
+   def poblar(self, sesion, resaltar=None):
         while self._grid.count():
             w = self._grid.takeAt(0).widget()
             if w:
@@ -182,9 +183,8 @@ class MatrizGrid(QFrame):
         col_rbrk = 4 + n
 
         for j in range(n):
-        from formato import var
-        enc = QLabel(var(j, "x"))
-        et_fila = QLabel(var(i, "E"))
+            enc = QLabel(var(j, "x"))
+            enc.setObjectName("hint")
             enc.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self._grid.addWidget(enc, 0, 2 + j)
         enc_b = QLabel("b")
@@ -209,7 +209,7 @@ class MatrizGrid(QFrame):
         self._grid.addWidget(regla, 1, col_regla, filas, 1)
 
         for i in range(filas):
-            et_fila = QLabel(f"E{i + 1}")
+            et_fila = QLabel(var(i, "E"))
             et_fila.setObjectName("hint")
             self._grid.addWidget(et_fila, i + 1, 0)
             for j in range(n + 1):
