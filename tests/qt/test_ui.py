@@ -56,7 +56,7 @@ class TestMenu(unittest.TestCase):
         menu = self.win.pantallas["menu"]
         menu._poblar_ejemplos()
         for i in range(menu.lista.count()):
-            if menu.lista.item(i).text() == "Variables libres":
+            if menu.lista.item(i).text() == "Infinitas soluciones":
                 menu._activar(menu.lista.item(i))
                 break
         self.assertIs(self.win.stack.currentWidget(), self.win.pantallas["proceso"])

@@ -27,6 +27,7 @@ uv run aqua-gauss         # equivalente:  uv run python -m aqua_gauss   /   uv r
 **¿Eres humano nuevo?** → Lee [docs/ONBOARDING.md](docs/ONBOARDING.md).
 
 **¿Quieres entender todo?** → Explora:
+- [docs/RUMBO.md](docs/RUMBO.md) - Arquitectura objetivo y roadmap por fases
 - [docs/PROYECTO.md](docs/PROYECTO.md) - Visión y estado
 - [docs/ARQUITECTURA.md](docs/ARQUITECTURA.md) - Diseño técnico
 - [docs/ALGORITMO.md](docs/ALGORITMO.md) - Explicación matemática
@@ -49,12 +50,13 @@ uv run aqua-gauss         # equivalente:  uv run python -m aqua_gauss   /   uv r
   matrices y vectores con corchetes, fracciones apiladas; código LaTeX oculto tras un botón
 - ✓ GUI por pantallas (menú → dimensiones → entrada guiada → proceso → vector), teclado-first
 - ✓ Análisis de rango/nulidad/forma en lista con explicaciones y ayudas `?`
-- ✓ Interfaz de consola interactiva (`--decimal` / `--fraccion`)
 - ✓ Operaciones, combinaciones lineales y ocho propiedades algebraicas de `R^n`
 - ✓ Gauss-Jordan/RREF separado en `gauss_jordan.py`, con API histórica compatible
-- ✓ Pantalla gráfica de vectores y propiedades, más su flujo de consola
-- ✓ 71 tests (todos pasan en la rama del issue #23)
-- ✓ El **algoritmo** no usa NumPy/SymPy; matplotlib
+- ✓ Pantalla gráfica de vectores y propiedades
+- ✓ Subíndices Unicode consistentes y rediseño visual plano (contraste AA)
+- ✓ Paquete instalable `aqua-gauss` con separación `core/` + `clients/qt/` (#28)
+- ✓ 70 tests (todos pasan)
+- ✓ El **algoritmo** no usa NumPy/SymPy (fase actual, ver `docs/RUMBO.md`); matplotlib
   se usa solo para dibujar la notación matemática, nunca para calcular
 
 ## 🎓 Restricción Deliberada
@@ -64,6 +66,7 @@ uv run aqua-gauss         # equivalente:  uv run python -m aqua_gauss   /   uv r
 Python y módulos propios del proyecto; `formato.py` continúa sin dependencias.
 
 **POR QUÉ:** El ejercicio exige comprensión profunda. Las librerías son "cajas negras".
+Es una **fase**: se irá levantando con el contenido del curso (ver [`docs/RUMBO.md`](docs/RUMBO.md)).
 
 **SE USA:** Listas, loops, aritmética básica (Python puro). `matplotlib` aparece
 solo en `mathrender.py` para convertir LaTeX en imágenes bonitas en la GUI (su
@@ -71,14 +74,25 @@ motor `mathtext`); arrastra NumPy como dependencia suya, que tampoco se usa.
 
 ## 📊 Estado
 
-- ✅ Feature 1: Eliminación gaussiana interactiva
-- ✅ Feature 2: Verificación de soluciones
-- ✅ Feature 3: Solución vectorial, rango, nulidad, LaTeX, formas
-- ✅ Chore: Migración a `uv`
-- ✅ Notación matemática renderizada + rediseño de la GUI por pantallas (PR #21)
-- 🔄 Issue #23: propiedades algebraicas de `R^n` y combinación lineal,
-  implementado en `feature/propiedades-algebraicas-rn` y pendiente de PR
-- 📋 Issue #18: migración de la consola a Textual TUI (propuesta)
+**Entregado (en `main`):**
+
+- ✅ Tarea 1: eliminación gaussiana interactiva (`v1.0.0`)
+- ✅ Verificación de soluciones · solución vectorial, rango, nulidad, LaTeX, formas
+- ✅ Migración a `uv`
+- ✅ Notación matemática renderizada + rediseño de la GUI por pantallas (PR #21, `v2.0.0`)
+- ✅ Tarea 3: propiedades algebraicas de `R^n` y combinación lineal (#29, `v3.0.0`)
+- ✅ Subíndices Unicode consistentes + rediseño visual plano (#30)
+
+**Planificado** — ver [`docs/RUMBO.md`](docs/RUMBO.md):
+
+- 🔄 #28: `core/` + `clients/` (MVC), paquete instalable, baja de `main.py`
+  (pasos 1 y 3 en PR; paso 2 MVC en curso)
+- 📋 #26 / #27: housekeeping + versionado → CI + release
+- 📋 #31: glosario como fuente única + tooltips didácticos
+- 📋 #18: cliente de terminal con Textual
+- 📋 #32: API FastAPI sobre `core/`
+- 📋 #33: animaciones Manim en la app
+- 📋 #34: spike Lean 4 para los axiomas
 
 ## 🧪 Tests
 

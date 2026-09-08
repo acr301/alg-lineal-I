@@ -87,7 +87,7 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
 | Métrica | Valor |
 |---------|-------|
 | Líneas de código | ~1600 (con `ui/`) |
-| Tests | 44 (100% pass) |
+| Tests | 78 (100% pass) |
 | Restricción sin librerías (algoritmo) | ✓ Cumplida |
 | Documentación | ✓ Completa |
 | GUI funcional | ✓ Sí (flujo de pantallas, teclado-first) |
@@ -148,7 +148,7 @@ Este proyecto es parte del curso **Álgebra Lineal I** y busca que estudiantes c
 - **test_ui.py** (3): humo de la GUI + regresión del menú (se salta sin PyQt6).
 - **test_main.py** (3): flujo completo de consola.
 
-**Ejecución:** `uv run --extra dev pytest` (44 passed)
+**Ejecución:** `uv run --extra dev pytest` (78 passed)
 
 ## 👥 Colaboradores
 
