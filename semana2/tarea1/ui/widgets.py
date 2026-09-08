@@ -16,8 +16,8 @@ from PyQt6.QtWidgets import (
 )
 
 import mathrender
-from formato import( 
-MODO_FRACCION, var)
+from formato import(
+    MODO_FRACCION, var)
 
 
 class ListaOpciones(QListWidget):
@@ -168,7 +168,7 @@ class MatrizGrid(QFrame):
         contorno.addLayout(self._grid)
         contorno.addStretch()
 
-   def poblar(self, sesion, resaltar=None):
+    def poblar(self, sesion, resaltar=None):
         while self._grid.count():
             w = self._grid.takeAt(0).widget()
             if w:
@@ -187,6 +187,7 @@ class MatrizGrid(QFrame):
             enc.setObjectName("hint")
             enc.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self._grid.addWidget(enc, 0, 2 + j)
+
         enc_b = QLabel("b")
         enc_b.setObjectName("hint")
         enc_b.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -228,16 +229,7 @@ class MatrizGrid(QFrame):
 
 
 def matriz_widget(filas, sesion, col_barra=True):
-    """Devuelve un widget con la matriz 'filas' bien compuesta: imagen si hay
-    matplotlib (corchetes y fracciones de verdad), rejilla como alternativa."""
-    n_sep = (len(filas[0]) - 1) if (col_barra and filas) else None
-    pix = mathrender.matriz_a_pixmap(filas, col_barra=n_sep, modo=sesion.modo, fontsize=17)
-    if pix is not None:
-        lbl = QLabel()
-        lbl.setPixmap(pix)
-        lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        return lbl
-    # alternativa sin matplotlib
+    """Devuelve un widget con la matriz 'filas' bien compuesta."""
     tmp = _SesionVista(sesion, filas)
     grid = MatrizGrid()
     grid.poblar(tmp)
