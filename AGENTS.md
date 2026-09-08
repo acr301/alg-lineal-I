@@ -6,6 +6,11 @@ Este archivo es la **puerta de entrada para agentes IA** (como Claude) que traba
 - Cómo ejecutar y contribuir
 - Memoria compartida del proyecto
 
+> **Hacia dónde va el repo:** ver [`docs/RUMBO.md`](docs/RUMBO.md) — arquitectura
+> objetivo (MVC, `core/` + `clients/` + `server/`), roadmap por fases y el mapa
+> de issues (#26–#43). La restricción "sin librerías de álgebra lineal" es una
+> **fase actual**, no permanente: se irá levantando con el contenido del curso.
+
 ## 📁 Estructura del Repositorio
 
 ```
@@ -110,7 +115,7 @@ Esc retrocede, ← → recorren los pasos, F1 vuelve al menú.
 
 ### Al Completar
 
-- [ ] Tests verdes (71 tests deben pasar en la rama del issue #23)
+- [ ] Tests verdes (78 tests en `main`)
 - [ ] Actualizar `context/current-feature.md`
 - [ ] Commits lógicos (no squash a menos que se pida)
 - [ ] Crear PR mencionando issues relacionados
@@ -207,25 +212,30 @@ Esc retrocede, ← → recorren los pasos, F1 vuelve al menú.
 
 ## 📊 Métricas Actuales
 
-- **Tests:** 71 (todos pasan en `feature/propiedades-algebraicas-rn`)
-- **Suites nuevas:** `test_gauss_jordan.py` y `test_vectores.py`; también se
-  ampliaron formato, consola y GUI
+- **Tests:** 78 (todos pasan en `main`) — `uv run --extra dev pytest`
+- **Suites:** `test_gauss`, `test_gauss_jordan`, `test_vectores`, `test_formato`,
+  `test_mathrender`, `test_main`, `test_ui`
 - **Cobertura:** Lógica principal y capa de formato cubiertas
-- **Estado:** issue #23 implementado en rama y pendiente de PR/revisión
+- **Estado:** Tareas 1–3 en `main`. Próximo trabajo estructural en #28 (ver `docs/RUMBO.md`)
 
 ## 🤖 Memoria para Agentes
 
 ### Contexto Compartido
 
-**Issue #23 (rama `feature/propiedades-algebraicas-rn`, pendiente de PR):**
+**Tarea 3 — propiedades de Rⁿ (#29 → `806dc24`, mergeado):**
 - `gauss_jordan.py` separa RREF y soluciones paramétricas; `gauss.py` mantiene
-  delegados compatibles con los nombres anteriores.
+  delegadores compatibles para `main.py` y `ui/state.py` (ver ADR-0002).
 - `vectores.py` implementa operaciones, combinación lineal, pertenencia y los
   ocho axiomas de `R^n` sin librerías externas de álgebra lineal.
-- `formato.py`, consola y `ui/screen_vectores.py` muestran vectores columna y
-  LaTeX coherente con la aplicación existente.
-- Convención de pesos no únicos documentada en ADR-0002.
-- 71 tests aprobados.
+- `formato.py`, consola y `ui/screen_vectores.py` muestran vectores columna y LaTeX.
+- Convención de pesos no únicos en ADR-0002; terminología en `docs/GLOSARIO.md`.
+
+**Subíndices + rediseño plano (#30 → `00ba185`, mergeado):**
+- `formato.subindice/var/parametro/entrada_A/entrada_b` para notación Unicode;
+  `ui/theme.py` sin degradados (flat design, contraste AA).
+
+**Rumbo:** `main.py` (consola) se **deprecará** en #28 — la app va puro GUI +
+una TUI Textual (#18). No agregues features nuevas a `main.py`.
 
 **Última feature (rama `fix/latex-renderizado-fracciones-verificacion`):**
 LaTeX renderizado, comprobación explícita y fracciones. Issues #15, #16, #17.
@@ -296,24 +306,28 @@ gh pr create --title "..." --body "..." --reviewer @colega
 ## ❓ FAQ para Agentes
 
 **P: ¿Debo usar NumPy para esto?**  
-R: NO. Es una restricción deliberada del ejercicio. Usa listas y loops.
+R: NO por ahora. Es una restricción de la fase actual (comprensión profunda) y
+vive en `core/` — se irá levantando con el contenido del curso. Ver `docs/RUMBO.md`.
 
 **P: ¿Cómo agrego una nueva función?**  
 R: 1) Elegir `gauss.py`, `gauss_jordan.py` o `vectores.py`, 2) agregar el test
-correspondiente, 3) integrar en `main.py` o mediante `ui/state.py` + una pantalla.
+correspondiente, 3) integrar mediante `ui/state.py` + una pantalla. **No** en
+`main.py` (se deprecará en #28).
 
 **P: ¿Los tests deben pasar?**  
 R: SÍ. Siempre. Si algo falla, es un bloqueador.
 
 **P: ¿Rompo algo si edito `gauss.py`?**  
-R: Posiblemente. Verifica: `python3 test_gauss.py && python3 test_main.py`
+R: Posiblemente. Verifica: `uv run --extra dev pytest`
 
 **P: ¿Dónde está la documentación matemática?**  
 R: En `docs/ALGORITMO.md` (completa) y `docs/CASOS_PRUEBA.md` (práctica)
 
 ---
 
-**Última actualización:** 2026-09-07
+**Última actualización:** 2026-09-08
 
-**Estado del Repo:** issue #23 implementado en
-`feature/propiedades-algebraicas-rn`, pendiente de PR y revisión.
+**Estado del Repo:** Tareas 1–3 en `main` (`v3.0.0` = #29 `806dc24`; #30
+`00ba185`). 78 tests. Trabajo estructural planificado en #28 → #26 → #27; épicos
+#31 (glosario), #32 (server), #33 (Manim), spike #34 (Lean). Mapa completo en
+[`docs/RUMBO.md`](docs/RUMBO.md).
