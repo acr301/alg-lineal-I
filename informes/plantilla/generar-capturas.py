@@ -25,7 +25,7 @@ import time
 os.environ.pop("QT_QPA_PLATFORM", None)  # backend nativo (cocoa), no "offscreen"
 os.environ.setdefault("AQUA_GAUSS_SILENCIAR", "1")
 
-from PyQt6.QtWidgets import QApplication  # noqa: E402
+from PyQt6.QtWidgets import QApplication, QScrollArea  # noqa: E402
 
 from aqua_gauss.clients.qt.app import VentanaPrincipal  # noqa: E402
 from aqua_gauss.clients.qt.theme import aplicar_tema  # noqa: E402
@@ -35,7 +35,8 @@ CASOS = [
     ("Infinitas soluciones", "caso2"),
     ("Sistema inconsistente", "caso3"),
 ]
-TAM = (1040, 760)  # tamaño por defecto de la ventana de la app
+ANCHO = 1040
+ALTO_MIN, ALTO_MAX = 760, 1800
 
 
 def _asentar(app, veces=25):
@@ -46,9 +47,18 @@ def _asentar(app, veces=25):
     app.processEvents()
 
 
+def _ajustar_alto(app, win, pantalla):
+    """Estira la ventana para que el contenido con scroll quepa entero en la foto."""
+    area = pantalla.findChild(QScrollArea)
+    contenido = area.widget().sizeHint().height() if area is not None else 0
+    alto = max(ALTO_MIN, min(ALTO_MAX, 260 + contenido))
+    win.setFixedSize(ANCHO, alto)
+    _asentar(app, veces=15)
+
+
 def _foto(win, ruta):
     win.grab().save(ruta, "PNG")
-    print(f"OK  {ruta}")
+    print(f"OK  {ruta}  ({win.width()}x{win.height()})")
 
 
 def main() -> int:
@@ -60,7 +70,7 @@ def main() -> int:
 
     for etiqueta, base in CASOS:
         win = VentanaPrincipal()
-        win.setFixedSize(*TAM)
+        win.setFixedSize(ANCHO, ALTO_MIN)
         win.sesion.cargar_ejemplo(etiqueta)
 
         win.ir("proceso")
@@ -69,8 +79,10 @@ def main() -> int:
             proceso._mostrar_paso(len(proceso.pasos) - 1)  # último paso: RREF / escalonada final
         win.show()
         _asentar(app)
+        _ajustar_alto(app, win, proceso)
         _foto(win, os.path.join(out, f"{base}-proceso.png"))
 
+        win.setFixedSize(ANCHO, ALTO_MIN)
         win.ir("resultado")  # pantalla "4 · Solución en notación vectorial"
         _asentar(app, veces=15)
         _foto(win, os.path.join(out, f"{base}-vectorial.png"))
