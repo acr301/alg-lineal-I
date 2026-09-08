@@ -1,0 +1,348 @@
+% ======================================================================
+%  Informe_Programa 2_Grupo 7.pdf
+%  Proyecto Integrador: Calculadora de Álgebra Lineal — UAM (MTM0120)
+%
+%  Compilar:  pdflatex informe.tex   (dos veces, para el índice)
+%  o bien:    latexmk -pdf informe.tex
+%
+%  Plantilla replicada de "Informe_Programa_1_Grupo_7.pdf" (hecho en Word).
+%  Reutilizable entre entregas: sólo cambia la portada (título del Programa),
+%  la sección "Explicación del algoritmo" y las 3 capturas de "Casos de prueba".
+% ======================================================================
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[spanish,es-noindentfirst]{babel}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+\usepackage{parskip}
+
+\graphicspath{{img/}}
+
+% --- Datos de la entrega (editar aquí) --------------------------------
+\newcommand{\programaTitulo}{Programa 2: Reducci\'on a Forma Escalonada Reducida (Gauss--Jordan) e Identificaci\'on de Columnas Pivote}
+\newcommand{\grupoNum}{7}
+\newcommand{\docente}{Jos\'e Andr\'es Mungu\'ia Cort\'ez}
+\newcommand{\ciudadFecha}{Managua, \today}
+% Integrantes: confirmar si el Grupo 7 incorpora a Roberto Mac\'ias y Reynaldo Molina.
+\newcommand{\integrantes}{%
+  Andr\'es Ernesto Castillo Rothschuh\\
+  F\'atima Marie Zogaib Gradiz%
+}
+% --------------------------------------------------------------------
+
+% --- Caja de pseudocódigo (imita los recuadros oscuros del informe 1) -
+\definecolor{codebg}{HTML}{2B2B2B}
+\definecolor{codefg}{HTML}{E6E6E6}
+\lstdefinestyle{pseudo}{
+  backgroundcolor=\color{codebg}, basicstyle=\ttfamily\small\color{codefg},
+  breaklines=true, columns=fullflexible, keepspaces=true,
+  frame=single, framerule=0pt, framesep=8pt, xleftmargin=8pt, xrightmargin=8pt,
+  aboveskip=1em, belowskip=1em, literate={->}{{$\rightarrow$}}1 {≤}{{$\leq$}}1 {≠}{{$\neq$}}1
+}
+\lstset{style=pseudo}
+
+% --- Placeholder para capturas todavía no tomadas --------------------
+\newcommand{\captura}[2]{%
+  \begin{center}
+  \IfFileExists{img/#1}{\includegraphics[width=0.92\linewidth]{#1}}{%
+    \fbox{\parbox{0.9\linewidth}{\centering\vspace{1.2em}
+      \textbf{[PENDIENTE: captura de pantalla]}\\[0.4em]
+      \small #2\\[0.2em]
+      Guardar como \texttt{img/#1} (ejecutar \texttt{uv run aqua-gauss}).
+      \vspace{1.2em}}}%
+  }
+  \end{center}%
+}
+
+\begin{document}
+
+% ===================== PORTADA =======================================
+\begin{titlepage}
+\centering
+{\large\bfseries UNIVERSIDAD AMERICANA\par}
+\vspace{0.4em}
+\rule{\linewidth}{0.4pt}\par
+\vspace{1.5em}
+
+\IfFileExists{img/uam-logo.png}{\includegraphics[width=0.42\linewidth]{uam-logo.png}}{%
+  \fbox{\parbox{0.42\linewidth}{\centering\vspace{3em}\small [logo UAM: \texttt{img/uam-logo.png}]\vspace{3em}}}}
+\par\vspace{1.5em}
+
+{Asignatura: \'Algebra Lineal (MTM0120)\par}
+{Facultad de Ingenier\'ia y Arquitectura (FIA)\par}
+\vspace{1em}
+\rule{\linewidth}{0.4pt}\par
+\vspace{1.2em}
+
+{\itshape\bfseries Proyecto Integrador: Calculadora de \'Algebra Lineal\par}
+\vspace{0.3em}
+{\itshape\bfseries \programaTitulo\par}
+\vspace{1.2em}
+\rule{\linewidth}{0.4pt}\par
+\vspace{2em}
+
+{\bfseries Integrantes:\par}
+\vspace{0.3em}
+{\integrantes\par}
+\vspace{3em}
+
+{\bfseries Grupo:} \grupoNum\par
+\vspace{2em}
+{\bfseries Docente:} \docente\par
+\vspace{0.5em}
+{Carrera: Ingenier\'ia en Sistemas y Tecnolog\'ias de la Informaci\'on\par}
+
+\vfill
+{\ciudadFecha\par}
+\end{titlepage}
+
+% ===================== ÍNDICE ========================================
+\tableofcontents
+\newpage
+
+% ===================== EXPLICACIÓN DEL ALGORITMO =====================
+\section{Explicaci\'on del algoritmo}
+
+\subsection{Contexto y ubicaci\'on en el repositorio}
+
+El programa transforma una matriz aumentada $[\,A \mid b\,]$ a su \textbf{Forma
+Escalonada Reducida por Filas} (RREF) mediante el m\'etodo de \textbf{Gauss--Jordan},
+e informa de forma expl\'icita las \textbf{columnas pivote}, las \textbf{variables
+b\'asicas} y las \textbf{variables libres}, y la soluci\'on (\'unica o su estructura
+general). Todo se implementa con Python est\'andar: listas anidadas, condicionales,
+bucles y funciones propias; sin NumPy, SciPy ni funciones de \'algebra lineal de
+\texttt{math}. Los m\'odulos de c\'alculo no hacen \texttt{input()}, \texttt{print()}
+ni acceso a archivos --- son funciones puras verificables por separado.
+
+En el repositorio del curso (\texttt{alg-lineal-I}) la l\'ogica vive en el n\'ucleo
+de c\'alculo:
+\begin{itemize}[nosep]
+  \item \texttt{gauss.py} --- \texttt{escalonar()}: reducci\'on a forma escalonada
+        (REF) con pivoteo parcial; devuelve la lista \texttt{columnas\_pivote}.
+        Adem\'as \texttt{rango\_matriz()}, \texttt{verificar\_rango\_nulidad()},
+        \texttt{clasificar()}.
+  \item \texttt{gauss\_jordan.py} --- \texttt{reducir\_a\_escalonada\_reducida()}:
+        contin\'ua de REF a RREF (normaliza cada pivote a 1 y hace ceros
+        \emph{encima} del pivote); \texttt{solucion\_parametrica()} y
+        \texttt{solucion\_general\_vectorial()}.
+\end{itemize}
+
+\subsection{Fundamentos matem\'aticos}
+
+La reducci\'on usa \'unicamente \textbf{operaciones elementales de fila}, que no
+alteran el conjunto soluci\'on:
+\begin{itemize}[nosep]
+  \item Intercambiar dos filas ($F_i \leftrightarrow F_j$).
+  \item Multiplicar una fila por un escalar no nulo ($F_i \leftarrow \tfrac{1}{p}\,F_i$).
+  \item Restarle a una fila un m\'ultiplo de otra ($F_i \leftarrow F_i - \lambda\,F_j$).
+\end{itemize}
+
+\paragraph{Pivoteo parcial.} En cada columna se elige como pivote, entre la fila
+actual y las inferiores, la de mayor valor absoluto. Esto evita dividir por cero
+cuando el elemento en la diagonal es $0$ y reduce el error de redondeo del punto
+flotante. Las comparaciones con cero usan una tolerancia $\varepsilon = 10^{-9}$
+(\texttt{valor\_casi\_cero}), nunca \texttt{== 0}.
+
+\subsection{Fase 1: reducci\'on a forma escalonada (\texttt{escalonar})}
+
+Se recorren las columnas de izquierda a derecha manteniendo un puntero
+\texttt{fila\_actual}. Para la columna $j$:
+
+\begin{enumerate}[nosep]
+  \item \textbf{Selecci\'on de pivote:} buscar, de \texttt{fila\_actual} hacia
+        abajo, la fila con $|a_{rj}|$ m\'aximo.
+  \item Si ese m\'aximo es $\approx 0$, la columna $j$ no tiene pivote: ser\'a una
+        \textbf{variable libre}. Se pasa a la siguiente columna sin avanzar
+        \texttt{fila\_actual}.
+  \item \textbf{Intercambio} de la fila del pivote con \texttt{fila\_actual} (si
+        difieren); se registra el paso $F_i \leftrightarrow F_k$.
+  \item \textbf{Ceros debajo del pivote:} para cada fila inferior $r$,
+        $\lambda = a_{rj}/p$ y $F_r \leftarrow F_r - \lambda\,F_{\text{actual}}$.
+  \item Registrar $j$ en \texttt{columnas\_pivote} y avanzar \texttt{fila\_actual}.
+\end{enumerate}
+
+\begin{lstlisting}
+Para cada columna j de 0 a n-1:
+    fila_max = argmax(|a[r][j]|)  para r >= fila_actual
+    si |a[fila_max][j]| ~ 0:  continuar        # columna sin pivote -> variable libre
+    intercambiar(fila_actual, fila_max)
+    p = a[fila_actual][j]
+    Para cada fila r > fila_actual:
+        lambda = a[r][j] / p
+        a[r] = a[r] - lambda * a[fila_actual]  # anula a[r][j]
+    columnas_pivote.append(j);  fila_actual += 1
+devolver columnas_pivote
+\end{lstlisting}
+
+\noindent\textbf{Resultado:} matriz en REF y \texttt{columnas\_pivote} = \'indices
+(base 0) de las columnas con pivote. Su longitud es el \textbf{rango} de $A$.
+
+\subsection{Fase 2: ceros por encima del pivote (\texttt{reducir\_a\_escalonada\_reducida})}
+
+Partiendo de la REF, se recorren los pivotes \textbf{de abajo hacia arriba}. Para el
+pivote $i$ en la columna \texttt{col}:
+
+\begin{enumerate}[nosep]
+  \item \textbf{Normalizar a 1:} si $a_{i,\text{col}} \neq 1$, dividir toda la fila
+        $i$ (desde \texttt{col}) entre el pivote. Paso: $F_i \leftarrow F_i / p$.
+  \item \textbf{Ceros arriba:} para cada fila $r < i$, tomar
+        $\lambda = a_{r,\text{col}}$; si $\lambda \not\approx 0$,
+        $F_r \leftarrow F_r - \lambda\,F_i$ y fijar $a_{r,\text{col}} = 0$
+        expl\'icitamente (evita residuos de punto flotante).
+\end{enumerate}
+
+\begin{lstlisting}
+Para i de (num_pivotes - 1) hasta 0:          # de abajo hacia arriba
+    col = columnas_pivote[i];  p = a[i][col]
+    si p != 1:  a[i] = a[i] / p               # F_i <- F_i / p
+    Para cada fila r < i:
+        lambda = a[r][col]
+        si lambda ~ 0:  continuar
+        a[r] = a[r] - lambda * a[i]           # F_r <- F_r - lambda * F_i
+        a[r][col] = 0.0
+\end{lstlisting}
+
+\noindent\textbf{Resultado (RREF):} cada pivote vale $1$ y es el \'unico elemento no
+nulo de su columna; toda columna pivote es un vector can\'onico $e_k$.
+
+\subsection{Identificaci\'on de columnas pivote y variables libres}
+
+\begin{itemize}[nosep]
+  \item \textbf{Columnas pivote} $=$ \texttt{columnas\_pivote} (Fase 1). En el
+        reporte se muestran en base 1: \emph{``Las columnas pivote son: 1, 2 y 4''}.
+  \item \textbf{Variables b\'asicas} $=$ las asociadas a una columna pivote.
+  \item \textbf{Variables libres} $=$
+        \texttt{[v for v in range(n) if v not in columnas\_pivote]}.
+  \item \textbf{Rango} $= |\texttt{columnas\_pivote}|$;\quad
+        \textbf{Nulidad} $= n - \text{rango}$;\quad
+        siempre $\operatorname{Rango}(A) + \operatorname{Nulidad}(A) = n$.
+\end{itemize}
+
+\subsection{Clasificaci\'on del sistema}
+
+Sobre la matriz reducida (criterio de Rouch\'e--Frobenius):
+\begin{itemize}[nosep]
+  \item \textbf{Inconsistente:} existe una fila $[\,0\ \cdots\ 0 \mid c\,]$ con
+        $c \neq 0$.
+  \item \textbf{Consistente determinado:} no hay fila de ese tipo y
+        $\text{rango} = n$ (todas las variables son b\'asicas) $\Rightarrow$
+        soluci\'on \'unica.
+  \item \textbf{Consistente indeterminado:} no hay fila de ese tipo y
+        $\text{rango} < n$ $\Rightarrow$ infinitas soluciones (hay variables
+        libres).
+\end{itemize}
+
+\subsection{Soluci\'on a partir de la RREF}
+
+\paragraph{Determinado.} Con la RREF, la columna $b$ ya es la soluci\'on: la fila
+del pivote de $x_k$ dice $x_k = b'_k$.
+
+\paragraph{Indeterminado.} \texttt{solucion\_parametrica()} lee cada fila pivote de
+la RREF y despeja su variable b\'asica en funci\'on de las libres:
+\[
+  x_{\text{piv}} \;=\; b'_i \;-\!\!\sum_{v\ \text{libre}} a'_{i,v}\,x_v .
+\]
+\texttt{solucion\_general\_vectorial()} arma entonces
+\[
+  \mathbf{x} \;=\; \mathbf{x}_p \;+\; t_1 \mathbf{v}_1 \;+\; \cdots \;+\; t_k \mathbf{v}_k ,
+\]
+donde $\mathbf{x}_p$ se obtiene fijando todas las libres a $0$, y cada
+$\mathbf{v}_j$ fijando $x_{\text{libre}_j}=1$ y el resto de libres a $0$ y restando
+$\mathbf{x}_p$ ($k = $ nulidad).
+
+% ===================== CASOS DE PRUEBA ==============================
+\section{Casos de prueba (capturas de pantalla)}
+
+Ejecuci\'on en la interfaz gr\'afica (\texttt{uv run aqua-gauss}). Cada caso muestra
+la matriz llevada a RREF, las columnas pivote, la clasificaci\'on de variables y la
+soluci\'on.
+
+\subsection{Sistema con soluci\'on \'unica}
+
+\[
+\begin{array}{rcrcrcr}
+ x_1 &+& x_2 &+& x_3 &=& 6\\
+     & & 2x_2 &+& 5x_3 &=& -4\\
+ 2x_1 &+& 5x_2 &-& x_3 &=& 27
+\end{array}
+\qquad
+[\,A\mid b\,]=\left[\begin{array}{ccc|c}
+1&1&1&6\\ 0&2&5&-4\\ 2&5&-1&27
+\end{array}\right]
+\]
+
+RREF esperada $\left[\begin{smallmatrix}1&0&0&5\\0&1&0&3\\0&0&1&-2\end{smallmatrix}\right]$;
+columnas pivote: 1, 2 y 3; todas las variables son b\'asicas (no hay libres);
+$\text{rango}=3=n$. Soluci\'on \'unica $x_1=5,\ x_2=3,\ x_3=-2$.
+
+\captura{caso1-unica.png}{Caso 1: sistema consistente determinado --- RREF, columnas
+pivote 1,2,3 y soluci\'on \'unica $(5,3,-2)$.}
+
+\subsection{Sistema con variables libres (infinitas soluciones)}
+
+\[
+\begin{array}{rcrcrcr}
+ x_1 &+& x_2 &+& x_3 &=& 6\\
+ 2x_1 &+& 2x_2 &+& 2x_3 &=& 12\\
+ x_1 &-& x_2 & & &=& 0
+\end{array}
+\qquad
+[\,A\mid b\,]=\left[\begin{array}{ccc|c}
+1&1&1&6\\ 2&2&2&12\\ 1&-1&0&0
+\end{array}\right]
+\]
+
+La fila $2$ es $2\times$ la fila $1$: se anula al escalonar. RREF esperada
+$\left[\begin{smallmatrix}1&0&\tfrac12&3\\[2pt]0&1&\tfrac12&3\\[2pt]0&0&0&0\end{smallmatrix}\right]$;
+columnas pivote: 1 y 2; \textbf{variable libre:} $x_3$; $\text{rango}=2$,
+$\text{nulidad}=1$. Soluci\'on general
+\[
+\mathbf{x}=\begin{pmatrix}3\\3\\0\end{pmatrix}
+      + t_1\begin{pmatrix}-\tfrac12\\[2pt]-\tfrac12\\[2pt]1\end{pmatrix}.
+\]
+
+\captura{caso2-libres.png}{Caso 2: sistema consistente indeterminado --- RREF,
+columnas pivote 1 y 2, $x_3$ libre, soluci\'on vectorial $\mathbf{x}_p + t_1\mathbf{v}_1$.}
+
+\subsection{Sistema sin soluci\'on (inconsistente)}
+
+\[
+\begin{array}{rcrcr}
+ x_1 &+& x_2 &=& 2\\
+ x_1 &+& x_2 &=& 5
+\end{array}
+\qquad
+[\,A\mid b\,]=\left[\begin{array}{cc|c}
+1&1&2\\ 1&1&5
+\end{array}\right]
+\]
+
+Al restar $F_2 \leftarrow F_2 - F_1$ queda $[\,0\ \ 0 \mid 3\,]$: una ecuaci\'on
+$0 = 3$. El sistema es \textbf{inconsistente}; no hay soluci\'on ni forma
+vectorial.
+
+\captura{caso3-inconsistente.png}{Caso 3: fila $[0\ 0\mid 3]$ tras reducir ---
+estado ``Sistema inconsistente $\cdot$ no tiene soluci\'on''.}
+
+% ===================== CONCLUSIÓN ===================================
+\section{Conclusi\'on}
+
+El programa cumple los requerimientos de la Tarea 2: entrada de $[\,A\mid b\,]$,
+reducci\'on completa a RREF por Gauss--Jordan (pivotes a $1$, ceros encima y
+debajo), detecci\'on autom\'atica de columnas pivote, distinci\'on entre variables
+b\'asicas y libres, y despliegue de la soluci\'on \'unica o de la estructura de la
+soluci\'on general --- todo con Python est\'andar, sin librer\'ias de \'algebra
+lineal. La fase de ceros por encima del pivote reutiliza \texttt{columnas\_pivote}
+de la fase de escalonado, de modo que identificar los pivotes y construir la RREF
+son un mismo recorrido de la matriz.
+
+\end{document}
