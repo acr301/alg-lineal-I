@@ -28,6 +28,11 @@ curso **una Tarea/Programa = un *major*** (ver [`docs/VERSIONADO.md`](docs/VERSI
 ### Added
 
 - `docs/VERSIONADO.md`, `CHANGELOG.md`, `.editorconfig` (#26).
+- CI en GitHub Actions (#27): `ci.yml` (ruff check + ruff format + guard de
+  CRLF + pytest en Python 3.9/3.13, Linux y un cruce en Windows, GUI headless
+  con `QT_QPA_PLATFORM=offscreen`) y `release.yml` (en tags `v*`: valida
+  tag ↔ `pyproject.version`, re-corre tests y publica el GitHub Release con la
+  sección del changelog). Badge de CI en el README.
 
 ## [3.0.0] — 2026-09-07
 

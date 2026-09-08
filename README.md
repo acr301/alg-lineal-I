@@ -1,5 +1,7 @@
 # Álgebra Lineal I - Sistema de Resolución de Ecuaciones Lineales
 
+[![CI](https://github.com/acr301/alg-lineal-I/actions/workflows/ci.yml/badge.svg)](https://github.com/acr301/alg-lineal-I/actions/workflows/ci.yml)
+
 > Sistema educativo interactivo para resolver y analizar sistemas de ecuaciones lineales Ax=b mediante eliminación de Gauss.
 
 ## 🚀 Inicio Rápido
@@ -142,11 +144,11 @@ uv run --extra dev pytest        # 70 tests
 
 ## 🛠️ Stack
 
-- **Python:** 3.9+
-- **PyQt6:** 6.6-7 (GUI)
-- **matplotlib:** 3.9+ (render de notación matemática en la GUI; opcional en runtime)
-- **uv:** Gestor de paquetes rápido
-- **unittest:** Tests
+- **Python:** 3.9+ (CI en 3.9 y 3.13)
+- **PyQt6:** 6.6-7 · **matplotlib:** 3.9+ — solo en la extra `qt` (GUI y render de notación)
+- **uv:** gestor de paquetes y entorno
+- **pytest** (`unittest` dentro) · **ruff** (lint + formato) — extra `dev`
+- **CI:** `.github/workflows/` — `ci.yml` (ruff + pytest + GUI offscreen + guard CRLF) y `release.yml` (tags `v*`)
 
 ## 📝 Ejemplos
 

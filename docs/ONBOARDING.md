@@ -57,13 +57,32 @@ guiada término a término.
 **Sistema de ejemplo** (E1: 1,1,1|6 · E2: 0,2,5|-4 · E3: 2,5,-1|27) → solución
 x=5, y=3, z=-2.
 
-## 4️⃣ Tests (2 minutos)
+## 4️⃣ Tests y comprobaciones (2 minutos)
 
 ```bash
-# Desde la raíz del repo (deben pasar):
-uv run --extra dev pytest
-# Salida esperada: 70 passed
+# Desde la raíz del repo. Es lo mismo que corre la CI (.github/workflows/ci.yml):
+uv run --extra dev pytest            # 70 passed
+uv run ruff check .                  # lint (imports sin usar, etc.)
+uv run ruff format --check .         # formato (equivale a black + isort)
 ```
+
+Antes de subir, deja el formato aplicado: `uv run ruff format .`
+
+### Qué corre la CI
+
+`ci.yml` (en cada `push` y cada `pull_request`):
+
+| Check | Comando local equivalente |
+|-------|---------------------------|
+| Lint | `uv run ruff check .` |
+| Formato | `uv run ruff format --check .` |
+| Finales de línea | `git ls-files --eol \| grep -P '\sw/crlf\s'` (no debe encontrar nada) |
+| Tests | `uv run --extra dev pytest` (Python 3.9 y 3.13; Linux + un cruce en Windows) |
+| GUI headless | el job instala las libs de Qt y corre con `QT_QPA_PLATFORM=offscreen`; los tests de `tests/qt/` deben **ejecutarse**, no saltarse |
+
+`release.yml` corre al empujar un tag `v*`: valida que el tag coincida con
+`pyproject.version`, re-corre los tests, y crea el GitHub Release con la sección
+del `CHANGELOG.md` (ver [`docs/VERSIONADO.md`](VERSIONADO.md)).
 
 ## 5️⃣ Entender la Estructura (3 minutos)
 
