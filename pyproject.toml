@@ -5,8 +5,9 @@ build-backend = "hatchling.build"
 [project]
 name = "aqua-gauss"
 # Fuente de verdad de la versión. Criterio: una tarea del curso = un *major*
-# (ver docs/VERSIONADO.md). v3 = Tarea 3 (propiedades de R^n, #29).
-version = "3.0.0"
+# (ver docs/VERSIONADO.md). v3 = Tarea 3 (propiedades de R^n, #29); v3.1 suma
+# el refactor a paquete, CI y el hotfix de GUI (columnas pivote, Vectores).
+version = "3.1.0"
 description = "Resuelve y analiza sistemas de ecuaciones lineales Ax = b por eliminación de Gauss, paso a paso y sin librerías de álgebra."
 requires-python = ">=3.9"
 license = "MIT"

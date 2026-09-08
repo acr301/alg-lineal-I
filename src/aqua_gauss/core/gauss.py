@@ -56,6 +56,14 @@ def _formato_por_defecto(valor):
     return f"{valor:.4g}"
 
 
+_SUBS = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
+
+
+def _fila(indice):
+    """Etiqueta de fila con subíndice Unicode: ``_fila(0)`` -> ``"F₁"``."""
+    return "F" + str(indice + 1).translate(_SUBS)
+
+
 def escalonar(matriz, n_incognitas, registrar_paso=None, formato_numero=None):
     """
     Reduce 'matriz' (aumentada, de tamaño m x (n_incognitas + 1)) a forma
@@ -103,7 +111,7 @@ def escalonar(matriz, n_incognitas, registrar_paso=None, formato_numero=None):
             intercambiar_filas(matriz, fila_actual, fila_max)
             if registrar_paso:
                 registrar_paso(
-                    f"F{fila_actual + 1} <-> F{fila_max + 1} (pivoteo parcial)",
+                    f"{_fila(fila_actual)} ↔ {_fila(fila_max)} (pivoteo parcial)",
                     matriz,
                 )
 
@@ -117,7 +125,7 @@ def escalonar(matriz, n_incognitas, registrar_paso=None, formato_numero=None):
             matriz[r][col] = 0.0
             if registrar_paso:
                 registrar_paso(
-                    f"F{r + 1} <- F{r + 1} - ({fmt(factor)}) * F{fila_actual + 1}",
+                    f"{_fila(r)} ← {_fila(r)} − ({fmt(factor)})·{_fila(fila_actual)}",
                     matriz,
                 )
 
