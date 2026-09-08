@@ -35,14 +35,14 @@ QSpinBox, QComboBox, QLineEdit { background: white; border: 1px solid #86cde3;
 QLineEdit#cell { font-size: 22px; font-weight: 700; padding: 12px; }
 QSpinBox:focus, QComboBox:focus, QLineEdit:focus { border: 2px solid #087fca; }
 QPushButton {
-    background: #0685cc;
+    background: #1f4e79;
     color: white;
     border: 1px solid #0572b2;
     border-radius: 10px;
     padding: 9px 16px;
     font-weight: 700;
 }
-QPushButton:hover { background: #0572b2; }
+QPushButton:hover { background: #2a69a4; }
 QPushButton:pressed { background: #056da8; }
 QPushButton:focus { border: 2px solid #08405f; }
 QPushButton:disabled { background: #bcd9e6; color: #eef; border-color: #a7c7d6; }
@@ -57,7 +57,7 @@ QToolButton#help:focus { border: 2px solid #08405f; }
 QListWidget { background: transparent; border: none; }
 QListWidget::item { background: white; border: 1px solid #86cde3; border-radius: 10px;
     padding: 14px; margin: 4px 0; font-weight: 700; color: #0874a4; }
-QListWidget::item:selected { background: #0685cc; color: white; border-color: #0572b2; }
+QListWidget::item:selected { background: #1f4e79; color: white; border-color: #0572b2; }
 QTableWidget { background: rgba(255,255,255,0.95); alternate-background-color: #edfaff;
     border: 1px solid #9bd4e6; border-radius: 10px; gridline-color: #c5e9f1;
     selection-background-color: #9de6f2; font-size: 15px; }
