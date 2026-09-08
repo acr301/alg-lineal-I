@@ -40,6 +40,10 @@ from formato import (
     MODO_FRACCION,
     formatear_valor,
     generar_latex_solucion,
+    var,
+    parametro,
+    subindice,
+    entrada_b
 )
 
 # Modo de presentación numérica; se ajusta según los argumentos de línea de
@@ -87,8 +91,8 @@ def leer_sistema():
         print(f"\n-- Ecuación {i + 1} --")
         fila = []
         for j in range(n):
-            fila.append(pedir_flotante(f"  Coeficiente de x{j + 1}: "))
-        b = pedir_flotante(f"  Término independiente (b{i + 1}): ")
+            fila.append(pedir_flotante(f"  Coeficiente de {var(j)}: "))
+        b = pedir_flotante(f"  Término independiente ({entrada_b(i + 1)}): ")
         coeficientes.append(fila)
         terminos.append(b)
 
@@ -161,7 +165,7 @@ def imprimir_verificacion(coeficientes, terminos, x, titulo="Verificación (sust
         print(f"    {factores}")
         if productos != suma:
             print(f"    = {productos}")
-        print(f"    = {suma} {simbolo} {esperado} (b{i + 1})  ->  {estado}")
+        print(f"    = {suma} {simbolo} {esperado} ({entrada_b(i + 1)})  ->  {estado}")
     if todo_coincide:
         print("La solución satisface todas las ecuaciones del sistema original.")
     else:
@@ -212,7 +216,7 @@ def resolver_sistema(coeficientes, terminos, n):
         x = sustitucion_regresiva(matriz, n, columnas_pivote)
         print("\nSolución:")
         for j in range(n):
-            print(f"  x{j + 1} = {formatear_numero(x[j])}")
+            print(f"  {var(j)} = {formatear_numero(x[j])}")
 
         imprimir_verificacion(coeficientes, terminos, x)
 
@@ -234,43 +238,46 @@ def resolver_sistema(coeficientes, terminos, n):
 
         libres, expresiones = solucion_parametrica(matriz, n, columnas_pivote)
 
-        nombres_libres = [f"x{v + 1}" for v in libres]
+        nombres_libres = [var(v) for v in libres]
         print("\nVariables libres (parámetros):", ", ".join(nombres_libres))
 
         print("\nSolución paramétrica:")
         for v in range(n):
             if v in libres:
-                indice_parametro = libres.index(v) + 1
-                print(f"  x{v + 1} = t{indice_parametro}   (variable libre)")
+                print(f"  {var(v)} = {parametro(libres.index(v))}   (variable libre)")
             else:
                 termino, partes = expresiones[v]
                 texto = formatear_numero(termino)
                 for coef, indice_libre in partes:
                     signo = "+" if coef >= 0 else "-"
-                    indice_parametro = libres.index(indice_libre) + 1
-                    texto += f" {signo} {formatear_numero(abs(coef))}*t{indice_parametro}"
-                print(f"  x{v + 1} = {texto}")
+                    texto += f" {signo} {formatear_numero(abs(coef))}*{parametro(libres.index(indice_libre))}"
+                print(f"  {var(v)} = {texto}")
 
         # Solución vectorial
         print("\n--- Solución general vectorial ---")
         solucion_vec = solucion_general_vectorial(matriz, n, columnas_pivote, libres, expresiones)
-        print("x = xp + t1*v1 + t2*v2 + ... + tk*vk")
+
+        ecuacion_vec = "x = xp"
+        if libres:
+            ecuacion_vec += " + " + " + ".join(f"{parametro(k)}*v{subindice(k+1)}" for k in range(len(libres)))
+        print(ecuacion_vec)
+
         print("\nDonde:")
         print("xp (solución particular) =", [f"{formatear_numero(v)}" for v in solucion_vec["particular"]])
         for k, vec in enumerate(solucion_vec["vectores_nulos"]):
-            print(f"v{k + 1} =", [f"{formatear_numero(v)}" for v in vec])
+            print(f"v{subindice(k + 1)} =", [f"{formatear_numero(v)}" for v in vec])
 
         # LaTeX de la solución
         print("\n--- Código LaTeX (para copiar) ---")
         latex_code = generar_latex_solucion(n, libres, expresiones,
-                                             solucion_vec["particular"],
-                                             solucion_vec["vectores_nulos"], MODO)
+                                            solucion_vec["particular"],
+                                            solucion_vec["vectores_nulos"], MODO)
         print(latex_code)
 
         valores_ejemplo = [0.0] * len(libres)
         x_ejemplo = evaluar_solucion_parametrica(n, libres, expresiones, valores_ejemplo)
         asignaciones = ", ".join(
-            f"t{k + 1} = {formatear_numero(v)}" for k, v in enumerate(valores_ejemplo)
+            f"{parametro(k)} = {formatear_numero(v)}" for k, v in enumerate(valores_ejemplo)
         )
         titulo = f"Verificación con un ejemplo concreto ({asignaciones})"
         imprimir_verificacion(coeficientes, terminos, x_ejemplo, titulo)
