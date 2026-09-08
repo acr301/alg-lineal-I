@@ -20,6 +20,9 @@ from formato import (
     formatear_valor,
     generar_latex_solucion,
     latex_pmatrix,
+    subindice,
+    var,
+    parametro
 )
 
 
@@ -38,17 +41,14 @@ class Sesion:
         self.n_var = 3
         self.modo = MODO_FRACCION
         self.matriz = self._matriz_ceros(3, 3)
-        self.resultado = None  # dict tras resolver(), o None
-        self.origen = "manual"  # "manual" (flujo completo) | "ejemplo" (salta a proceso)
-
-    # ---- helpers de forma -------------------------------------------------- #
+        self.resultado = None
+        self.origen = "manual"
 
     @staticmethod
     def _matriz_ceros(n_eq, n_var):
         return [[0.0] * (n_var + 1) for _ in range(n_eq)]
 
     def redimensionar(self, n_eq, n_var):
-        """Cambia las dimensiones conservando los valores que quepan."""
         nueva = self._matriz_ceros(n_eq, n_var)
         for i in range(min(n_eq, len(self.matriz))):
             for j in range(min(n_var + 1, len(self.matriz[i]))):
@@ -69,23 +69,19 @@ class Sesion:
         self.resultado = None
 
     def fmt(self, valor):
-        """Formatea un número según la notación elegida (fracción o decimal)."""
         return formatear_valor(valor, self.modo)
-
-    # ---- celdas de la matriz aumentada ----------------------------------- #
 
     def total_celdas(self):
         return self.n_eq * (self.n_var + 1)
 
-    #aqui se crearon los cambios Para inyectar la función subindice() en las etiquetas de la matriz
     def etiqueta_celda(self, indice):
-        from formato import subindice
+        # Se removió la importación local recursiva que enmascaraba funciones
         fila, col = divmod(indice, self.n_var + 1)
         if col == self.n_var:
             return (f"b{subindice(fila + 1)}",
-                f"término independiente de la ecuación {fila + 1}")
+                    f"término independiente de la ecuación {fila + 1}")
         return (f"a{subindice(fila + 1)}{subindice(col + 1)}",
-            f"coeficiente de x{subindice(col + 1)} en la ecuación {fila + 1}")
+                f"coeficiente de {var(col, 'x')} en la ecuación {fila + 1}")
 
     def set_celda(self, indice, valor):
         fila, col = divmod(indice, self.n_var + 1)
@@ -96,10 +92,7 @@ class Sesion:
         fila, col = divmod(indice, self.n_var + 1)
         return self.matriz[fila][col]
 
-    # ---- resolución ----------------------------------------------------- #
-
     def resolver(self):
-        """Corre la eliminación de Gauss sobre self.matriz y guarda el resultado."""
         n = self.n_var
         coeficientes = [fila[:n] for fila in self.matriz]
         terminos = [fila[n] for fila in self.matriz]
@@ -124,9 +117,9 @@ class Sesion:
             "n": n,
             "forma": clasificar_forma_escalonada(matriz, n, pivotes),
             "solucion": None,
-            "parametrica": None,   # (libres, expresiones)
-            "vectorial": None,     # {particular, vectores_nulos}
-            "verificacion": None,  # (encabezado, filas_detalladas)
+            "parametrica": None,
+            "vectorial": None,
+            "verificacion": None,
             "latex": "",
         }
 
@@ -150,7 +143,8 @@ class Sesion:
                 n, libres, expresiones, datos["vectorial"]["particular"],
                 datos["vectorial"]["vectores_nulos"], self.modo)
             x_ej = evaluar_solucion_parametrica(n, libres, expresiones, [0.0] * len(libres))
-            etiqueta = ", ".join(f"t{k + 1} = 0" for k in range(len(libres))) or "sin parámetros"
+            # Sustitución de texto plano t por inyección tipográfica
+            etiqueta = ", ".join(f"{parametro(k)} = 0" for k in range(len(libres))) or "sin parámetros"
             datos["verificacion"] = (
                 f"Comprobación con {etiqueta}",
                 verificar_solucion_detallada(coeficientes, terminos, x_ej),
