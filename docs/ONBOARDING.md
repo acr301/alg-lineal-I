@@ -14,8 +14,8 @@ pip install uv
 git clone https://github.com/acr301/alg-lineal-I.git
 cd alg-lineal-I
 
-# Sincronizar dependencias
-uv sync
+# Sincronizar dependencias (el núcleo no tiene ninguna; `qt` añade la GUI)
+uv sync --extra qt
 ```
 
 ## 2️⃣ Exploración (5 minutos)
@@ -32,10 +32,11 @@ cat context/current-feature.md
 
 ## 3️⃣ Primer Run (3 minutos)
 
-### Opción A: Interfaz Gráfica (recomendado)
+### Interfaz Gráfica
 ```bash
-cd semana2/tarea1
-uv run python gui.py     # con `uv run` para que matplotlib renderice las fórmulas
+# desde la raíz del repo
+uv sync --extra qt
+uv run aqua-gauss     # con `uv run` para que matplotlib renderice las fórmulas
 ```
 
 La GUI es un flujo de pantallas navegable **sin ratón** (Enter avanza, Esc
@@ -50,46 +51,42 @@ retrocede, ← → recorren pasos, F1 vuelve al menú):
 Para crear un sistema propio: "Iniciar" → dimensiones y notación → entrada
 guiada término a término.
 
-### Opción B: Consola
-```bash
-cd semana2/tarea1
-uv run python main.py     # --decimal / --fraccion para cambiar la notación
-```
+> La consola (`main.py`) se retiró en el refactor a `core/` + `clients/`: no era
+> requisito y la TUI (#18) cubrirá el terminal.
 
-**Qué hacer:**
-1. Ingresa 3 ecuaciones, 3 incógnitas
-2. Ingresa los coeficientes:
-   - E1: 1, 1, 1 | 6
-   - E2: 0, 2, 5 | -4
-   - E3: 2, 5, -1 | 27
-3. Observa la solución: x=5, y=3, z=-2
+**Sistema de ejemplo** (E1: 1,1,1|6 · E2: 0,2,5|-4 · E3: 2,5,-1|27) → solución
+x=5, y=3, z=-2.
 
 ## 4️⃣ Tests (2 minutos)
 
 ```bash
 # Desde la raíz del repo (deben pasar):
 uv run --extra dev pytest
-# Salida esperada: 44 passed
+# Salida esperada: 70 passed
 ```
 
 ## 5️⃣ Entender la Estructura (3 minutos)
 
 ```
-semana2/tarea1/
-├── gauss.py          ← LÓGICA PURA (sin I/O, sin imports)
-│                       - Eliminación de Gauss, rango/nulidad,
-│                         formas escalonadas, solución vectorial
-├── formato.py        ← PRESENTACIÓN texto (float → fracción/decimal, LaTeX, HTML)
-├── mathrender.py     ← PRESENTACIÓN imagen (LaTeX → QPixmap con matplotlib)
-├── main.py           ← CONSOLA (lee, escribe)
-├── gui.py            ← punto de entrada de la GUI (shim)
-├── ui/               ← GUI PyQt6 por pantallas
-│   ├── app.py            ventana principal (QStackedWidget) + atajos
-│   ├── state.py          Sesion: único punto de la GUI que llama a gauss.py
-│   ├── theme.py          estilo, paleta, fuente
-│   ├── widgets.py        PantallaBase, MatrizGrid, navegación, ayudas
-│   └── screen_*.py       menú, dimensiones, entrada, proceso, resultado
-└── test_*.py         ← TESTS (gauss 21 · formato 14 · mathrender 3 · ui 3 · main 3)
+src/aqua_gauss/
+├── app.py                ← entry point (aqua-gauss / python -m aqua_gauss)
+├── core/                 ← MODEL PURO (sin I/O, sin imports de framework)
+│   ├── gauss.py              Eliminación de Gauss, rango/nulidad,
+│   │                         formas escalonadas, solución vectorial
+│   ├── gauss_jordan.py       RREF y solución paramétrica
+│   ├── vectores.py           operaciones en R^n, combinaciones, axiomas
+│   └── formato.py            PRESENTACIÓN texto (float → fracción/decimal, LaTeX, HTML)
+└── clients/qt/           ← CLIENTE PyQt6 por pantallas
+    ├── app.py               ventana principal (QStackedWidget) + atajos
+    ├── state.py             Sesion: único punto de la GUI que llama a core/
+    ├── mathrender.py        PRESENTACIÓN imagen (LaTeX → QPixmap con matplotlib)
+    ├── theme.py             estilo, paleta, fuente
+    ├── widgets.py           PantallaBase, MatrizGrid, navegación, ayudas
+    └── screen_*.py          menú, dimensiones, entrada, proceso, resultado, vectores
+
+tests/
+├── core/   test_gauss (21) · test_gauss_jordan (6) · test_vectores (12) · test_formato (20)
+└── qt/     test_mathrender (3) · test_ui (8)
 ```
 
 ## 🚫 Restricción Crítica
@@ -113,7 +110,7 @@ Para familiarizarte, intenta **agregar un comentario a una función en gauss.py*
 
 ```bash
 # 1. Abre el archivo
-vim semana2/tarea1/gauss.py
+vim src/aqua_gauss/core/gauss.py
 
 # 2. Busca la función escalonar()
 # 3. Lee el código
@@ -127,12 +124,12 @@ uv run --extra dev pytest  # Debe pasar
 
 ## ✅ Checklist: "Estoy Listo"
 
-- [ ] He instalado uv y ejecutado `uv sync`
+- [ ] He instalado uv y ejecutado `uv sync --extra qt`
 - [ ] He ejecutado la GUI sin errores
 - [ ] He visto los 3 casos de prueba ejemplo
-- [ ] He corrido todos los tests (44 pass)
+- [ ] He corrido todos los tests (70 pass)
 - [ ] He leído `docs/PROYECTO.md`
-- [ ] Sé dónde está la lógica (`gauss.py`)
+- [ ] Sé dónde está la lógica (`src/aqua_gauss/core/`)
 - [ ] Entiendo la restricción: sin NumPy
 
 ## 📚 Siguiente: Profundidad
@@ -146,15 +143,15 @@ Si completaste lo anterior, lee en orden:
 ## 🆘 Ayuda Rápida
 
 **"¿Cómo agrego una función?"**
-1. Agrégala en `gauss.py` (lógica pura, sin imports)
-2. Escribe test en `test_gauss.py`
+1. Agrégala en `src/aqua_gauss/core/` (lógica pura, sin imports de framework)
+2. Escribe test en `tests/core/test_gauss.py`
 3. Verifica: `uv run --extra dev pytest` (debe pasar)
-4. Si se usa en la GUI, llámala desde `ui/state.py:Sesion` y muéstrala en la
-   pantalla que corresponda (`ui/screen_*.py`); en consola, desde `main.py`.
-   Para formatear números usa `formato.formatear_valor` / `sesion.fmt`.
+4. Si se usa en la GUI, llámala desde `clients/qt/state.py:Sesion` y
+   muéstrala en la pantalla que corresponda (`clients/qt/screen_*.py`).
+   Para formatear números usa `core.formato.formatear_valor` / `sesion.fmt`.
 
 **"¿Cómo aumento los tests?"**
-1. Abre `test_gauss.py`
+1. Abre `tests/core/test_gauss.py`
 2. Busca la clase relevante (ej: `TestRango`)
 3. Agrega método `def test_mi_caso(self):`
 4. Usa `self.assertEqual()`, `self.assertTrue()`, etc.
@@ -163,7 +160,7 @@ Si completaste lo anterior, lee en orden:
 1. Corre: `uv run --extra dev pytest`
 2. Busca el test fallido
 3. Lee el error: te dice exactamente qué está mal
-4. Si es de compilación: `uv run python -m py_compile semana2/tarea1/*.py semana2/tarea1/ui/*.py`
+4. Si es de compilación: `uv run python -m compileall src/`
 
 ## 🎓 Después del Onboarding
 

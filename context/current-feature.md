@@ -1,27 +1,115 @@
-# Current Feature
+# Current Feature: Consolidación core/ + clients/ (MVC), CI/Release y housekeeping (#28, #27, #26)
 
 ## Status
 
-Ready for review — rama publicada, PR pendiente
+In Progress — #28 (rama `refactor/core-clients-mvc`)
+
+### Avance de #28
+
+- [x] Paso 1 · Mover (mecánico): `git mv` de `semana2/tarea1/` → `src/aqua_gauss/`
+  (`core/` puro + `clients/qt/`), tests a `tests/core` y `tests/qt`. Historial
+  preservado (renames detectados por git).
+- [x] Paquete instalable `aqua-gauss` (hatchling, layout src); entry point
+  `aqua-gauss = "aqua_gauss.app:main"`; `python -m aqua_gauss`; extras `qt` /
+  `dev`. `core/` sin dependencias.
+- [x] `gui.py` movido a la raíz como shim a `aqua_gauss.app:main`, sin
+  `sys.path.insert`.
+- [x] Paso 3 · Borrada la consola: `main.py`, `test_main.py`, `requirements.txt`.
+- [x] Docs/README con rutas y comandos nuevos (README, ONBOARDING, AGENTS
+  quickstart, CASOS_PRUEBA, FEATURE_PROPIEDADES_RN); sección "Layout del paquete"
+  en `docs/ARQUITECTURA.md`.
+- [x] Autores: Roberto Macías (@roberto7503) y Reynaldo Molina (@ReynaldoZr)
+  añadidos en `README.md`, `clients/qt/theme.py:APP_INFO` y `pyproject.toml`.
+- [x] 70 tests en verde (`uv run --extra dev pytest` desde la raíz). Bajó de 78
+  a 70 al eliminar los 8 tests de consola de `test_main.py`.
+- [ ] **Paso 2 · MVC en `clients/qt/` (PENDIENTE, PR aparte):** `Sesion` sigue
+  siendo god-object; falta separar Models/Controllers/Views y el `SolverPort`
+  explícito (`LocalSolver`). `state.Sesion` es hoy el único punto de contacto
+  con `core`.
+- [ ] Reconciliación fina del resto de `docs/ARQUITECTURA.md` y del árbol de
+  ficheros en `AGENTS.md` → se hace en #26.
+- [ ] `semana2/tarea1/` queda con `Informe_Programa 1_Grupo 1.md` (sin versionar,
+  archivo del alumno) y `.DS_Store`; git ya no rastrea nada ahí.
 
 ## Goals
 
-- Implementar el issue #23: propiedades algebraicas de `R^n`.
-- Separar Gauss-Jordan sin romper las llamadas existentes.
-- Integrar combinaciones lineales con vectores columna y LaTeX.
-- Ofrecer los cálculos desde consola y GUI.
-- Mantener los algoritmos libres de librerías externas de álgebra lineal.
+### #28 — refactor: `core/` + `clients/` (MVC) y paquete instalable
+
+- `git mv` de `semana2/tarea1/` → `core/` (`gauss.py`, `gauss_jordan.py`,
+  `vectores.py`, `formato.py`, `mathrender.py`, tests) + `clients/qt/` (`ui/`,
+  tests de GUI), preservando historial (`git log --follow`).
+- Quitar `sys.path.insert` de `gui.py`; `pyproject.toml` coherente; borrar
+  `semana2/` si queda vacío.
+- Paquete instalable; entry point `aqua-gauss = "<pkg>.app:main"`; extras
+  `qt` / `dev`. `uv run --extra dev pytest` en verde desde la raíz.
+- `core/` sin imports de framework (Qt, FastAPI); solo Python + módulos propios.
+- MVC en `clients/qt/`: `Sesion` deja de ser god-object; Models por caso,
+  Controllers por pantalla, Views (`screen_*`); `SolverPort` con `LocalSolver`
+  como única implementación. Documentar en `docs/ARQUITECTURA.md`.
+- Borrar la consola: eliminar `main.py` y `test_main.py`; asserts útiles pasan a
+  `core/tests/` y tests de cliente.
+- Rama: `refactor/core-clients-mvc`.
+
+### #26 — chore: housekeeping (pyproject, versionado, docs)
+
+- `pyproject.toml`: alinear nombre y versión con `APP_INFO` (fuente de verdad =
+  `pyproject.toml`); `APP_INFO["version"]` pasa a leer
+  `importlib.metadata.version(<pkg>)` en runtime.
+- `authors` de `pyproject.toml`: añadir a `ReynaldoZr` (Reynaldo Molina) y
+  `roberto7503` (Roberto Macías).
+- Migrar `[tool.black]` + `[tool.isort]` → `[tool.ruff]` (lint + format).
+- `docs/VERSIONADO.md`: criterio **Tarea → bump major**.
+- Tags retroactivos + GitHub Releases: `v1.0.0` (Tarea 1), `v2.0.0` (PR #21),
+  `v3.0.0` (`806dc24`, Tarea 3).
+- `CHANGELOG.md` en la raíz, formato *Keep a Changelog*.
+- Sacar `context/current-feature.md` del VC: `git rm --cached`, `.gitignore`,
+  versionar `context/current-feature.md.template`, aclarar en `AGENTS.md` que es
+  local.
+- `.editorconfig` en la raíz (`end_of_line = lf`, etc.).
+- Docs: arreglar enlace roto a `DOCUMENTACION_FEATURE.md` en `README.md`; conteo
+  de tests al día (**78**); reflejar split `gauss.py`/`gauss_jordan.py`/
+  `vectores.py` y layout `core/`+`clients/`; encuadrar "sin librerías" como fase
+  actual; typos de `AGENTS.md`.
+- `ui/state.py:EJEMPLOS`: `"Variables libres"` → `"Variables libres (infinitas soluciones)"`.
+- Rama: `chore/housekeeping-pyproject-docs-versionado`.
+
+### #27 — infra: CI y release
+
+- `.github/workflows/ci.yml` en `push` + `pull_request`: `setup-uv` +
+  `uv sync --extra dev`; `ruff check .` y `ruff format --check .`; guard de fin
+  de línea (falla ante `w/crlf` en `git ls-files --eol`); `uv run --extra dev
+  pytest`; job GUI headless con `QT_QPA_PLATFORM=offscreen`; matriz Python
+  3.9 y 3.13 en `ubuntu-latest` (+ `windows-latest` si se puede).
+- `.github/workflows/release.yml` en tags `v*`: re-corre tests, guard
+  `git describe --tags` ≡ `pyproject.version`, crea GitHub Release con la
+  sección del `CHANGELOG.md`.
+- Badge de CI en `README.md`; documentar en `docs/ONBOARDING.md`.
+- Rama: `infra/ci-y-release`.
+
+### Petición explícita del usuario — autoría de Roberto Macías y Reynaldo Molina
+
+- Añadir a **Roberto Macías** y **Reynaldo Molina** como autores/colaboradores en:
+  - `README.md` (línea de **Autores:** en el pie).
+  - `semana2/tarea1/ui/theme.py` → `APP_INFO["autores"]` (o su ubicación tras el
+    `git mv` de #28: `clients/qt/ui/theme.py`).
+- Si #26/#28 mueven `APP_INFO` o lo vuelven dinámico (`importlib.metadata`), el
+  campo `autores` sigue siendo texto en `APP_INFO`: mantenerlo ahí con los cinco
+  nombres. Coherente con el `authors` de `pyproject.toml` que pide #26.
 
 ## Notes
 
-- Rama local: `feature/propiedades-algebraicas-rn`.
-- Responsables: `@ReynaldoZr` (implementación) y `@acr301` (docs, ADR-0002, glosario).
-- Verificación actual: 71 tests aprobados.
-- Guía de revisión: `docs/FEATURE_PROPIEDADES_RN.md`.
-- Rama publicada en `origin/feature/propiedades-algebraicas-rn`; `main` no fue
-  modificado y todavía no se creó el PR.
-- Fuera de alcance para evitar conflictos: subíndices globales, cambios de
-  paleta/degradados y housekeeping de metadatos, versionado y changelog.
+- Estado hoy: `APP_INFO` (`semana2/tarea1/ui/theme.py:5`) dice `"Aqua Gauss"`
+  `2.0.0`, autores `"Andrés Castillo y Fátima Zogaib (Grupo 7)"`. `pyproject.toml`
+  dice `1.0.0`. `README.md:181` repite los mismos autores.
+- Orden recomendado de implementación: **#28 → #26 → #27**.
+  - #27 necesita `[tool.ruff]` en `pyproject.toml` → después de #26.
+  - #26 (`APP_INFO` vía `importlib.metadata`, layout `core/`+`clients/` en docs)
+    encaja mejor después de #28.
+  - #27 es por lo demás independiente de #28 (el workflow se adapta a la ruta).
+- Cada issue tiene su propia rama y se mergea por PR separado (#28 son 3 PRs).
+- Precedentes ya mergeados: #23/#24/#25 (`806dc24`, `00ba185`), #30.
+- Restricción "sin librerías de álgebra lineal": vive en `core/`; se levantará
+  ahí cuando avance el contenido, sin tocar el resto.
 
 ## History
 

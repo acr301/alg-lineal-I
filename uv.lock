@@ -9,10 +9,22 @@ resolution-markers = [
 ]
 
 [[package]]
-name = "alg-lineal-i"
+name = "aqua-gauss"
 version = "1.0.0"
-source = { virtual = "." }
-dependencies = [
+source = { editable = "." }
+
+[package.optional-dependencies]
+dev = [
+    { name = "matplotlib", version = "3.9.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
+    { name = "matplotlib", version = "3.11.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pyqt6", version = "6.10.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "pyqt6", version = "6.11.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "pytest", version = "8.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "pytest", version = "9.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "pytest-cov" },
+]
+qt = [
     { name = "matplotlib", version = "3.9.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
     { name = "matplotlib", version = "3.11.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -20,21 +32,15 @@ dependencies = [
     { name = "pyqt6", version = "6.11.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "pytest", version = "8.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
-    { name = "pytest", version = "9.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
-    { name = "pytest-cov" },
-]
-
 [package.metadata]
 requires-dist = [
-    { name = "matplotlib", specifier = ">=3.9.4" },
-    { name = "pyqt6", specifier = ">=6.6,<7" },
+    { name = "aqua-gauss", extras = ["qt"], marker = "extra == 'dev'" },
+    { name = "matplotlib", marker = "extra == 'qt'", specifier = ">=3.9.4" },
+    { name = "pyqt6", marker = "extra == 'qt'", specifier = ">=6.6,<7" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["qt", "dev"]
 
 [[package]]
 name = "colorama"

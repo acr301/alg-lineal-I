@@ -5,17 +5,17 @@
 ## 🚀 Inicio Rápido
 
 ```bash
-# 1. Instalar dependencias
+# 1. Instalar dependencias (desde la raíz del repo)
 pip install uv
-uv sync
+uv sync --extra qt        # el núcleo no tiene dependencias; `qt` añade PyQt6 + matplotlib
 
-# 2. Ejecutar GUI  (dentro del entorno de uv, para que se rendericen las fórmulas)
-cd semana2/tarea1
-uv run python gui.py
-
-# 3. O ejecutar consola
-uv run python main.py
+# 2. Ejecutar la GUI  (dentro del entorno de uv, para que se rendericen las fórmulas)
+uv run aqua-gauss         # equivalente:  uv run python -m aqua_gauss   /   uv run python gui.py
 ```
+
+> La consola (`main.py`) se retiró: no era requisito del curso y la TUI (issue
+> #18) cubrirá el terminal. Toda la lógica vive ahora en el paquete instalable
+> `aqua_gauss` (`core/` de cálculo + `clients/qt/` de interfaz).
 
 > La GUI es un flujo de pantallas navegable **sin ratón**: Enter avanza, Esc
 > retrocede, ← → recorren los pasos, F1 vuelve al menú.
@@ -84,16 +84,15 @@ motor `mathtext`); arrastra NumPy como dependencia suya, que tampoco se usa.
 
 ```bash
 # Desde la raíz del repo:
-uv run --extra dev pytest        # 71 tests en la rama del issue #23
+uv run --extra dev pytest        # 70 tests
 ```
 
-- `test_gauss.py` — lógica pura (21)
-- `test_gauss_jordan.py` — RREF y soluciones paramétricas (6)
-- `test_vectores.py` — operaciones, combinaciones y propiedades (12)
-- `test_formato.py` — fracciones, normalización de entrada, LaTeX (17)
-- `test_mathrender.py` — render de LaTeX a imagen (3)
-- `test_ui.py` — humo de la GUI / regresión del menú (6)
-- `test_main.py` — integración de consola (6)
+- `tests/core/test_gauss.py` — lógica pura (21)
+- `tests/core/test_gauss_jordan.py` — RREF y soluciones paramétricas (6)
+- `tests/core/test_vectores.py` — operaciones, combinaciones y propiedades (12)
+- `tests/core/test_formato.py` — fracciones, normalización de entrada, LaTeX (20)
+- `tests/qt/test_mathrender.py` — render de LaTeX a imagen (3)
+- `tests/qt/test_ui.py` — humo de la GUI / regresión del menú (8)
 
 ## 📁 Estructura
 
@@ -110,17 +109,24 @@ uv run --extra dev pytest        # 71 tests en la rama del issue #23
 │   ├── ADR-0001-entrada-numerica.md
 │   └── ADR-0002-pesos-combinacion-lineal.md
 ├── DOCUMENTACION_FEATURE.md   # Detalles extensos
-├── semana2/tarea1/
-│   ├── gauss.py              # Gauss / REF + compatibilidad
-│   ├── gauss_jordan.py       # Gauss-Jordan / RREF y parámetros
-│   ├── vectores.py           # Operaciones y propiedades de R^n
-│   ├── formato.py            # Presentación: fracciones, LaTeX (texto), HTML
-│   ├── mathrender.py         # LaTeX -> imagen (matplotlib mathtext) para la GUI
-│   ├── main.py               # Consola
-│   ├── gui.py                # Punto de entrada de la GUI (shim)
-│   ├── ui/                   # GUI por pantallas, incluida screen_vectores.py
-│   └── test_*.py             # Tests de algoritmos, formato, consola y GUI
-└── context/current-feature.md # Estado desarrollo
+├── pyproject.toml             # Paquete `aqua-gauss`; entry point + extras qt/dev
+├── gui.py                     # Lanzador de la GUI (shim -> aqua_gauss.app:main)
+├── src/aqua_gauss/
+│   ├── app.py                # Punto de entrada (aqua-gauss / python -m aqua_gauss)
+│   ├── core/                 # Model puro: SIN dependencias de framework
+│   │   ├── gauss.py          # Gauss / REF + compatibilidad
+│   │   ├── gauss_jordan.py   # Gauss-Jordan / RREF y parámetros
+│   │   ├── vectores.py       # Operaciones y propiedades de R^n
+│   │   └── formato.py        # Presentación: fracciones, LaTeX (texto), HTML
+│   └── clients/qt/           # Cliente PyQt6 por pantallas
+│       ├── app.py            # Ventana principal (QStackedWidget)
+│       ├── state.py          # Sesion: dimensiones, notación, matriz, resultado
+│       ├── mathrender.py     # LaTeX -> imagen (matplotlib mathtext)
+│       └── screen_*.py       # una pantalla por archivo (incl. screen_vectores.py)
+├── tests/
+│   ├── core/                 # tests del núcleo (algoritmos, formato)
+│   └── qt/                   # tests del cliente (mathrender, humo de GUI)
+└── context/current-feature.md # Estado desarrollo (local, ver #26)
 ```
 
 ## 🛠️ Stack
@@ -178,7 +184,7 @@ Resultado: 2v₁ - v₂ = [-1, 5]ᵀ
 
 ---
 
-**Autores:** Andrés Castillo y Fátima Zogaib (Grupo 7) | **Última actualización:** 2026-09-07 | **Licencia:** MIT
+**Autores:** Andrés Castillo y Fátima Zogaib (Grupo 7) · Roberto Macías ([@roberto7503](https://github.com/roberto7503)) y Reynaldo Molina ([@ReynaldoZr](https://github.com/ReynaldoZr)) | **Última actualización:** 2026-09-08 | **Licencia:** MIT
 
 Ver también [docs/ADR-0001-entrada-numerica.md](docs/ADR-0001-entrada-numerica.md) — cómo la calculadora normaliza los números que teclea el usuario.
 

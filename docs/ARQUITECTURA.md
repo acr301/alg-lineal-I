@@ -1,5 +1,48 @@
 # ARQUITECTURA.md - Diseño Técnico
 
+## Layout del paquete (refactor #28)
+
+El código es un paquete instalable, `aqua-gauss` (import: `aqua_gauss`), con
+*layout src* y separación **core / clients**:
+
+```
+src/aqua_gauss/
+├── app.py            entry point  →  aqua-gauss  /  python -m aqua_gauss
+├── core/             MODEL puro — solo Python, sin imports de framework
+│   ├── gauss.py          Gauss / REF + nombres de compatibilidad
+│   ├── gauss_jordan.py   Gauss-Jordan / RREF y soluciones paramétricas
+│   ├── vectores.py       operaciones y propiedades de R^n
+│   └── formato.py        PRESENTACIÓN texto (float → fracción/decimal, LaTeX, HTML)
+└── clients/
+    └── qt/           CLIENTE PyQt6 (Views = pantallas)
+        ├── app.py           ventana principal (QStackedWidget)
+        ├── state.py         Sesion: único punto que llama a core/
+        ├── mathrender.py    PRESENTACIÓN imagen (LaTeX → QPixmap, matplotlib)
+        ├── theme.py         estilo, paleta, fuente, APP_INFO
+        ├── widgets.py       PantallaBase, MatrizGrid, navegación
+        └── screen_*.py      una pantalla por archivo
+
+gui.py     shim en la raíz → `aqua_gauss.app:main` (sin `sys.path` hacks)
+tests/     core/ (algoritmos, formato) · qt/ (mathrender, humo de GUI)
+```
+
+Reglas que sostienen el split:
+
+- **`core/` no importa Qt, matplotlib, FastAPI ni nada de framework.** Es el
+  único módulo sujeto a la restricción "sin librerías de álgebra"; el día que se
+  levante, se levanta ahí sin tocar los clientes.
+- **Los clientes consumen `core` a través de un `SolverPort`.** Hoy la única
+  implementación es `LocalSolver` (importa `core` en proceso); `RemoteSolver`
+  llegará con el server (#32). *(El `SolverPort` explícito y la separación
+  Models/Controllers/Views dentro de `clients/qt/` es el paso 2 de #28 — todavía
+  pendiente; hoy `state.Sesion` sigue siendo el punto único de contacto.)*
+- **La consola se retiró** (`main.py`, `test_main.py`): no era requisito; la TUI
+  (#18) cubrirá el terminal con su propio cliente.
+
+> Las secciones siguientes describen todavía el layout plano anterior
+> (`gauss.py`, `main.py`, `ui/` en `semana2/tarea1/`). Su reconciliación con este
+> layout es parte de #26.
+
 ## Principios Arquitectónicos
 
 ### 1. Separación Estricta de Responsabilidades

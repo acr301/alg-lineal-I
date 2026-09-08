@@ -65,25 +65,23 @@ alg-lineal-I/
 # Instalar uv (una sola vez)
 pip install uv
 
-# Desde la raíz del proyecto
-uv sync
+# Desde la raíz del proyecto (el núcleo no tiene dependencias; `qt` añade la GUI)
+uv sync --extra qt
 ```
 
 ### 3. Ejecutar
 
 ```bash
-cd semana2/tarea1
+# Todo desde la raíz del repo. Es un paquete instalable: no hay `cd`.
 
 # GUI: ejecútala DENTRO del entorno de uv para que matplotlib renderice las
-# fórmulas. Con `python3 gui.py` a secas puede faltar matplotlib y la notación
-# se verá como texto.
-uv run python gui.py
+# fórmulas. Sin matplotlib la notación se ve como texto (degrada con elegancia).
+uv run aqua-gauss                 # equivalente: uv run python -m aqua_gauss / uv run python gui.py
 
-# Consola (fracción exacta por defecto; --decimal para decimales)
-uv run python main.py
+# La consola (main.py) se retiró en el refactor #28; la TUI (#18) cubrirá el terminal.
 
 # Tests
-uv run --extra dev pytest        # desde la raíz del repo
+uv run --extra dev pytest
 ```
 
 La GUI mantiene el flujo de sistemas (menú → dimensiones → entrada guiada →
