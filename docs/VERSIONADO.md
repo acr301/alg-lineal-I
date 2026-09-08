@@ -39,6 +39,7 @@ El workflow de release valida que `git describe --tags` coincida con
 | `v1.0.0` | Tarea 1 — eliminación gaussiana interactiva (consola) | rama `feature/eliminacion-gaussiana-interactiva` |
 | `v2.0.0` | Notación matemática renderizada + GUI multipantalla | PR #21 (`be2d169`) |
 | `v3.0.0` | Tarea 3 — propiedades algebraicas de `R^n` y combinación lineal | PR #29 (`806dc24`) |
+| `v3.1.0` | Paquete `aqua-gauss` + CI + GUI: columnas pivote, color-coding, flujo de Vectores | PR #45/#46/#47/#48 |
 
 Las versiones intermedias (verificación de la solución, rango/nulidad, solución
 vectorial, migración a `uv`) se entregaron entre `v1` y `v2` sin tag propio; se

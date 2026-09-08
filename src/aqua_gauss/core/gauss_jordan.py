@@ -5,7 +5,7 @@ usa librerías de álgebra lineal: trabaja únicamente con listas, ciclos y
 aritmética básica.
 """
 
-from aqua_gauss.core.gauss import _formato_por_defecto, valor_casi_cero
+from aqua_gauss.core.gauss import _fila, _formato_por_defecto, valor_casi_cero
 
 
 def reducir_a_escalonada_reducida(
@@ -24,7 +24,7 @@ def reducir_a_escalonada_reducida(
             for c in range(col, n_incognitas + 1):
                 matriz[i][c] /= pivote
             if registrar_paso:
-                registrar_paso(f"F{i + 1} <- F{i + 1} / {fmt(pivote)}", matriz)
+                registrar_paso(f"{_fila(i)} ← {_fila(i)} ÷ {fmt(pivote)}", matriz)
 
         for r in range(i):
             factor = matriz[r][col]
@@ -35,7 +35,7 @@ def reducir_a_escalonada_reducida(
             matriz[r][col] = 0.0
             if registrar_paso:
                 registrar_paso(
-                    f"F{r + 1} <- F{r + 1} - ({fmt(factor)}) * F{i + 1}",
+                    f"{_fila(r)} ← {_fila(r)} − ({fmt(factor)})·{_fila(i)}",
                     matriz,
                 )
 

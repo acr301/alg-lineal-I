@@ -8,6 +8,28 @@ curso **una Tarea/Programa = un *major*** (ver [`docs/VERSIONADO.md`](docs/VERSI
 
 ## [Unreleased]
 
+## [3.1.0] — 2026-09-08
+
+Estructura del repositorio, CI y pulido de la GUI para la entrega del Programa 2.
+
+### Added
+
+- **Columnas pivote y variables básicas / libres** en la pantalla "3 · Proceso y
+  resultado": se listan de forma explícita (`Columnas pivote: 1 y 2`,
+  `Variables básicas: x₁ x₂  ·  Variables libres: x₃`).
+- **Color-coding** de columnas en cada paso: fondo azul para las columnas pivote
+  (variables básicas) y ámbar para las libres, con una leyenda. Funciona también
+  en el modo sin matplotlib.
+- Flujo guiado para "Vectores y propiedades de Rⁿ" (configuración → entrada
+  término a término con rejilla y subíndices → tarjeta de resultado), como el de
+  "Iniciar — crear un sistema nuevo".
+- `docs/VERSIONADO.md`, `CHANGELOG.md`, `.editorconfig`.
+- CI en GitHub Actions (#27): `ci.yml` (ruff check + ruff format + guard de CRLF
+  + pytest en Python 3.9/3.13, Linux y un cruce en Windows, GUI headless con
+  `QT_QPA_PLATFORM=offscreen`) y `release.yml` (en tags `v*`: valida
+  tag ↔ `pyproject.version`, re-corre tests y publica el GitHub Release con la
+  sección del changelog). Badge de CI en el README.
+
 ### Changed
 
 - Refactor a paquete instalable `aqua-gauss` con separación **core / clients**
@@ -17,6 +39,10 @@ curso **una Tarea/Programa = un *major*** (ver [`docs/VERSIONADO.md`](docs/VERSI
 - Migración de `black` + `isort` a `ruff` (lint + formato) (#26).
 - `APP_INFO["version"]` se lee de `importlib.metadata`; `pyproject.toml` es la
   única fuente de la versión (#26).
+- Textos del menú (encabezado, pie, título de ventana) reflejan que la app
+  cubre Gauss, Gauss-Jordan (RREF) y vectores de Rⁿ, no solo Gauss.
+- La narración de cada paso usa notación con subíndices y signos Unicode
+  (`F₂ ← F₂ − (1/2)·F₁`, `F₁ ↔ F₃`).
 - `context/current-feature.md` deja de versionarse; se versiona su plantilla
   `context/current-feature.md.template` (#26).
 
@@ -24,15 +50,6 @@ curso **una Tarea/Programa = un *major*** (ver [`docs/VERSIONADO.md`](docs/VERSI
 
 - Interfaz de consola (`main.py`, `test_main.py`): no era requisito del curso; el
   terminal lo cubrirá la TUI (#18) (#28).
-
-### Added
-
-- `docs/VERSIONADO.md`, `CHANGELOG.md`, `.editorconfig` (#26).
-- CI en GitHub Actions (#27): `ci.yml` (ruff check + ruff format + guard de
-  CRLF + pytest en Python 3.9/3.13, Linux y un cruce en Windows, GUI headless
-  con `QT_QPA_PLATFORM=offscreen`) y `release.yml` (en tags `v*`: valida
-  tag ↔ `pyproject.version`, re-corre tests y publica el GitHub Release con la
-  sección del changelog). Badge de CI en el README.
 
 ## [3.0.0] — 2026-09-07
 
@@ -96,7 +113,8 @@ Tarea 1 — Solución de sistemas `Ax = b` por eliminación por filas.
   paramétrica / incompatible).
 - `test_gauss.py`: pruebas de la lógica pura.
 
-[Unreleased]: https://github.com/acr301/alg-lineal-I/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/acr301/alg-lineal-I/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/acr301/alg-lineal-I/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/acr301/alg-lineal-I/compare/v2.0.0...v3.0.0
 [2.0.0]: https://github.com/acr301/alg-lineal-I/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/acr301/alg-lineal-I/releases/tag/v1.0.0
