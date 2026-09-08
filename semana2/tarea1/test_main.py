@@ -34,6 +34,17 @@ class TestClasificacionVisible(unittest.TestCase):
         self.assertIn("Sistema INCONSISTENTE", salida)
         self.assertNotIn("Sistema INCOMPATIBLE", salida)
 
+    def test_solucion_unica_usa_subindices(self):
+        salida = self.salida_de([[1, 1], [1, -1]], [4, 0])
+        self.assertIn("x₁ = ", salida)
+        self.assertNotIn("x1 = ", salida)
+
+    def test_solucion_parametrica_usa_subindices(self):
+        salida = self.salida_de([[1, 1], [2, 2]], [2, 4])
+        self.assertIn("t₁", salida)
+        self.assertNotIn(" t1", salida)
+        self.assertNotIn("*t1", salida)
+
 
 class TestVectoresEnConsola(unittest.TestCase):
     def test_muestra_combinacion_y_latex(self):

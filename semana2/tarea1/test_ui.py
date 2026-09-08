@@ -105,5 +105,31 @@ class TestMenu(unittest.TestCase):
         self.assertTrue(all(p["cumple"] for p in datos["propiedades"].values()))
 
 
+@unittest.skipUnless(_LISTO, "PyQt6 no disponible")
+class TestNotacionSubindices(unittest.TestCase):
+    """Fija la notación con subíndices Unicode en la matriz y sus etiquetas."""
+
+    def test_etiqueta_celda_usa_doble_subindice(self):
+        from ui.state import Sesion
+
+        sesion = Sesion()  # 3x3 por defecto
+        self.assertEqual(sesion.etiqueta_celda(0)[0], "a₁₁")
+        self.assertEqual(sesion.etiqueta_celda(3)[0], "b₁")
+        self.assertEqual(sesion.etiqueta_celda(4)[0], "a₂₁")
+        self.assertIn("x₁", sesion.etiqueta_celda(0)[1])
+
+    def test_matrizgrid_encabeza_con_subindices(self):
+        from ui.state import Sesion
+        from ui.widgets import MatrizGrid
+
+        grid = MatrizGrid()
+        grid.poblar(Sesion())
+        encabezados = {
+            grid._grid.itemAtPosition(0, 2 + j).widget().text() for j in range(3)
+        }
+        self.assertEqual(encabezados, {"x₁", "x₂", "x₃"})
+        self.assertEqual(grid._grid.itemAtPosition(1, 0).widget().text(), "E₁")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -16,8 +16,7 @@ from PyQt6.QtWidgets import (
 )
 
 import mathrender
-from formato import(
-    MODO_FRACCION, var)
+from formato import var
 
 
 class ListaOpciones(QListWidget):

@@ -38,14 +38,14 @@ from gauss import (
 from formato import (
     MODO_DECIMAL,
     MODO_FRACCION,
+    entrada_b,
     formatear_valor,
     generar_latex_solucion,
-    var,
+    latex_combinacion_lineal,
     parametro,
     subindice,
-    entrada_b
-    latex_combinacion_lineal,
     texto_combinacion_lineal,
+    var,
 )
 from vectores import (
     combinacion_lineal,
@@ -99,7 +99,7 @@ def leer_sistema():
         fila = []
         for j in range(n):
             fila.append(pedir_flotante(f"  Coeficiente de {var(j)}: "))
-        b = pedir_flotante(f"  Término independiente ({entrada_b(i + 1)}): ")
+        b = pedir_flotante(f"  Término independiente ({entrada_b(i)}): ")
         coeficientes.append(fila)
         terminos.append(b)
 
@@ -246,7 +246,7 @@ def imprimir_verificacion(coeficientes, terminos, x, titulo="Verificación (sust
         print(f"    {factores}")
         if productos != suma:
             print(f"    = {productos}")
-        print(f"    = {suma} {simbolo} {esperado} ({entrada_b(i + 1)})  ->  {estado}")
+        print(f"    = {suma} {simbolo} {esperado} ({entrada_b(i)})  ->  {estado}")
     if todo_coincide:
         print("La solución satisface todas las ecuaciones del sistema original.")
     else:

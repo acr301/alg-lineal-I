@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from formato import MENOS, POR, formatear_display, texto_verificacion, var, parametro
+from formato import MENOS, POR, formatear_display, parametro, texto_verificacion, var
 from ui.widgets import FilaAnalisis, PantallaBase, matriz_widget
 
 _EXPL = {
