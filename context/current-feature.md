@@ -2,9 +2,10 @@
 
 ## Status
 
-In Progress — #28 pasos 1+3 en review (**PR #45**, rama `refactor/core-clients-mvc`).
+In Progress — **#28 completo** (pasos 1, 2 y 3) en **PR #45**, rama
+`refactor/core-clients-mvc` (merge de `origin/main` tras PR #44 ya resuelto).
 Siguiente: #26 (rama `chore/housekeeping-pyproject-docs-versionado`, se ramifica
-de `refactor/core-clients-mvc`). Paso 2 de #28 → PR de seguimiento tras #26/#27.
+de `refactor/core-clients-mvc` mientras PR #45 no esté en `main`).
 
 ### Avance de #28 (PR #45)
 
@@ -24,12 +25,21 @@ de `refactor/core-clients-mvc`). Paso 2 de #28 → PR de seguimiento tras #26/#2
   añadidos en `README.md`, `clients/qt/theme.py:APP_INFO` y `pyproject.toml`.
 - [x] 70 tests en verde (`uv run --extra dev pytest` desde la raíz). Bajó de 78
   a 70 al eliminar los 8 tests de consola de `test_main.py`.
-- [ ] **Paso 2 · MVC en `clients/qt/` (PENDIENTE, PR aparte):** `Sesion` sigue
-  siendo god-object; falta separar Models/Controllers/Views y el `SolverPort`
-  explícito (`LocalSolver`). `state.Sesion` es hoy el único punto de contacto
-  con `core`.
-- [ ] Reconciliación fina del resto de `docs/ARQUITECTURA.md` y del árbol de
-  ficheros en `AGENTS.md` → se hace en #26.
+- [x] **Paso 2 · MVC en `clients/qt/`:** nuevo `solver.py` (`SolverPort` +
+  `LocalSolver`) como única frontera con los algoritmos de `core`; `state.Sesion`
+  deja de tener lógica y pasa a agrupar `SistemaModel` + `VectoresModel`
+  (`models.py`) y su solver, con proxies planos para no tocar pantallas/tests.
+  Cada `screen_*` es la View y su handler hace de controller. `core.gauss` /
+  `core.vectores` ya sólo se importan desde `solver.py`. `docs/ARQUITECTURA.md`
+  con el patrón y el flujo de una resolución.
+- [x] Merge de `origin/main` (PR #44: `RUMBO.md` + rename "Variables libres" →
+  "Infinitas soluciones") resuelto en la rama; el rename de #44 cubre lo que
+  pedía #26 para el menú.
+- [x] Autores reformateados: cada uno separado con ` · `, sin "(Grupo 7)", con
+  enlace a su perfil (README) y handle (APP_INFO). `pyproject.toml` con 4
+  entradas `{name=…}`.
+- [ ] Reconciliación fina del resto de `docs/ARQUITECTURA.md` (diagramas de flujo
+  antiguos) y de prosa suelta en `AGENTS.md` → se hace en #26.
 - [ ] `semana2/tarea1/` queda con `Informe_Programa 1_Grupo 1.md` (sin versionar,
   archivo del alumno) y `.DS_Store`; git ya no rastrea nada ahí.
 

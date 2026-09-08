@@ -14,13 +14,15 @@ src/aqua_gauss/
 │   ├── vectores.py       operaciones y propiedades de R^n
 │   └── formato.py        PRESENTACIÓN texto (float → fracción/decimal, LaTeX, HTML)
 └── clients/
-    └── qt/           CLIENTE PyQt6 (Views = pantallas)
+    └── qt/           CLIENTE PyQt6
         ├── app.py           ventana principal (QStackedWidget)
-        ├── state.py         Sesion: único punto que llama a core/
+        ├── solver.py        SolverPort + LocalSolver — ÚNICA frontera con core
+        ├── models.py        SistemaModel · VectoresModel (uno por caso de uso)
+        ├── state.py         Sesion: agrupa los modelos + su solver (sin lógica)
+        ├── screen_*.py       Views: una pantalla por archivo; su handler = su controller
         ├── mathrender.py    PRESENTACIÓN imagen (LaTeX → QPixmap, matplotlib)
         ├── theme.py         estilo, paleta, fuente, APP_INFO
-        ├── widgets.py       PantallaBase, MatrizGrid, navegación
-        └── screen_*.py      una pantalla por archivo
+        └── widgets.py       PantallaBase, MatrizGrid, navegación
 
 gui.py     shim en la raíz → `aqua_gauss.app:main` (sin `sys.path` hacks)
 tests/     core/ (algoritmos, formato) · qt/ (mathrender, humo de GUI)
@@ -31,13 +33,28 @@ Reglas que sostienen el split:
 - **`core/` no importa Qt, matplotlib, FastAPI ni nada de framework.** Es el
   único módulo sujeto a la restricción "sin librerías de álgebra"; el día que se
   levante, se levanta ahí sin tocar los clientes.
-- **Los clientes consumen `core` a través de un `SolverPort`.** Hoy la única
-  implementación es `LocalSolver` (importa `core` en proceso); `RemoteSolver`
-  llegará con el server (#32). *(El `SolverPort` explícito y la separación
-  Models/Controllers/Views dentro de `clients/qt/` es el paso 2 de #28 — todavía
-  pendiente; hoy `state.Sesion` sigue siendo el punto único de contacto.)*
+- **El cliente pide el cálculo a un `SolverPort`.** `clients/qt/solver.py` es el
+  único archivo del cliente que importa los algoritmos (`core.gauss`,
+  `core.vectores`); hoy sólo existe `LocalSolver` (en proceso) y `RemoteSolver`
+  llegará con el server (#32). `core.formato` sí lo usan varias Views: es
+  presentación compartida, no cálculo.
+- **`Sesion` ya no es un god-object.** El estado y los métodos viven en
+  `SistemaModel` / `VectoresModel` (`models.py`); `Sesion` sólo los agrupa junto
+  al `SolverPort` y deja proxies planos por compatibilidad. Cada `screen_*` es la
+  View y sus manejadores de evento hacen de controller: leen/escriben el modelo
+  y disparan `modelo.resolver()` / `modelo.calcular_combinacion(...)`.
 - **La consola se retiró** (`main.py`, `test_main.py`): no era requisito; la TUI
   (#18) cubrirá el terminal con su propio cliente.
+
+### Flujo de una resolución
+
+```
+screen_input (View)  →  sesion.set_celda(i, v)         # escribe SistemaModel.matriz
+screen_process (View) →  sesion.resolver()             # SistemaModel.resolver()
+                              └→ solver.resolver_sistema(matriz, n_var, modo)   # SolverPort
+                                     └→ core.gauss.escalonar / clasificar / …   # MODEL puro
+                         datos ── cacheado en SistemaModel.resultado ──→ render en la View
+```
 
 > Las secciones siguientes describen todavía el layout plano anterior
 > (`gauss.py`, `main.py`, `ui/` en `semana2/tarea1/`). Su reconciliación con este
