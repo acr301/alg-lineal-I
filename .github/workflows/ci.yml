@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: ruff + finales de línea
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - run: uv sync --extra dev
+
+      - name: ruff check
+        run: uv run ruff check .
+
+      - name: ruff format --check
+        run: uv run ruff format --check .
+
+      - name: Finales de línea (rechaza CRLF en archivos de texto)
+        run: |
+          crlf="$(git ls-files --eol | grep -P '\sw/crlf\s' || true)"
+          if [ -n "$crlf" ]; then
+            echo "::error::Archivos de texto con CRLF en el working tree:"
+            echo "$crlf"
+            exit 1
+          fi
+          echo "OK: sin CRLF."
+
+  test:
+    name: pytest (py${{ matrix.python }} · ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python: ["3.9", "3.13"]
+        include:
+          # Un cruce en Windows para cazar problemas de rutas / fin de línea.
+          - os: windows-latest
+            python: "3.13"
+    env:
+      # La GUI corre headless; los tests de tests/qt/ ya lo fijan, pero lo
+      # dejamos explícito para todo el job.
+      QT_QPA_PLATFORM: offscreen
+      AQUA_GAUSS_SILENCIAR: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Librerías de sistema para Qt (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1 libxkbcommon-x11-0 libxcb-cursor0 \
+            libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 \
+            libxcb-render-util0 libxcb-xinerama0 libdbus-1-3 libglib2.0-0
+
+      - name: Instalar uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - run: uv sync --extra dev
+
+      - name: Qt importa (falla en vez de saltar los tests de GUI)
+        run: uv run python -c "from PyQt6.QtWidgets import QApplication; QApplication([])"
+
+      - name: pytest
+        run: uv run --extra dev pytest
