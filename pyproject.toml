@@ -1,28 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "alg-lineal-I"
+name = "aqua-gauss"
 version = "1.0.0"
-description = "Sistema interactivo para resolver sistemas de ecuaciones lineales mediante eliminación de Gauss"
+description = "Resuelve y analiza sistemas de ecuaciones lineales Ax = b por eliminación de Gauss, paso a paso y sin librerías de álgebra."
 requires-python = ">=3.9"
 license = "MIT"
 authors = [
     {name = "Andrés Castillo"},
     {name = "Fátima Zogaib"},
+    {name = "Roberto Macías"},
+    {name = "Reynaldo Molina"},
 ]
 
-dependencies = [
-    # PyQt6: interfaz gráfica.
-    "PyQt6>=6.6,<7",
-    # matplotlib: SOLO para renderizar la notación matemática (LaTeX -> imagen) en
-    # la GUI mediante su motor mathtext. El algoritmo (gauss.py) no lo usa. Arrastra
-    # NumPy como dependencia propia; tampoco se usa NumPy para calcular.
-    "matplotlib>=3.9.4",
-]
+# El núcleo de cálculo (aqua_gauss.core) no tiene dependencias: solo Python.
+dependencies = []
 
 [project.optional-dependencies]
+# Cliente gráfico PyQt6. matplotlib SOLO renderiza la notación matemática
+# (LaTeX -> imagen) vía su motor mathtext; el algoritmo no lo usa.
+qt = [
+    "PyQt6>=6.6,<7",
+    "matplotlib>=3.9.4",
+]
 dev = [
+    "aqua-gauss[qt]",
     "pytest>=7.0",
     "pytest-cov>=4.0",
 ]
+
+[project.scripts]
+aqua-gauss = "aqua_gauss.app:main"
+
+[project.urls]
+Homepage = "https://github.com/acr301/alg-lineal-I"
+Repository = "https://github.com/acr301/alg-lineal-I.git"
+Issues = "https://github.com/acr301/alg-lineal-I/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aqua_gauss"]
 
 [tool.black]
 line-length = 100
@@ -33,11 +51,7 @@ profile = "black"
 line_length = 100
 
 [tool.pytest.ini_options]
-testpaths = ["semana2/tarea1"]
+testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-v --tb=short"
-
-[project.urls]
-Homepage = "https://github.com/acr301/alg-lineal-I"
-Repository = "https://github.com/acr301/alg-lineal-I.git"
-Issues = "https://github.com/acr301/alg-lineal-I/issues"
+pythonpath = ["src"]

@@ -28,29 +28,26 @@ alg-lineal-I/
 │   ├── GLOSARIO.md              # Terminología unificada
 │   ├── ADR-0001-entrada-numerica.md
 │   └── ADR-0002-pesos-combinacion-lineal.md
-├── semana2/tarea1/
-│   ├── gauss.py                 # Gauss / REF + API histórica compatible
-│   ├── gauss_jordan.py          # RREF y soluciones paramétricas
-│   ├── vectores.py              # Operaciones y propiedades de R^n
-│   ├── formato.py               # Presentación: fracciones, LaTeX (texto), helpers HTML
-│   ├── mathrender.py            # LaTeX -> imagen (matplotlib mathtext) para la GUI
-│   ├── main.py                  # Interfaz de consola (--decimal / --fraccion)
-│   ├── gui.py                   # Punto de entrada de la GUI (shim -> ui/)
-│   ├── ui/                      # GUI PyQt6 por pantallas
-│   │   ├── app.py               #   ventana principal (QStackedWidget) + atajos
-│   │   ├── state.py             #   Sesion: único sitio que llama a gauss desde la GUI
-│   │   ├── theme.py             #   hoja de estilo, paleta, fuente
-│   │   ├── widgets.py           #   PantallaBase, MatrizGrid, barra de navegación, ayuda
-│   │   └── screen_*.py          #   menú, dimensiones, entrada guiada, proceso, resultado
-│   ├── test_gauss.py            # Tests de la lógica pura
-│   ├── test_gauss_jordan.py     # Tests directos de RREF y parámetros
-│   ├── test_vectores.py         # Tests de operaciones y ocho axiomas
-│   ├── test_formato.py          # Tests de fracciones / formato
-│   ├── test_mathrender.py       # Tests del render de LaTeX (se salta si falta matplotlib)
-│   ├── test_main.py             # Tests de integración de consola
-│   └── requirements.txt          # Legacy (generado desde pyproject.toml)
+├── gui.py                       # Lanzador de la GUI (shim -> aqua_gauss.app:main)
+├── src/aqua_gauss/              # Paquete instalable `aqua-gauss` (#28)
+│   ├── app.py                  # Entry point (aqua-gauss / python -m aqua_gauss)
+│   ├── core/                   # MODEL puro: SIN imports de framework
+│   │   ├── gauss.py            #   Gauss / REF + API histórica compatible
+│   │   ├── gauss_jordan.py     #   RREF y soluciones paramétricas
+│   │   ├── vectores.py         #   Operaciones y propiedades de R^n
+│   │   └── formato.py          #   Presentación: fracciones, LaTeX (texto), helpers HTML
+│   └── clients/qt/             # CLIENTE PyQt6 por pantallas
+│       ├── app.py              #   ventana principal (QStackedWidget) + atajos
+│       ├── state.py            #   Sesion: único sitio que llama a core/ desde la GUI
+│       ├── mathrender.py       #   LaTeX -> imagen (matplotlib mathtext)
+│       ├── theme.py            #   hoja de estilo, paleta, fuente
+│       ├── widgets.py          #   PantallaBase, MatrizGrid, barra de navegación, ayuda
+│       └── screen_*.py         #   menú, dimensiones, entrada guiada, proceso, resultado, vectores
+├── tests/
+│   ├── core/                   # test_gauss, test_gauss_jordan, test_vectores, test_formato
+│   └── qt/                     # test_mathrender, test_ui
 └── context/
-    └── current-feature.md       # Estado actual del desarrollo
+    └── current-feature.md       # Estado actual del desarrollo (local, ver #26)
 ```
 
 ## 🚀 Inicio Rápido (para Agentes)
@@ -70,25 +67,23 @@ alg-lineal-I/
 # Instalar uv (una sola vez)
 pip install uv
 
-# Desde la raíz del proyecto
-uv sync
+# Desde la raíz del proyecto (el núcleo no tiene dependencias; `qt` añade la GUI)
+uv sync --extra qt
 ```
 
 ### 3. Ejecutar
 
 ```bash
-cd semana2/tarea1
+# Todo desde la raíz del repo. Es un paquete instalable: no hay `cd`.
 
 # GUI: ejecútala DENTRO del entorno de uv para que matplotlib renderice las
-# fórmulas. Con `python3 gui.py` a secas puede faltar matplotlib y la notación
-# se verá como texto.
-uv run python gui.py
+# fórmulas. Sin matplotlib la notación se ve como texto (degrada con elegancia).
+uv run aqua-gauss                 # equivalente: uv run python -m aqua_gauss / uv run python gui.py
 
-# Consola (fracción exacta por defecto; --decimal para decimales)
-uv run python main.py
+# La consola (main.py) se retiró en el refactor #28; la TUI (#18) cubrirá el terminal.
 
 # Tests
-uv run --extra dev pytest        # desde la raíz del repo
+uv run --extra dev pytest
 ```
 
 La GUI mantiene el flujo de sistemas (menú → dimensiones → entrada guiada →
@@ -109,13 +104,13 @@ Esc retrocede, ← → recorren los pasos, F1 vuelve al menú.
 
 - [ ] NO usar NumPy, SymPy ni librerías de álgebra lineal (restricción del ejercicio)
 - [ ] Mantener separación: `gauss.py` (REF), `gauss_jordan.py` (RREF),
-      `vectores.py` (R^n), `main.py` (consola) y `ui/` (GUI)
+      `vectores.py` (R^n) en `core/`, y `clients/qt/` (GUI)
 - [ ] NO romper tests existentes
 - [ ] Commits atómicos con mensajes descriptivos
 
 ### Al Completar
 
-- [ ] Tests verdes (78 tests en `main`)
+- [ ] Tests verdes (70 tests)
 - [ ] Actualizar `context/current-feature.md`
 - [ ] Commits lógicos (no squash a menos que se pida)
 - [ ] Crear PR mencionando issues relacionados
@@ -204,9 +199,9 @@ Esc retrocede, ← → recorren los pasos, F1 vuelve al menú.
    - Los tres módulos son lógica pura (sin input/print y sin librerías de AL)
    - `formato.py`: Presentación texto (float → fracción/decimal, LaTeX, HTML)
    - `mathrender.py`: Presentación imagen (LaTeX → QPixmap con matplotlib)
-   - `main.py`: UI de consola
-   - `ui/`: UI PyQt6 por pantallas; `ui/state.py:Sesion` es el ÚNICO sitio de la
-     GUI que llama a los módulos de cálculo. Cada pantalla es un `ui/screen_*.py`.
+   - (la consola `main.py` se retiró en #28; la TUI #18 la reemplazará)
+   - `clients/qt/`: UI PyQt6 por pantallas; `clients/qt/state.py:Sesion` es el
+     ÚNICO sitio de la GUI que llama a `core/`. Cada pantalla es un `clients/qt/screen_*.py`.
    - No dupliques formateo de números: usa `formato.formatear_valor(v, modo)` o
      `sesion.fmt(v)`.
 
@@ -224,18 +219,18 @@ Esc retrocede, ← → recorren los pasos, F1 vuelve al menú.
 
 **Tarea 3 — propiedades de Rⁿ (#29 → `806dc24`, mergeado):**
 - `gauss_jordan.py` separa RREF y soluciones paramétricas; `gauss.py` mantiene
-  delegadores compatibles para `main.py` y `ui/state.py` (ver ADR-0002).
+  delegadores compatibles para `clients/qt/state.py` (ver ADR-0002).
 - `vectores.py` implementa operaciones, combinación lineal, pertenencia y los
   ocho axiomas de `R^n` sin librerías externas de álgebra lineal.
-- `formato.py`, consola y `ui/screen_vectores.py` muestran vectores columna y LaTeX.
+- `core/formato.py` y `clients/qt/screen_vectores.py` muestran vectores columna y LaTeX.
 - Convención de pesos no únicos en ADR-0002; terminología en `docs/GLOSARIO.md`.
 
 **Subíndices + rediseño plano (#30 → `00ba185`, mergeado):**
 - `formato.subindice/var/parametro/entrada_A/entrada_b` para notación Unicode;
-  `ui/theme.py` sin degradados (flat design, contraste AA).
+  `clients/qt/theme.py` sin degradados (flat design, contraste AA).
 
-**Rumbo:** `main.py` (consola) se **deprecará** en #28 — la app va puro GUI +
-una TUI Textual (#18). No agregues features nuevas a `main.py`.
+**Rumbo:** la consola `main.py` se **retiró** en #28 — la app va puro GUI + una
+TUI Textual (#18).
 
 **Última feature (rama `fix/latex-renderizado-fracciones-verificacion`):**
 LaTeX renderizado, comprobación explícita y fracciones. Issues #15, #16, #17.
@@ -311,8 +306,7 @@ vive en `core/` — se irá levantando con el contenido del curso. Ver `docs/RUM
 
 **P: ¿Cómo agrego una nueva función?**  
 R: 1) Elegir `gauss.py`, `gauss_jordan.py` o `vectores.py`, 2) agregar el test
-correspondiente, 3) integrar mediante `ui/state.py` + una pantalla. **No** en
-`main.py` (se deprecará en #28).
+correspondiente, 3) integrar mediante `clients/qt/state.py` + una pantalla.
 
 **P: ¿Los tests deben pasar?**  
 R: SÍ. Siempre. Si algo falla, es un bloqueador.
@@ -328,6 +322,6 @@ R: En `docs/ALGORITMO.md` (completa) y `docs/CASOS_PRUEBA.md` (práctica)
 **Última actualización:** 2026-09-08
 
 **Estado del Repo:** Tareas 1–3 en `main` (`v3.0.0` = #29 `806dc24`; #30
-`00ba185`). 78 tests. Trabajo estructural planificado en #28 → #26 → #27; épicos
+`00ba185`). 70 tests. Trabajo estructural: #28 (en curso) → #26 → #27; épicos
 #31 (glosario), #32 (server), #33 (Manim), spike #34 (Lean). Mapa completo en
 [`docs/RUMBO.md`](docs/RUMBO.md).

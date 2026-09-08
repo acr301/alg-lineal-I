@@ -81,15 +81,14 @@ vectores columna. Los pesos se escriben como `c_1, ..., c_p` y los vectores como
 Desde la raíz del repositorio:
 
 ```bash
-uv sync
+uv sync --extra dev
 uv run --extra dev pytest
 ```
 
 Para probar la interfaz gráfica:
 
 ```bash
-cd semana2/tarea1
-uv run python gui.py
+uv run aqua-gauss
 ```
 
 Luego elegir **Vectores y propiedades de R^n** en el menú principal.

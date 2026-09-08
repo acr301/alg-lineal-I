@@ -105,16 +105,15 @@ E2: [1, 1] | 5
 
 ---
 
-## Verificación Manual (Consola)
+## Verificación Manual (GUI)
 
 ```bash
-cd semana2/tarea1
-uv run python main.py
+uv run aqua-gauss
 
-# Ingresa los datos del Caso 1
-# Verás cada paso (multiplicadores como fracción: F3 <- F3 - (1/2) * F1)
-# Resultado: x=5, y=3, z=-2
-# Comprobación: 1·(5) + 1·(3) + 1·(-2) = 6 = 6 ✓
+# Menú → "Iniciar" → dimensiones 3×3 → entrada guiada con los datos del Caso 1
+# La pantalla de proceso muestra cada paso (multiplicadores como fracción:
+#   F3 ← F3 − (1/2)·F1), el resultado x=5, y=3, z=-2 y la comprobación
+#   término a término: 1·(5) + 1·(3) + 1·(-2) = 6 = 6 ✓
 ```
 
 ---
