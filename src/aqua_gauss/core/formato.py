@@ -34,8 +34,16 @@ MAX_DEN_DISPLAY = 64
 DECIMALES_ENTRADA = 4
 
 _SUBINDICES = {
-    "0": "₀", "1": "₁", "2": "₂", "3": "₃", "4": "₄",
-    "5": "₅", "6": "₆", "7": "₇", "8": "₈", "9": "₉",
+    "0": "₀",
+    "1": "₁",
+    "2": "₂",
+    "3": "₃",
+    "4": "₄",
+    "5": "₅",
+    "6": "₆",
+    "7": "₇",
+    "8": "₈",
+    "9": "₉",
     "-": "₋",
 }
 
@@ -175,6 +183,7 @@ def entrada_b(fila):
 #   {"terminos": [(coef, x_j, producto), ...], "suma", "esperado", "coincide"}
 # --------------------------------------------------------------------------- #
 
+
 def _terminos_activos(fila):
     activos = [(c, xj, p) for (c, xj, p) in fila["terminos"] if not _casi_cero(c)]
     return activos or fila["terminos"][:1]
@@ -188,13 +197,19 @@ def texto_verificacion(indice, fila, modo=MODO_FRACCION):
         if k == 0:
             encabezado = formatear_display(coef, modo)
         else:
-            encabezado = f"+ {formatear_display(abs(coef), modo)}" if coef >= 0 \
+            encabezado = (
+                f"+ {formatear_display(abs(coef), modo)}"
+                if coef >= 0
                 else f"{MENOS} {formatear_display(abs(coef), modo)}"
+            )
         partes.append(f"{encabezado}{POR}({formatear_display(xj, modo)})")
     rel = "=" if fila["coincide"] else "≠"
-    return (f"{var(indice, 'E')}:  " + " ".join(partes)
-            + f"  =  {formatear_display(fila['suma'], modo)}"
-            + f"  {rel}  {formatear_display(fila['esperado'], modo)}")
+    return (
+        f"{var(indice, 'E')}:  "
+        + " ".join(partes)
+        + f"  =  {formatear_display(fila['suma'], modo)}"
+        + f"  {rel}  {formatear_display(fila['esperado'], modo)}"
+    )
 
 
 def latex_verificacion(indice, fila, modo=MODO_FRACCION):
@@ -205,22 +220,21 @@ def latex_verificacion(indice, fila, modo=MODO_FRACCION):
         c = latex_valor(abs(coef) if k else coef, modo)
         partes.append(rf"{signo}{c} \cdot ({latex_valor(xj, modo)})")
     rel = "=" if fila["coincide"] else r"\neq"
-    return (rf"\mathrm{{E}}_{{{indice + 1}}}:\;\; " + " ".join(partes)
-            + rf" \;=\; {latex_valor(fila['suma'], modo)}"
-            + rf" \;{rel}\; {latex_valor(fila['esperado'], modo)}")
+    return (
+        rf"\mathrm{{E}}_{{{indice + 1}}}:\;\; "
+        + " ".join(partes)
+        + rf" \;=\; {latex_valor(fila['suma'], modo)}"
+        + rf" \;{rel}\; {latex_valor(fila['esperado'], modo)}"
+    )
 
 
 # --------------------------------------------------------------------------- #
 # Fragmentos HTML para el rich-text de Qt (QLabel / QTextEdit)
 # --------------------------------------------------------------------------- #
 
+
 def _escapar(texto):
-    return (
-        str(texto)
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
+    return str(texto).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def valor_html(valor, modo=MODO_FRACCION):
@@ -238,7 +252,7 @@ def valor_html(valor, modo=MODO_FRACCION):
                 f'<span style="display:inline-block; text-align:center; vertical-align:middle;">'
                 f'<span style="display:block; border-bottom:1px solid #153653; padding:0 2px;">{abs(num)}</span>'
                 f'<span style="display:block; padding:0 2px;">{den}</span>'
-                f'</span></span>'
+                f"</span></span>"
             )
     return _escapar(formatear_display(valor, modo))
 
@@ -299,10 +313,7 @@ def latex_combinacion_lineal(objetivo, vectores, pesos, modo=MODO_FRACCION):
         else:
             terminos.append((" - " if peso < 0 else " + ") + termino)
 
-    return (
-        rf"\mathbf{{b}} = {latex_pmatrix(objetivo, modo)} = "
-        + "".join(terminos)
-    )
+    return rf"\mathbf{{b}} = {latex_pmatrix(objetivo, modo)} = " + "".join(terminos)
 
 
 def texto_combinacion_lineal(objetivo, vectores, pesos, modo=MODO_FRACCION):
@@ -322,8 +333,9 @@ def texto_combinacion_lineal(objetivo, vectores, pesos, modo=MODO_FRACCION):
     return "b = " + "".join(terminos) + f" = [{resultado}]ᵀ"
 
 
-def generar_latex_solucion(n_incognitas, libres, expresiones, particular,
-                           vectores_nulos, modo=MODO_FRACCION):
+def generar_latex_solucion(
+    n_incognitas, libres, expresiones, particular, vectores_nulos, modo=MODO_FRACCION
+):
     """
     Código LaTeX de la solución general vectorial x = x_p + Σ tₖ vₖ.
 
@@ -339,13 +351,12 @@ def generar_latex_solucion(n_incognitas, libres, expresiones, particular,
         lineas.append("\\text{Vectores del espacio nulo (base):}\\\\")
         for k, vec in enumerate(vectores_nulos):
             separador = ", \\quad " if k < len(vectores_nulos) - 1 else ""
-            lineas.append(
-                f"\\mathbf{{v_{{{k + 1}}}}} = {latex_pmatrix(vec, modo)}{separador}\\\\"
-            )
+            lineas.append(f"\\mathbf{{v_{{{k + 1}}}}} = {latex_pmatrix(vec, modo)}{separador}\\\\")
         lineas.append("\\\\")
         lineas.append("\\text{Solución general:}\\\\")
-        params = " + ".join(f"t_{{{k + 1}}} \\mathbf{{v_{{{k + 1}}}}}"
-                            for k in range(len(vectores_nulos)))
+        params = " + ".join(
+            f"t_{{{k + 1}}} \\mathbf{{v_{{{k + 1}}}}}" for k in range(len(vectores_nulos))
+        )
         lineas.append(f"\\mathbf{{x}} = \\mathbf{{x_p}} + {params}")
 
     return "".join(lineas)

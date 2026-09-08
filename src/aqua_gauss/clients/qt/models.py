@@ -75,10 +75,8 @@ class SistemaModel:
         """Nombre y ayuda de la celda 'indice' (por filas): a₁₁, a₁₂, …, b₁, a₂₁…"""
         fila, col = divmod(indice, self.n_var + 1)
         if col == self.n_var:
-            return (entrada_b(fila),
-                    f"término independiente de la ecuación {fila + 1}")
-        return (entrada_A(fila, col),
-                f"coeficiente de {var(col, 'x')} en la ecuación {fila + 1}")
+            return (entrada_b(fila), f"término independiente de la ecuación {fila + 1}")
+        return (entrada_A(fila, col), f"coeficiente de {var(col, 'x')} en la ecuación {fila + 1}")
 
     def set_celda(self, indice, valor):
         fila, col = divmod(indice, self.n_var + 1)

@@ -1,24 +1,23 @@
 """Primera pantalla: dimensiones del sistema y notación."""
 
-from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QComboBox,
     QFrame,
     QGridLayout,
     QLabel,
     QSpinBox,
-    QVBoxLayout,
 )
 
-from aqua_gauss.core.formato import MODO_DECIMAL, MODO_FRACCION
 from aqua_gauss.clients.qt.widgets import PantallaBase
+from aqua_gauss.core.formato import MODO_DECIMAL, MODO_FRACCION
 
 
 class PantallaDimensiones(PantallaBase):
     def __init__(self, win):
         super().__init__(win)
-        self.encabezado("1 · Dimensiones y notación",
-                        "Elige cuántas ecuaciones e incógnitas tiene el sistema.")
+        self.encabezado(
+            "1 · Dimensiones y notación", "Elige cuántas ecuaciones e incógnitas tiene el sistema."
+        )
 
         ficha = QFrame()
         ficha.setObjectName("card")
@@ -35,7 +34,8 @@ class PantallaDimensiones(PantallaBase):
         self.notacion.addItems(["Fracción", "Decimal"])
         self.notacion.setToolTip(
             "Fracción: recíprocos exactos como 1/2, 1/4, -8/3 (como se hace a mano).\n"
-            "Decimal: aproximación con 4 cifras.")
+            "Decimal: aproximación con 4 cifras."
+        )
 
         rejilla.addWidget(QLabel("Ecuaciones (filas)"), 0, 0)
         rejilla.addWidget(self.ecuaciones, 0, 1)
@@ -58,8 +58,7 @@ class PantallaDimensiones(PantallaBase):
     def al_entrar(self, **kw):
         self.ecuaciones.setValue(self.sesion.n_eq)
         self.incognitas.setValue(self.sesion.n_var)
-        self.notacion.setCurrentText(
-            "Decimal" if self.sesion.modo == MODO_DECIMAL else "Fracción")
+        self.notacion.setCurrentText("Decimal" if self.sesion.modo == MODO_DECIMAL else "Fracción")
 
     def al_atras(self):
         self.win.ir("menu")
@@ -68,8 +67,9 @@ class PantallaDimensiones(PantallaBase):
         return self.ecuaciones
 
     def _continuar(self):
-        self.sesion.modo = (MODO_DECIMAL if self.notacion.currentText() == "Decimal"
-                            else MODO_FRACCION)
+        self.sesion.modo = (
+            MODO_DECIMAL if self.notacion.currentText() == "Decimal" else MODO_FRACCION
+        )
         n_eq, n_var = self.ecuaciones.value(), self.incognitas.value()
         if (n_eq, n_var) != (self.sesion.n_eq, self.sesion.n_var):
             self.sesion.redimensionar(n_eq, n_var)

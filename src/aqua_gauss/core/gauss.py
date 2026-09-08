@@ -136,9 +136,7 @@ def clasificar(matriz, n_incognitas, columnas_pivote):
         soluciones (hay al menos una variable libre).
     """
     for fila in matriz:
-        coeficientes_cero = all(
-            valor_casi_cero(v) for v in fila[:n_incognitas]
-        )
+        coeficientes_cero = all(valor_casi_cero(v) for v in fila[:n_incognitas])
         termino_no_cero = not valor_casi_cero(fila[n_incognitas])
         if coeficientes_cero and termino_no_cero:
             return "incompatible"
@@ -165,8 +163,9 @@ def sustitucion_regresiva(matriz, n_incognitas, columnas_pivote):
     return x
 
 
-def reducir_a_escalonada_reducida(matriz, n_incognitas, columnas_pivote,
-                                   registrar_paso=None, formato_numero=None):
+def reducir_a_escalonada_reducida(
+    matriz, n_incognitas, columnas_pivote, registrar_paso=None, formato_numero=None
+):
     """Compatibilidad: delega la reducción RREF al módulo Gauss-Jordan."""
     from aqua_gauss.core.gauss_jordan import reducir_a_escalonada_reducida as reducir
 
@@ -212,12 +211,14 @@ def verificar_solucion_detallada(coeficientes, terminos_independientes, x):
             producto = coef * xj
             suma += producto
             terminos.append((coef, xj, producto))
-        resultados.append({
-            "terminos": terminos,
-            "suma": suma,
-            "esperado": b_i,
-            "coincide": valor_casi_cero(suma - b_i),
-        })
+        resultados.append(
+            {
+                "terminos": terminos,
+                "suma": suma,
+                "esperado": b_i,
+                "coincide": valor_casi_cero(suma - b_i),
+            }
+        )
     return resultados
 
 
@@ -266,12 +267,7 @@ def verificar_rango_nulidad(matriz, n_incognitas, columnas_pivote):
     nulidad = n_incognitas - rango
     suma = rango + nulidad
 
-    return {
-        "rango": rango,
-        "nulidad": nulidad,
-        "suma": suma,
-        "es_valido": suma == n_incognitas
-    }
+    return {"rango": rango, "nulidad": nulidad, "suma": suma, "es_valido": suma == n_incognitas}
 
 
 def es_forma_escalonada(matriz, n_incognitas, columnas_pivote):
@@ -284,8 +280,7 @@ def es_forma_escalonada(matriz, n_incognitas, columnas_pivote):
     """
     if not columnas_pivote:
         # Sin pivotes: todas las filas deben ser nulas
-        return all(all(valor_casi_cero(v) for v in fila[:n_incognitas])
-                   for fila in matriz)
+        return all(all(valor_casi_cero(v) for v in fila[:n_incognitas]) for fila in matriz)
 
     # Verificar que hay exactamente len(columnas_pivote) filas no nulas
     num_filas_nulas = 0
@@ -364,9 +359,7 @@ def solucion_general_vectorial(matriz, n_incognitas, columnas_pivote, libres, ex
     """Compatibilidad: delega la construcción vectorial a Gauss-Jordan."""
     from aqua_gauss.core.gauss_jordan import solucion_general_vectorial as construir_vectorial
 
-    return construir_vectorial(
-        matriz, n_incognitas, columnas_pivote, libres, expresiones
-    )
+    return construir_vectorial(matriz, n_incognitas, columnas_pivote, libres, expresiones)
 
 
 # NOTA: la generación de LaTeX (presentación) vive ahora en formato.py

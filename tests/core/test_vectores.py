@@ -68,9 +68,7 @@ class TestCombinacionesLineales(unittest.TestCase):
 
 class TestPropiedadesAlgebraicas(unittest.TestCase):
     def test_verifica_los_ocho_axiomas(self):
-        propiedades = verificar_propiedades(
-            [1, 2, -1], [3, -2, 4], [0, 5, 2], 2, -4
-        )
+        propiedades = verificar_propiedades([1, 2, -1], [3, -2, 4], [0, 5, 2], 2, -4)
 
         self.assertEqual(len(propiedades), 8)
         self.assertTrue(all(datos["cumple"] for datos in propiedades.values()))

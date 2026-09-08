@@ -72,10 +72,12 @@ def main():
 
     if not mathrender.disponible() and os.environ.get("AQUA_GAUSS_SILENCIAR") != "1":
         QMessageBox.information(
-            ventana, "Notación matemática como texto",
+            ventana,
+            "Notación matemática como texto",
             "No se encontró <b>matplotlib</b>, así que la notación se mostrará como "
             "texto en vez de renderizada.<br><br>"
             "Para verla bonita, cierra la app y ejecútala dentro del entorno de uv:"
-            "<br><code>uv sync --extra qt</code><br><code>uv run aqua-gauss</code>")
+            "<br><code>uv sync --extra qt</code><br><code>uv run aqua-gauss</code>",
+        )
 
     sys.exit(app.exec())

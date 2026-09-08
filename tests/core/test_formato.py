@@ -44,18 +44,14 @@ class TestNotacionSubindices(unittest.TestCase):
 
 class TestFormatoCombinacionLineal(unittest.TestCase):
     def test_latex_usa_vectores_columna_y_fracciones(self):
-        latex = latex_combinacion_lineal(
-            [2, 0], [[1, 2], [3, -1]], [0.5, 0.5], MODO_FRACCION
-        )
+        latex = latex_combinacion_lineal([2, 0], [[1, 2], [3, -1]], [0.5, 0.5], MODO_FRACCION)
 
         self.assertIn(r"\mathbf{b}", latex)
         self.assertEqual(latex.count(r"\begin{pmatrix}"), 3)
         self.assertIn(r"\frac{1}{2}", latex)
 
     def test_texto_muestra_pesos_y_resultado(self):
-        texto = texto_combinacion_lineal(
-            [-1, 5], [[1, 2], [3, -1]], [2, -1], MODO_FRACCION
-        )
+        texto = texto_combinacion_lineal([-1, 5], [[1, 2], [3, -1]], [2, -1], MODO_FRACCION)
 
         self.assertEqual(texto, "b = 2·v1 − 1·v2 = [−1, 5]ᵀ")
 
@@ -90,7 +86,7 @@ class TestAFraccion(unittest.TestCase):
         self.assertEqual(a_fraccion(0.5), (1, 2))
 
     def test_irracional_devuelve_none(self):
-        self.assertIsNone(a_fraccion(2 ** 0.5))
+        self.assertIsNone(a_fraccion(2**0.5))
         self.assertIsNone(a_fraccion(3.14159265358979))
 
     def test_denominador_grande_devuelve_none(self):
@@ -110,7 +106,7 @@ class TestFormatearValor(unittest.TestCase):
         self.assertEqual(formatear_valor(0.5, MODO_DECIMAL), "0.5")
 
     def test_irracional_cae_a_decimal_en_modo_fraccion(self):
-        self.assertEqual(formatear_valor(2 ** 0.5, MODO_FRACCION), "1.4142")
+        self.assertEqual(formatear_valor(2**0.5, MODO_FRACCION), "1.4142")
 
 
 class TestNormalizarEntrada(unittest.TestCase):
@@ -126,9 +122,9 @@ class TestNormalizarEntrada(unittest.TestCase):
         self.assertEqual(self._frac(0.3333), "1/3")
 
     def test_decimales_sin_fraccion_tidy_se_redondean_a_4(self):
-        self.assertEqual(self._frac(6.33), "6.33")            # 633/100: den > 64
-        self.assertEqual(self._frac(0.333), "0.333")          # a más de 1e-4 de 1/3
-        self.assertEqual(normalizar_entrada(2 ** 0.5), 1.4142)
+        self.assertEqual(self._frac(6.33), "6.33")  # 633/100: den > 64
+        self.assertEqual(self._frac(0.333), "0.333")  # a más de 1e-4 de 1/3
+        self.assertEqual(normalizar_entrada(2**0.5), 1.4142)
 
     def test_enteros_y_fracciones_pequenas_intactos(self):
         self.assertEqual(normalizar_entrada(5.0), 5.0)
@@ -144,8 +140,12 @@ class TestLatex(unittest.TestCase):
     def test_latex_solucion_incluye_frac_y_no_pierde_ceros(self):
         # x_p = [3, 3, 0]  ->  el 0 debe aparecer, no una cadena vacía
         latex = generar_latex_solucion(
-            3, [2], [None, None, None],
-            [3.0, 3.0, 0.0], [[-0.5, -0.5, 1.0]], MODO_FRACCION,
+            3,
+            [2],
+            [None, None, None],
+            [3.0, 3.0, 0.0],
+            [[-0.5, -0.5, 1.0]],
+            MODO_FRACCION,
         )
         self.assertIn("\\begin{pmatrix} 3 \\\\ 3 \\\\ 0 \\end{pmatrix}", latex)
         self.assertIn("\\frac{1}{2}", latex)

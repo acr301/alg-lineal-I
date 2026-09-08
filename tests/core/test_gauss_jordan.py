@@ -57,17 +57,13 @@ class TestSolucionesParametricas(unittest.TestCase):
     def test_construye_solucion_vectorial(self):
         libres, expresiones = solucion_parametrica(self.matriz, 3, self.pivotes)
 
-        resultado = solucion_general_vectorial(
-            self.matriz, 3, self.pivotes, libres, expresiones
-        )
+        resultado = solucion_general_vectorial(self.matriz, 3, self.pivotes, libres, expresiones)
 
         self.assertEqual(resultado["particular"], [4.0, 1.0, 0.0])
         self.assertEqual(resultado["vectores_nulos"], [[-2.0, 1.0, 1.0]])
 
     def test_los_nombres_historicos_de_gauss_siguen_funcionando(self):
-        libres, expresiones = gauss.solucion_parametrica(
-            self.matriz, 3, self.pivotes
-        )
+        libres, expresiones = gauss.solucion_parametrica(self.matriz, 3, self.pivotes)
 
         self.assertEqual(libres, [2])
         self.assertEqual(

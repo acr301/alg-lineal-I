@@ -6,11 +6,10 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
-    QVBoxLayout,
 )
 
-from aqua_gauss.core.formato import normalizar_entrada
 from aqua_gauss.clients.qt.widgets import MatrizGrid, PantallaBase
+from aqua_gauss.core.formato import normalizar_entrada
 
 
 def _parsear(texto):
@@ -27,9 +26,11 @@ def _parsear(texto):
 class PantallaEntrada(PantallaBase):
     def __init__(self, win):
         super().__init__(win)
-        self.encabezado("2 · Matriz aumentada [A | b]",
-                        "Se te pide cada término de izquierda a derecha y de arriba "
-                        "abajo, como se lee. La matriz se va rellenando abajo.")
+        self.encabezado(
+            "2 · Matriz aumentada [A | b]",
+            "Se te pide cada término de izquierda a derecha y de arriba "
+            "abajo, como se lee. La matriz se va rellenando abajo.",
+        )
 
         self.prompt = QLabel("—")
         self.prompt.setObjectName("prompt")
@@ -71,8 +72,10 @@ class PantallaEntrada(PantallaBase):
         self.raiz.addWidget(self.grid, 0)
         self.raiz.addStretch(1)
 
-        pista = QLabel("Enter: guardar y pasar al siguiente · Retroceso en campo vacío: "
-                       "término anterior · Esc: volver")
+        pista = QLabel(
+            "Enter: guardar y pasar al siguiente · Retroceso en campo vacío: "
+            "término anterior · Esc: volver"
+        )
         pista.setObjectName("hint")
         self.raiz.addWidget(pista)
 
@@ -108,8 +111,10 @@ class PantallaEntrada(PantallaBase):
         self.error.setText("")
         etiqueta, descripcion = self.sesion.etiqueta_celda(self.indice)
         fila = self.indice // (self.sesion.n_var + 1) + 1
-        self.prompt.setText(f"Ecuación {fila} · <b>{etiqueta}</b> — {descripcion} "
-                            f"&nbsp; ({self.indice + 1}/{total})")
+        self.prompt.setText(
+            f"Ecuación {fila} · <b>{etiqueta}</b> — {descripcion} "
+            f"&nbsp; ({self.indice + 1}/{total})"
+        )
         self.campo.setText(self.sesion.fmt(self.sesion.get_celda(self.indice)))
         self.campo.selectAll()
         self.campo.setFocus()
@@ -132,15 +137,16 @@ class PantallaEntrada(PantallaBase):
             self._ir_a(self.indice + 1)
         else:
             self.grid.poblar(self.sesion, resaltar=None)
-            self.prompt.setText("Matriz aumentada completa. Revísala y pulsa "
-                                "<b>Aceptar matriz</b>, o corrige cualquier término.")
+            self.prompt.setText(
+                "Matriz aumentada completa. Revísala y pulsa "
+                "<b>Aceptar matriz</b>, o corrige cualquier término."
+            )
             self._actualizar_continuar()
             if self.nav.boton_continuar.isEnabled():
                 self.nav.boton_continuar.setFocus()
 
     def keyPressEvent(self, event):
-        if (event.key() == Qt.Key.Key_Backspace and not self.campo.text()
-                and self.indice > 0):
+        if event.key() == Qt.Key.Key_Backspace and not self.campo.text() and self.indice > 0:
             self._ir_a(self.indice - 1)
             return
         super().keyPressEvent(event)

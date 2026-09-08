@@ -12,32 +12,51 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from aqua_gauss.core.formato import MENOS, POR, formatear_display, parametro, texto_verificacion, var
 from aqua_gauss.clients.qt.widgets import FilaAnalisis, PantallaBase, matriz_widget
+from aqua_gauss.core.formato import (
+    MENOS,
+    POR,
+    formatear_display,
+    parametro,
+    texto_verificacion,
+    var,
+)
 
 _EXPL = {
-    "rango": ("Filas linealmente independientes (nº de pivotes).",
-              "Rango(A): cuántas ecuaciones aportan información nueva. Es el número "
-              "de pivotes que quedan en la forma escalonada."),
-    "nulidad": ("Número de variables libres (parámetros).",
-                "Nulidad(A): dimensión del conjunto de soluciones de Ax = 0. "
-                "Coincide con cuántas incógnitas quedan sin pivote."),
-    "suma": ("Debe dar el número de incógnitas n.",
-             "Teorema del rango–nulidad: rango(A) + nulidad(A) = n. Sirve de control."),
-    "forma": ("Cómo quedó la matriz tras eliminar.",
-              "REF: cada pivote más a la derecha que el de arriba y ceros debajo. "
-              "RREF: además cada pivote vale 1 y es el único no nulo de su columna."),
+    "rango": (
+        "Filas linealmente independientes (nº de pivotes).",
+        "Rango(A): cuántas ecuaciones aportan información nueva. Es el número "
+        "de pivotes que quedan en la forma escalonada.",
+    ),
+    "nulidad": (
+        "Número de variables libres (parámetros).",
+        "Nulidad(A): dimensión del conjunto de soluciones de Ax = 0. "
+        "Coincide con cuántas incógnitas quedan sin pivote.",
+    ),
+    "suma": (
+        "Debe dar el número de incógnitas n.",
+        "Teorema del rango–nulidad: rango(A) + nulidad(A) = n. Sirve de control.",
+    ),
+    "forma": (
+        "Cómo quedó la matriz tras eliminar.",
+        "REF: cada pivote más a la derecha que el de arriba y ceros debajo. "
+        "RREF: además cada pivote vale 1 y es el único no nulo de su columna.",
+    ),
 }
-_FORMA_TXT = {"RREF": "RREF (escalonada reducida)", "REF": "REF (escalonada)",
-              "ninguna": "no escalonada"}
+_FORMA_TXT = {
+    "RREF": "RREF (escalonada reducida)",
+    "REF": "REF (escalonada)",
+    "ninguna": "no escalonada",
+}
 
 
 class PantallaProceso(PantallaBase):
     def __init__(self, win):
         super().__init__(win)
-        self.encabezado("3 · Proceso y resultado",
-                        "Recorre la eliminación paso a paso. Debajo, la solución y su "
-                        "comprobación.")
+        self.encabezado(
+            "3 · Proceso y resultado",
+            "Recorre la eliminación paso a paso. Debajo, la solución y su comprobación.",
+        )
 
         self.estado = QLabel("—")
         self.estado.setObjectName("status")
@@ -107,10 +126,8 @@ class PantallaProceso(PantallaBase):
         nav = self.navegacion(texto_continuar="Ver solución vectorial  →")
         nav.continuar.connect(lambda: self.win.ir("resultado"))
 
-        QShortcut(QKeySequence("Left"), self,
-                  activated=lambda: self._mostrar_paso(self.paso - 1))
-        QShortcut(QKeySequence("Right"), self,
-                  activated=lambda: self._mostrar_paso(self.paso + 1))
+        QShortcut(QKeySequence("Left"), self, activated=lambda: self._mostrar_paso(self.paso - 1))
+        QShortcut(QKeySequence("Right"), self, activated=lambda: self._mostrar_paso(self.paso + 1))
 
         self.paso = 0
         self.pasos = []
@@ -157,12 +174,18 @@ class PantallaProceso(PantallaBase):
 
     def _pintar_estado(self, tipo):
         estilos = {
-            "determinado": ("Sistema consistente determinado · solución única",
-                            "background:#dff7e7; color:#176b46;"),
-            "indeterminado": ("Sistema consistente indeterminado · infinitas soluciones",
-                              "background:#fff3cf; color:#805900;"),
-            "incompatible": ("Sistema inconsistente · no tiene solución",
-                             "background:#ffe6e5; color:#9f2520;"),
+            "determinado": (
+                "Sistema consistente determinado · solución única",
+                "background:#dff7e7; color:#176b46;",
+            ),
+            "indeterminado": (
+                "Sistema consistente indeterminado · infinitas soluciones",
+                "background:#fff3cf; color:#805900;",
+            ),
+            "incompatible": (
+                "Sistema inconsistente · no tiene solución",
+                "background:#ffe6e5; color:#9f2520;",
+            ),
         }
         texto, css = estilos[tipo]
         self.estado.setText(texto)
@@ -190,8 +213,9 @@ class PantallaProceso(PantallaBase):
 
         tipo = datos["tipo"]
         if tipo == "incompatible":
-            self.sol_layout.addWidget(QLabel(
-                "Una ecuación se redujo a 0 = c con c ≠ 0: el sistema no tiene solución."))
+            self.sol_layout.addWidget(
+                QLabel("Una ecuación se redujo a 0 = c con c ≠ 0: el sistema no tiene solución.")
+            )
             return
 
         if tipo == "determinado":
@@ -202,8 +226,9 @@ class PantallaProceso(PantallaBase):
             n = datos["n"]
             for v in range(n):
                 if v in libres:
-                    self.sol_layout.addWidget(QLabel(
-                        f"{var(v)} = {parametro(libres.index(v))}  (variable libre)"))
+                    self.sol_layout.addWidget(
+                        QLabel(f"{var(v)} = {parametro(libres.index(v))}  (variable libre)")
+                    )
                     continue
                 cte, partes = expresiones[v]
                 txt = self._fmt(cte)
@@ -223,8 +248,11 @@ class PantallaProceso(PantallaBase):
             linea = QLabel(texto_verificacion(i, fila, self.sesion.modo))
             linea.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
             self.sol_layout.addWidget(linea)
-        cierre = QLabel("✓ La solución satisface todas las ecuaciones." if todo_ok
-                        else "✗ La solución NO satisface todas las ecuaciones.")
+        cierre = QLabel(
+            "✓ La solución satisface todas las ecuaciones."
+            if todo_ok
+            else "✗ La solución NO satisface todas las ecuaciones."
+        )
         cierre.setStyleSheet("font-weight:700; color:%s;" % ("#176b46" if todo_ok else "#9f2520"))
         self.sol_layout.addWidget(cierre)
 
@@ -235,8 +263,7 @@ class PantallaProceso(PantallaBase):
         filas = (
             (f"Rango(A) = {rango}", *_EXPL["rango"]),
             (f"Nulidad(A) = {nul}", *_EXPL["nulidad"]),
-            (f"Rango + Nulidad = {rango} + {nul} = {suma}",
-             f"n = {n} · {casa}.", _EXPL["suma"][1]),
+            (f"Rango + Nulidad = {rango} + {nul} = {suma}", f"n = {n} · {casa}.", _EXPL["suma"][1]),
             (f"Forma: {_FORMA_TXT.get(datos['forma'], datos['forma'])}", *_EXPL["forma"]),
         )
         for titulo, breve, detalle in filas:
