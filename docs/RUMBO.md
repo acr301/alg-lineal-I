@@ -9,7 +9,7 @@ Estado y plan de evolución. El detalle vive en los issues; esto es el mapa.
   - `v2.0.0` → PR #21 (rework GUI multipantalla + notación matemática).
   - `v3.0.0` → `806dc24` (#29, propiedades algebraicas de Rⁿ y combinación lineal).
   - #30 (`00ba185`): subíndices Unicode consistentes + rediseño visual plano.
-- **78 tests** en verde (`uv run --extra dev pytest`).
+- **70 tests** en verde (`uv run --extra dev pytest`).
 - Código en `semana2/tarea1/` (se consolida en #28).
 
 ## La restricción "sin librerías" es una fase, no un dogma
