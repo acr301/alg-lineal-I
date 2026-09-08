@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from formato import MENOS, POR, formatear_display, texto_verificacion, var
+from formato import MENOS, POR, formatear_display, texto_verificacion, var, parametro
 from ui.widgets import FilaAnalisis, PantallaBase, matriz_widget
 
 _EXPL = {
@@ -203,13 +203,13 @@ class PantallaProceso(PantallaBase):
             for v in range(n):
                 if v in libres:
                     self.sol_layout.addWidget(QLabel(
-                        f"{var(v)} = t{libres.index(v) + 1}  (variable libre)"))
+                        f"{var(v)} = {parametro(libres.index(v))}  (variable libre)"))
                     continue
                 cte, partes = expresiones[v]
                 txt = self._fmt(cte)
                 for coef, libre in partes:
                     signo = "+" if coef >= 0 else MENOS
-                    txt += f" {signo} {self._fmt(abs(coef))} {POR} t{libres.index(libre) + 1}"
+                    txt += f" {signo} {self._fmt(abs(coef))} {POR} {parametro(libres.index(libre))}"
                 self.sol_layout.addWidget(QLabel(f"{var(v)} = {txt}"))
 
         encabezado, filas = datos["verificacion"]
