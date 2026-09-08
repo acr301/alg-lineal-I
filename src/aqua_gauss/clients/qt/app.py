@@ -76,6 +76,6 @@ def main():
             "No se encontró <b>matplotlib</b>, así que la notación se mostrará como "
             "texto en vez de renderizada.<br><br>"
             "Para verla bonita, cierra la app y ejecútala dentro del entorno de uv:"
-            "<br><code>uv sync</code><br><code>uv run python gui.py</code>")
+            "<br><code>uv sync --extra qt</code><br><code>uv run aqua-gauss</code>")
 
     sys.exit(app.exec())
