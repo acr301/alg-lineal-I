@@ -312,3 +312,10 @@ def vector_columna_html(componentes, modo=MODO_FRACCION):
         ' vertical-align:middle; border-left:2px solid #153653; border-right:2px solid #153653;">'
         f"{filas}</table>"
     )
+def entrada_A(fila, col):
+    """Genera notación a₁₁ con subíndices Unicode"""
+    return f"a{subindice(fila)}{subindice(col)}"
+
+def entrada_b(fila):
+    """Genera notación b₁ con subíndices Unicode"""
+    return f"b{subindice(fila)}"
