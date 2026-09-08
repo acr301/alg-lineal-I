@@ -81,19 +81,24 @@ class TestMenu(unittest.TestCase):
 
         self.assertIs(self.win.stack.currentWidget(), self.win.pantallas["vectores"])
 
-    def test_pantalla_calcula_una_combinacion(self):
+    def test_flujo_vectores_calcula_combinacion(self):
+        # Config -> entrada guiada -> Calcular, como el flujo de "Iniciar".
         self.win.ir("vectores")
-        pantalla = self.win.pantallas["vectores"]
-        pantalla.dimension.setValue(2)
-        pantalla.cantidad.setValue(2)
-        pantalla.operacion.setCurrentText("Calcular combinación lineal")
-        valores = ((0, 0, "2"), (1, 0, "1"), (2, 0, "2"), (0, 1, "-1"), (1, 1, "3"), (2, 1, "-1"))
-        for fila, columna, valor in valores:
-            pantalla.tabla.item(fila, columna).setText(valor)
+        cfg = self.win.pantallas["vectores"]
+        cfg.operacion.setCurrentIndex(0)  # combinación lineal
+        cfg.dimension.setValue(2)
+        cfg.cantidad.setValue(2)
+        cfg._continuar()
+        self.assertIs(self.win.stack.currentWidget(), self.win.pantallas["vectores_entrada"])
 
-        datos = pantalla._calcular()
+        modelo = self.win.sesion.vectores
+        # tabla: fila 0 = pesos [2, -1]; filas 1..2 = v1=[1,2], v2=[3,-1]
+        modelo.tabla = [[2.0, -1.0], [1.0, 3.0], [2.0, -1.0]]
+        entrada = self.win.pantallas["vectores_entrada"]
+        entrada._visitadas = set(range(modelo.total_celdas()))
+        entrada._al_continuar()
 
-        self.assertEqual(datos["resultado"], [-1, 5])
+        self.assertEqual(modelo.resultado["resultado"], [-1, 5])
 
     def test_estado_verifica_propiedades(self):
         datos = self.win.sesion.comprobar_propiedades([1, 2], [3, -1], [0, 4], 2, -3)

@@ -81,12 +81,17 @@ class LocalSolver:
         tipo = clasificar(aumentada, n, pivotes)
 
         info_rn = verificar_rango_nulidad(aumentada, n, pivotes)
+        basicas = list(pivotes)
+        libres = [c for c in range(n) if c not in pivotes]
         datos = {
             "tipo": tipo,
             "rango": rango_matriz(aumentada, n),
             "nulidad": info_rn["nulidad"],
             "suma": info_rn["suma"],
             "n": n,
+            "pivotes": basicas,  # índices (base 0) de las columnas pivote
+            "basicas": basicas,  # variables básicas = columnas pivote
+            "libres_cols": libres,  # variables libres = columnas sin pivote
             "forma": clasificar_forma_escalonada(aumentada, n, pivotes),
             "solucion": None,
             "parametrica": None,  # (libres, expresiones)

@@ -39,7 +39,7 @@ class PantallaMenu(PantallaBase):
         pie = QLabel(
             f"v{APP_INFO['version']}  ·  {APP_INFO['autores']}  ·  "
             f"Licencia {APP_INFO['licencia']}  ·  {APP_INFO['repo']}  ·  "
-            "Método: eliminación de Gauss (sin NumPy/SymPy)"
+            "Métodos: Gauss · Gauss-Jordan (RREF) · vectores de Rⁿ — sin NumPy/SymPy"
         )
         pie.setObjectName("pie")
         pie.setWordWrap(True)
