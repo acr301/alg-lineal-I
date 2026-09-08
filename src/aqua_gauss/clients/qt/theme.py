@@ -18,8 +18,9 @@ APP_INFO = {
     "nombre": "Aqua Gauss",
     "version": _version(),
     "resumen": (
-        "Resuelve y analiza sistemas de ecuaciones lineales Ax = b por "
-        "eliminación de Gauss, paso a paso y sin librerías de álgebra."
+        "Sistemas Ax = b por Gauss y Gauss-Jordan (RREF), con rango, nulidad, "
+        "columnas pivote y formas escalonadas; y vectores y propiedades de Rⁿ. "
+        "Paso a paso, sin librerías de álgebra."
     ),
     "autores": (
         "Andrés Castillo (@acr301) · Fátima Zogaib (@fmariezgg) · "

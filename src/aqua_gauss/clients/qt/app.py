@@ -9,7 +9,15 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox, QStackedWidg
 from aqua_gauss.clients.qt import mathrender
 from aqua_gauss.clients.qt.theme import APP_INFO, aplicar_tema
 
-_ORDEN = ("menu", "dimensiones", "entrada", "proceso", "resultado", "vectores")
+_ORDEN = (
+    "menu",
+    "dimensiones",
+    "entrada",
+    "proceso",
+    "resultado",
+    "vectores",
+    "vectores_entrada",
+)
 
 
 class VentanaPrincipal(QMainWindow):
@@ -18,7 +26,7 @@ class VentanaPrincipal(QMainWindow):
         from aqua_gauss.clients.qt.state import Sesion  # import perezoso: evita ciclos al arrancar
 
         self.sesion = Sesion()
-        self.setWindowTitle(f"{APP_INFO['nombre']} · Eliminación de Gauss")
+        self.setWindowTitle(f"{APP_INFO['nombre']} · Sistemas lineales y vectores de Rⁿ")
         self.resize(1040, 760)
         self.setMinimumSize(820, 600)
 
@@ -31,6 +39,7 @@ class VentanaPrincipal(QMainWindow):
         from aqua_gauss.clients.qt.screen_process import PantallaProceso
         from aqua_gauss.clients.qt.screen_result import PantallaResultado
         from aqua_gauss.clients.qt.screen_vectores import PantallaVectores
+        from aqua_gauss.clients.qt.screen_vectores_entrada import PantallaVectoresEntrada
 
         clases = {
             "menu": PantallaMenu,
@@ -39,6 +48,7 @@ class VentanaPrincipal(QMainWindow):
             "proceso": PantallaProceso,
             "resultado": PantallaResultado,
             "vectores": PantallaVectores,
+            "vectores_entrada": PantallaVectoresEntrada,
         }
         self.pantallas = {}
         for nombre in _ORDEN:

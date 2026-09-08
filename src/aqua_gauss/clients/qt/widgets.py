@@ -167,12 +167,18 @@ class MatrizGrid(QFrame):
         contorno.addLayout(self._grid)
         contorno.addStretch()
 
-    def poblar(self, sesion, resaltar=None):
+    def poblar(self, sesion, resaltar=None, col_basicas=None, col_libres=None):
         while self._grid.count():
             w = self._grid.takeAt(0).widget()
             if w:
                 w.setParent(None)
                 w.deleteLater()
+
+        color_col = {}
+        for j in col_basicas or ():
+            color_col[j] = "#d3e8ff"
+        for j in col_libres or ():
+            color_col[j] = "#ffeec2"
 
         n = sesion.n_var
         filas = sesion.n_eq
@@ -185,6 +191,8 @@ class MatrizGrid(QFrame):
             enc = QLabel(var(j, "x"))
             enc.setObjectName("hint")
             enc.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            if j in color_col:
+                enc.setStyleSheet(f"background:{color_col[j]}; border-radius:5px; font-weight:800;")
             self._grid.addWidget(enc, 0, 2 + j)
 
         enc_b = QLabel("b")
@@ -227,16 +235,29 @@ class MatrizGrid(QFrame):
                         "#celda_activa{background:#fff3cf; border:2px solid #e0a400;"
                         " border-radius:6px; padding:2px 8px; font-weight:800;}"
                     )
+                elif j < n and j in color_col:
+                    celda.setStyleSheet(
+                        f"background:{color_col[j]}; border-radius:5px; padding:2px 8px;"
+                    )
                 else:
                     celda.setStyleSheet("padding:2px 8px;")
                 self._grid.addWidget(celda, i + 1, (2 + j) if j < n else col_b)
 
 
-def matriz_widget(filas, sesion, col_barra=True):
+def matriz_widget(filas, sesion, col_barra=True, col_basicas=None, col_libres=None):
     """Devuelve un widget con la matriz 'filas' bien compuesta: imagen si hay
-    matplotlib (corchetes y fracciones de verdad), rejilla como alternativa."""
+    matplotlib (corchetes y fracciones de verdad), rejilla como alternativa.
+
+    'col_basicas' / 'col_libres' (índices base 0) resaltan esas columnas."""
     n_sep = (len(filas[0]) - 1) if (col_barra and filas) else None
-    pix = mathrender.matriz_a_pixmap(filas, col_barra=n_sep, modo=sesion.modo, fontsize=17)
+    pix = mathrender.matriz_a_pixmap(
+        filas,
+        col_barra=n_sep,
+        modo=sesion.modo,
+        fontsize=17,
+        col_basicas=col_basicas,
+        col_libres=col_libres,
+    )
     if pix is not None:
         lbl = QLabel()
         lbl.setPixmap(pix)
@@ -245,7 +266,7 @@ def matriz_widget(filas, sesion, col_barra=True):
     # alternativa sin matplotlib
     tmp = _SesionVista(sesion, filas)
     grid = MatrizGrid()
-    grid.poblar(tmp)
+    grid.poblar(tmp, col_basicas=col_basicas, col_libres=col_libres)
     return grid
 
 

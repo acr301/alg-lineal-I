@@ -98,9 +98,104 @@ class SistemaModel:
 class VectoresModel:
     """Operaciones de R^n: combinación lineal, pertenencia y axiomas."""
 
+    OP_COMBINACION = "combinacion"
+    OP_PERTENENCIA = "pertenencia"
+    OP_PROPIEDADES = "propiedades"
+
     def __init__(self, solver):
         self._solver = solver
         self.resultado = None  # dict del último cálculo, o None
+        # --- estado de edición (flujo guiado tipo "Iniciar") -------------- #
+        self.op = self.OP_COMBINACION
+        self.n = 3  # dimensión del espacio
+        self.p = 2  # nº de vectores
+        self.escalar_a = 2.0  # solo para OP_PROPIEDADES
+        self.escalar_b = -1.0
+        self.tabla = self._tabla_ceros()
+
+    # ---- forma de la tabla ------------------------------------------- #
+    #  combinación: fila 0 = pesos c₁…c_p ; filas 1…n = componentes de v₁…v_p
+    #  pertenencia: filas 0…n-1 = componentes ; columnas v₁…v_p y luego b
+    #  propiedades: filas 0…n-1 = componentes ; columnas u, v, w  (p se ignora)
+
+    def _n_filas(self):
+        return self.n + (1 if self.op == self.OP_COMBINACION else 0)
+
+    def _n_cols(self):
+        if self.op == self.OP_PROPIEDADES:
+            return 3
+        return self.p + (1 if self.op == self.OP_PERTENENCIA else 0)
+
+    def _tabla_ceros(self):
+        return [[0.0] * self._n_cols() for _ in range(self._n_filas())]
+
+    def nombres_columnas(self):
+        if self.op == self.OP_PROPIEDADES:
+            return ["u", "v", "w"]
+        nombres = [var(j, "v") for j in range(self.p)]
+        if self.op == self.OP_PERTENENCIA:
+            nombres.append("b")
+        return nombres
+
+    def hay_fila_pesos(self):
+        return self.op == self.OP_COMBINACION
+
+    def preparar(self):
+        """Rehace la tabla con la forma actual, conservando lo que quepa."""
+        vieja, nueva = self.tabla, self._tabla_ceros()
+        for i in range(min(len(nueva), len(vieja))):
+            for j in range(min(len(nueva[i]), len(vieja[i]))):
+                nueva[i][j] = vieja[i][j]
+        self.tabla = nueva
+        self.resultado = None
+
+    def fmt(self, valor):
+        return formatear_valor(valor, MODO_FRACCION)
+
+    # ---- entrada guiada (recorrido por filas) ----------------------- #
+
+    def total_celdas(self):
+        return self._n_filas() * self._n_cols()
+
+    def _rc(self, indice):
+        return divmod(indice, self._n_cols())
+
+    def etiqueta_celda(self, indice):
+        fila, col = self._rc(indice)
+        if self.hay_fila_pesos() and fila == 0:
+            c = var(col, "c")
+            return (c, f"peso que multiplica al vector {var(col, 'v')}")
+        base = 1 if self.hay_fila_pesos() else 0
+        nom = self.nombres_columnas()[col]
+        comp = fila - base + 1
+        etiqueta = "b" if nom == "b" else f"{nom}"
+        return (f"{etiqueta} · componente {comp}", f"el {comp}º número del vector {nom}")
+
+    def set_celda(self, indice, valor):
+        fila, col = self._rc(indice)
+        self.tabla[fila][col] = valor
+        self.resultado = None
+
+    def get_celda(self, indice):
+        fila, col = self._rc(indice)
+        return self.tabla[fila][col]
+
+    # ---- cálculo --------------------------------------------------- #
+
+    def _leer_vectores(self):
+        base = 1 if self.hay_fila_pesos() else 0
+        ncols = 3 if self.op == self.OP_PROPIEDADES else self.p
+        return [[self.tabla[base + i][j] for i in range(self.n)] for j in range(ncols)]
+
+    def calcular(self):
+        if self.op == self.OP_COMBINACION:
+            pesos = [self.tabla[0][j] for j in range(self.p)]
+            return self.calcular_combinacion(self._leer_vectores(), pesos)
+        if self.op == self.OP_PERTENENCIA:
+            objetivo = [self.tabla[i][self.p] for i in range(self.n)]
+            return self.comprobar_combinacion(objetivo, self._leer_vectores())
+        u, v, w = self._leer_vectores()
+        return self.comprobar_propiedades(u, v, w, self.escalar_a, self.escalar_b)
 
     def calcular_combinacion(self, vectores, pesos):
         self.resultado = self._solver.combinacion(vectores, pesos)

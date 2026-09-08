@@ -49,13 +49,28 @@ _FORMA_TXT = {
     "ninguna": "no escalonada",
 }
 
+# Colores del resaltado de columnas en los pasos (fondo suave detrás de la columna).
+COL_BASICA = "#d3e8ff"  # columna pivote → variable básica
+COL_LIBRE = "#ffeec2"  # columna sin pivote → variable libre
+
+
+def _lista_y(numeros):
+    """[0, 1, 3] -> "1, 2 y 4" (en base 1, como se numera a mano)."""
+    ns = [str(k + 1) for k in numeros]
+    if not ns:
+        return "ninguna"
+    if len(ns) == 1:
+        return ns[0]
+    return ", ".join(ns[:-1]) + " y " + ns[-1]
+
 
 class PantallaProceso(PantallaBase):
     def __init__(self, win):
         super().__init__(win)
         self.encabezado(
             "3 · Proceso y resultado",
-            "Recorre la eliminación paso a paso. Debajo, la solución y su comprobación.",
+            "Recorre la reducción a forma escalonada paso a paso. Debajo, columnas "
+            "pivote, solución y comprobación.",
         )
 
         self.estado = QLabel("—")
@@ -86,6 +101,11 @@ class PantallaProceso(PantallaBase):
         pv.addWidget(self.paso_desc)
         self.paso_matriz_host = QVBoxLayout()
         pv.addLayout(self.paso_matriz_host)
+        self.leyenda = QLabel("")
+        self.leyenda.setObjectName("explain")
+        self.leyenda.setWordWrap(True)
+        self.leyenda.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        pv.addWidget(self.leyenda)
         fila_nav = QHBoxLayout()
         self.btn_prev = QPushButton("←  Anterior")
         self.btn_prev.setObjectName("secondary")
@@ -114,7 +134,7 @@ class PantallaProceso(PantallaBase):
         self.ana_card.setObjectName("card")
         self.ana_layout = QVBoxLayout(self.ana_card)
         self.ana_layout.setContentsMargins(16, 14, 16, 14)
-        titulo_ana = QLabel("Análisis: rango, nulidad y forma escalonada")
+        titulo_ana = QLabel("Análisis")
         titulo_ana.setObjectName("h1")
         self.ana_layout.addWidget(titulo_ana)
         self.cuerpo.addWidget(self.ana_card)
@@ -137,11 +157,26 @@ class PantallaProceso(PantallaBase):
     def al_entrar(self, **kw):
         datos = self.sesion.resultado or self.sesion.resolver()
         self.pasos = datos["pasos"]
+        self._basicas = datos.get("basicas", [])
+        self._libres = datos.get("libres_cols", [])
+        self._pintar_leyenda()
         self._pintar_estado(datos["tipo"])
         self._pintar_solucion(datos)
         self._pintar_analisis(datos)
         self.paso = 0
         self._mostrar_paso(0)
+
+    def _pintar_leyenda(self):
+        def chip(css, texto):
+            return (
+                f'<span style="background:{css}; padding:1px 10px; border-radius:4px;'
+                f' border:1px solid rgba(0,0,0,0.12);">&nbsp;</span> {texto}'
+            )
+
+        partes = [chip(COL_BASICA, "columna pivote → variable básica")]
+        if self._libres:
+            partes.append(chip(COL_LIBRE, "columna sin pivote → variable libre"))
+        self.leyenda.setText("&nbsp;&nbsp;&nbsp;".join(partes))
 
     def al_atras(self):
         # Si venimos de un ejemplo, no hay pantallas de entrada que revisar.
@@ -166,7 +201,14 @@ class PantallaProceso(PantallaBase):
             if w:
                 w.setParent(None)
                 w.deleteLater()
-        self.paso_matriz_host.addWidget(matriz_widget(matriz, self.sesion))
+        self.paso_matriz_host.addWidget(
+            matriz_widget(
+                matriz,
+                self.sesion,
+                col_basicas=getattr(self, "_basicas", None),
+                col_libres=getattr(self, "_libres", None),
+            )
+        )
         self.btn_prev.setEnabled(self.paso > 0)
         self.btn_next.setEnabled(self.paso < len(self.pasos) - 1)
 
@@ -260,7 +302,23 @@ class PantallaProceso(PantallaBase):
         self._limpiar(self.ana_layout, desde=1)  # conserva el título
         rango, nul, suma, n = datos["rango"], datos["nulidad"], datos["suma"], datos["n"]
         casa = "✓ coincide con n" if suma == n else "✗ no coincide"
+        basicas = datos.get("basicas", [])
+        libres = datos.get("libres_cols", [])
+        basicas_txt = "  ".join(var(c) for c in basicas) or "(ninguna)"
+        libres_txt = "  ".join(var(c) for c in libres) or "(ninguna)"
         filas = (
+            (
+                f"Columnas pivote: {_lista_y(basicas)}",
+                "Columnas de A donde el escalonado dejó un pivote.",
+                "El pivote de una columna es el primer valor no nulo de una fila "
+                "no nula. Su número (en base 1) identifica la columna.",
+            ),
+            (
+                f"Variables básicas: {basicas_txt}   ·   Variables libres: {libres_txt}",
+                "Básica = tiene columna pivote; libre = no la tiene (queda como parámetro).",
+                "En la RREF cada variable básica se despeja en función de las "
+                "libres. El nº de libres es la nulidad.",
+            ),
             (f"Rango(A) = {rango}", *_EXPL["rango"]),
             (f"Nulidad(A) = {nul}", *_EXPL["nulidad"]),
             (f"Rango + Nulidad = {rango} + {nul} = {suma}", f"n = {n} · {casa}.", _EXPL["suma"][1]),
