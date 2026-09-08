@@ -2,10 +2,14 @@
 
 ## Resumen
 
-Esta rama implementa el issue #23 como trabajo de **Andrés Castillo**. Agrega
-operaciones con vectores de `R^n`, combinaciones lineales y la verificación de
-los ocho axiomas de espacio vectorial. Los vectores se presentan como columnas
-y la notación copiable se integra con el LaTeX que ya tenía la aplicación.
+Esta rama implementa el issue #23. Agrega operaciones con vectores de `R^n`,
+combinaciones lineales y la verificación de los ocho axiomas de espacio
+vectorial. Los vectores se presentan como columnas y la notación copiable se
+integra con el LaTeX que ya tenía la aplicación.
+
+**Autoría:** implementación de `@ReynaldoZr` (Reynaldo Molina); el rework de
+documentación —esta guía, `ADR-0002` y `GLOSARIO.md`— es de `@acr301`
+(Andrés Castillo).
 
 La implementación se hizo sobre la arquitectura existente y sin librerías de
 álgebra lineal. Los cálculos usan listas, ciclos, aritmética básica y los
@@ -16,8 +20,8 @@ algoritmos de Gauss/Gauss-Jordan del proyecto.
 ### Operaciones en `vectores.py`
 
 - `suma(u, v)`
-- `producto_escalar(c, v)`
-- `vector_cero(n)`
+- `escalar(c, v)`
+- `cero(n)`
 - `opuesto(v)`
 - `iguales(u, v)`
 - `combinacion_lineal(vectores, pesos)`

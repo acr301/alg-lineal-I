@@ -15,7 +15,7 @@ Ready for review — rama publicada, PR pendiente
 ## Notes
 
 - Rama local: `feature/propiedades-algebraicas-rn`.
-- Responsable: Andrés Castillo.
+- Responsables: `@ReynaldoZr` (implementación) y `@acr301` (docs, ADR-0002, glosario).
 - Verificación actual: 71 tests aprobados.
 - Guía de revisión: `docs/FEATURE_PROPIEDADES_RN.md`.
 - Rama publicada en `origin/feature/propiedades-algebraicas-rn`; `main` no fue
