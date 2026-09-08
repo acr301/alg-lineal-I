@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox, QStackedWidg
 import mathrender
 from ui.theme import APP_INFO, aplicar_tema
 
-_ORDEN = ("menu", "dimensiones", "entrada", "proceso", "resultado")
+_ORDEN = ("menu", "dimensiones", "entrada", "proceso", "resultado", "vectores")
 
 
 class VentanaPrincipal(QMainWindow):
@@ -30,6 +30,7 @@ class VentanaPrincipal(QMainWindow):
         from ui.screen_menu import PantallaMenu
         from ui.screen_process import PantallaProceso
         from ui.screen_result import PantallaResultado
+        from ui.screen_vectores import PantallaVectores
 
         clases = {
             "menu": PantallaMenu,
@@ -37,6 +38,7 @@ class VentanaPrincipal(QMainWindow):
             "entrada": PantallaEntrada,
             "proceso": PantallaProceso,
             "resultado": PantallaResultado,
+            "vectores": PantallaVectores,
         }
         self.pantallas = {}
         for nombre in _ORDEN:

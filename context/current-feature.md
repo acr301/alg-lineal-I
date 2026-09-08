@@ -2,17 +2,39 @@
 
 ## Status
 
-Not Started
+Ready for review — rama publicada, PR pendiente
 
 ## Goals
 
-<!-- goals go here -->
+- Implementar el issue #23: propiedades algebraicas de `R^n`.
+- Separar Gauss-Jordan sin romper las llamadas existentes.
+- Integrar combinaciones lineales con vectores columna y LaTeX.
+- Ofrecer los cálculos desde consola y GUI.
+- Mantener los algoritmos libres de librerías externas de álgebra lineal.
 
 ## Notes
 
-<!-- notes go here -->
+- Rama local: `feature/propiedades-algebraicas-rn`.
+- Responsables: `@ReynaldoZr` (implementación) y `@acr301` (docs, ADR-0002, glosario).
+- Verificación actual: 71 tests aprobados.
+- Guía de revisión: `docs/FEATURE_PROPIEDADES_RN.md`.
+- Rama publicada en `origin/feature/propiedades-algebraicas-rn`; `main` no fue
+  modificado y todavía no se creó el PR.
+- Fuera de alcance para evitar conflictos: subíndices globales, cambios de
+  paleta/degradados y housekeeping de metadatos, versionado y changelog.
 
 ## History
+
+### Propiedades algebraicas de R^n y combinaciones lineales (semana2/tarea1)
+
+Implementación local del issue #23 en la rama `feature/propiedades-algebraicas-rn`.
+Agrega `vectores.py` con operaciones puras, pertenencia a un espacio generado y
+verificación de los ocho axiomas; separa la reducción RREF en `gauss_jordan.py`
+manteniendo compatibilidad desde `gauss.py`; integra notación LaTeX con vectores
+columna, consola y una pantalla de GUI. No usa NumPy, SymPy ni rutinas externas
+de álgebra lineal. Incluye pruebas de algoritmo, formato, consola y GUI. Estado:
+listo para revisión local, con 71 tests aprobados. Documentación detallada en
+`docs/FEATURE_PROPIEDADES_RN.md`.
 
 ### Solución Vectorial, Rango, Nulidad, LaTeX y Formas Escalonadas (semana2/tarea1)
 

@@ -167,92 +167,30 @@ def sustitucion_regresiva(matriz, n_incognitas, columnas_pivote):
 
 def reducir_a_escalonada_reducida(matriz, n_incognitas, columnas_pivote,
                                    registrar_paso=None, formato_numero=None):
-    """
-    A partir de una matriz ya en forma escalonada, continúa el proceso
-    (estilo Gauss-Jordan) hasta la forma escalonada reducida: cada pivote
-    vale 1 y es el único valor no nulo en su columna. Modifica in place.
+    """Compatibilidad: delega la reducción RREF al módulo Gauss-Jordan."""
+    from gauss_jordan import reducir_a_escalonada_reducida as reducir
 
-    'formato_numero' (valor -> str) da formato al divisor/multiplicador de las
-    descripciones (p. ej. fracción). No afecta al cálculo.
-    """
-    fmt = formato_numero or _formato_por_defecto
-    for i in range(len(columnas_pivote) - 1, -1, -1):
-        col = columnas_pivote[i]
-        pivote = matriz[i][col]
-        if not valor_casi_cero(pivote - 1.0):
-            for c in range(col, n_incognitas + 1):
-                matriz[i][c] /= pivote
-            if registrar_paso:
-                registrar_paso(f"F{i + 1} <- F{i + 1} / {fmt(pivote)}", matriz)
-
-        for r in range(i):
-            factor = matriz[r][col]
-            if valor_casi_cero(factor):
-                continue
-            for c in range(col, n_incognitas + 1):
-                matriz[r][c] -= factor * matriz[i][c]
-            matriz[r][col] = 0.0
-            if registrar_paso:
-                registrar_paso(
-                    f"F{r + 1} <- F{r + 1} - ({fmt(factor)}) * F{i + 1}",
-                    matriz,
-                )
+    return reducir(
+        matriz,
+        n_incognitas,
+        columnas_pivote,
+        registrar_paso=registrar_paso,
+        formato_numero=formato_numero,
+    )
 
 
 def solucion_parametrica(matriz, n_incognitas, columnas_pivote):
-    """
-    A partir de la matriz en forma escalonada REDUCIDA, construye la
-    descripción de la solución para un sistema indeterminado.
+    """Compatibilidad: delega la solución paramétrica a Gauss-Jordan."""
+    from gauss_jordan import solucion_parametrica as resolver_parametrica
 
-    Devuelve (libres, expresiones):
-      - libres: lista de índices de variables libres (parámetros).
-      - expresiones: lista de tamaño n_incognitas; para cada índice de
-        variable pivote v, expresiones[v] = (termino_independiente, partes)
-        donde partes es una lista de (coeficiente, indice_variable_libre)
-        tal que x_v = termino_independiente + suma(coeficiente * x_libre).
-        Para variables libres, expresiones[v] es None.
-    """
-    libres = [v for v in range(n_incognitas) if v not in columnas_pivote]
-    expresiones = [None] * n_incognitas
-
-    for i, col in enumerate(columnas_pivote):
-        termino_independiente = matriz[i][n_incognitas]
-        partes = []
-        for v in libres:
-            coef = matriz[i][v]
-            if not valor_casi_cero(coef):
-                partes.append((-coef, v))
-        expresiones[col] = (termino_independiente, partes)
-
-    return libres, expresiones
+    return resolver_parametrica(matriz, n_incognitas, columnas_pivote)
 
 
 def evaluar_solucion_parametrica(n_incognitas, libres, expresiones, valores_libres):
-    """
-    Construye una solucion concreta x = [x1, ..., xn] a partir de la solucion
-    parametrica devuelta por solucion_parametrica(), asignando un valor
-    numerico a cada variable libre.
+    """Compatibilidad: delega la evaluación paramétrica a Gauss-Jordan."""
+    from gauss_jordan import evaluar_solucion_parametrica as evaluar
 
-    'valores_libres' es una lista alineada con 'libres': valores_libres[k] es
-    el valor que se le asigna a la variable libre libres[k].
-
-    Util para construir un ejemplo concreto (p. ej. con parametros = 0 o 1)
-    y poder verificar que satisface el sistema original.
-    """
-    x = [0.0] * n_incognitas
-    for indice_libre, valor in zip(libres, valores_libres):
-        x[indice_libre] = valor
-
-    for v in range(n_incognitas):
-        if expresiones[v] is None:
-            continue
-        termino_independiente, partes = expresiones[v]
-        valor = termino_independiente
-        for coef, indice_libre in partes:
-            valor += coef * x[indice_libre]
-        x[v] = valor
-
-    return x
+    return evaluar(n_incognitas, libres, expresiones, valores_libres)
 
 
 def verificar_solucion_detallada(coeficientes, terminos_independientes, x):
@@ -423,61 +361,12 @@ def clasificar_forma_escalonada(matriz, n_incognitas, columnas_pivote):
 
 
 def solucion_general_vectorial(matriz, n_incognitas, columnas_pivote, libres, expresiones):
-    """
-    Construye la solución general vectorial en la forma:
-    x = xp + t1*v1 + t2*v2 + ... + tk*vk
+    """Compatibilidad: delega la construcción vectorial a Gauss-Jordan."""
+    from gauss_jordan import solucion_general_vectorial as construir_vectorial
 
-    donde:
-      - xp es una solución particular (con variables libres = 0)
-      - v1, v2, ..., vk son los vectores de espacio nulo (k = número de variables libres)
-      - t1, t2, ..., tk son los parámetros libres
-
-    Devuelve un diccionario:
-      - particular: vector solución particular
-      - vectores_nulos: lista de vectores del espacio nulo
-      - variables_libres: lista de índices de variables libres
-      - expresion_str: descripción en forma string de la solución
-    """
-    # Solución particular: asignar 0 a todas las variables libres
-    particular = evaluar_solucion_parametrica(n_incognitas, libres, expresiones, [0] * len(libres))
-
-    # Vectores del espacio nulo
-    vectores_nulos = []
-    for k, indice_libre in enumerate(libres):
-        # Vector correspondiente a la variable libre k-ésima
-        vec = [0.0] * n_incognitas
-        vec[indice_libre] = 1.0  # Este parámetro vale 1
-
-        # Asignar valores a las otras variables libres (todos 0 excepto este)
-        valores_libres_temp = [0.0] * len(libres)
-        valores_libres_temp[k] = 1.0
-        x_temp = evaluar_solucion_parametrica(n_incognitas, libres, expresiones, valores_libres_temp)
-
-        # El vector es x_temp - particular
-        for i in range(n_incognitas):
-            vec[i] = x_temp[i] - particular[i]
-
-        vectores_nulos.append(vec)
-
-    return {
-        "particular": particular,
-        "vectores_nulos": vectores_nulos,
-        "variables_libres": libres,
-        "expresion_str": _construir_expresion_string(particular, vectores_nulos, libres)
-    }
-
-
-def _construir_expresion_string(particular, vectores_nulos, variables_libres):
-    """Helper para construir una descripción textual de la solución vectorial."""
-    if not variables_libres:
-        # Solución única
-        return f"x = {particular}"
-
-    parts = [f"x = {particular}"]
-    for k, (vec, var_idx) in enumerate(zip(vectores_nulos, variables_libres)):
-        parts.append(f" + t{k + 1} * {vec}")
-
-    return "".join(parts)
+    return construir_vectorial(
+        matriz, n_incognitas, columnas_pivote, libres, expresiones
+    )
 
 
 # NOTA: la generación de LaTeX (presentación) vive ahora en formato.py
